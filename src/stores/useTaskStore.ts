@@ -7,6 +7,7 @@ interface TaskStore {
   addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string) => void;
   completeTask: (id: string) => void;
   deleteTask: (id: string) => void;
+  updateTaskPriority: (id: string, priority: Priority) => void;
   getTasksByPriority: () => Task[];
 }
 
@@ -34,6 +35,13 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   deleteTask: (id) => {
     set((state) => ({
       tasks: state.tasks.filter((task) => task.id !== id),
+    }));
+  },
+  updateTaskPriority: (id, priority) => {
+    set((state) => ({
+      tasks: state.tasks.map((task) =>
+        task.id === id ? { ...task, priority } : task
+      ),
     }));
   },
   getTasksByPriority: () => {
