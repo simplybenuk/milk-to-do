@@ -2,10 +2,8 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Priority } from '@/types/task';
-import { Calendar, Plus } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus } from 'lucide-react';
 
 interface AddTaskDialogProps {
   onAddTask: (title: string, priority: Priority, expiryDate: Date) => void;
@@ -14,19 +12,18 @@ interface AddTaskDialogProps {
 export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
-  const [expiryDate, setExpiryDate] = useState(
-    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-  );
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
     
+    // Set expiry date to 30 days from now
+    const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    
     onAddTask(title.trim(), priority, expiryDate);
     setTitle("");
     setPriority("medium");
-    setExpiryDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
     setIsOpen(false);
   };
 
@@ -39,16 +36,16 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
           <Plus className="h-6 w-6" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="animate-slide-up sm:max-w-[425px]">
+      <DialogContent className="animate-slide-up sm:max-w-[425px] pb-6">
         <DialogHeader>
           <DialogTitle>Add New Task</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <Input
-            placeholder="Task title"
+          <textarea
+            placeholder="What needs to be done?"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full"
+            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px] resize-none"
           />
           <div className="flex gap-2">
             {(["low", "medium", "high"] as Priority[]).map((p) => (
@@ -62,15 +59,6 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
                 {p}
               </Button>
             ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-milk-500" />
-            <input
-              type="date"
-              value={format(expiryDate, "yyyy-MM-dd")}
-              onChange={(e) => setExpiryDate(new Date(e.target.value))}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
           </div>
           <Button type="submit" className="w-full">
             Add Task
