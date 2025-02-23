@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
@@ -21,8 +20,15 @@ const Index = () => {
 
   const handleComplete = (taskId: string) => {
     completeTask(taskId);
-    if (currentIndex < sortedTasks.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    const remainingTasks = sortedTasks.filter(task => !task.completed);
+    if (remainingTasks.length > 0) {
+      if (currentIndex >= remainingTasks.length - 1) {
+        setCurrentIndex(0); // Reset to start if we're at the end
+      } else {
+        setCurrentIndex(currentIndex + 1);
+      }
+    } else {
+      setCurrentIndex(0); // Reset to start if all tasks are completed
     }
   };
 
@@ -35,7 +41,10 @@ const Index = () => {
   };
 
   const moveToNextTask = () => {
-    if (currentIndex < sortedTasks.length - 1) {
+    const remainingTasks = sortedTasks.filter(task => !task.completed);
+    if (currentIndex >= remainingTasks.length - 1) {
+      setCurrentIndex(0); // Reset to start if we're at the end
+    } else {
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -87,11 +96,14 @@ const Index = () => {
           </>
         );
       default:
-        return currentTask ? (
+        const openTasks = sortedTasks.filter(task => !task.completed);
+        return openTasks.length > 0 ? (
           <CurrentTask
             task={currentTask}
             onComplete={handleComplete}
             onSkip={handleSkip}
+            currentIndex={currentIndex}
+            totalTasks={openTasks.length}
           />
         ) : (
           <div className="text-center py-12">

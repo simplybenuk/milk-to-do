@@ -8,11 +8,16 @@ interface CurrentTaskProps {
   task: Task;
   onComplete: (id: string) => void;
   onSkip: () => void;
+  currentIndex: number;
+  totalTasks: number;
 }
 
-export function CurrentTask({ task, onComplete, onSkip }: CurrentTaskProps) {
+export function CurrentTask({ task, onComplete, onSkip, currentIndex, totalTasks }: CurrentTaskProps) {
   return (
     <div className="w-full max-w-xl animate-fade-in">
+      <div className="text-center mb-4 text-sm text-milk-600">
+        Task {currentIndex + 1} of {totalTasks}
+      </div>
       <TaskItem
         key={task.id}
         task={task}
