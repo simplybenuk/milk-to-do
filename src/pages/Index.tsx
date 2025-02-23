@@ -1,9 +1,10 @@
+
 import { useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { TaskItem } from '@/components/TaskItem';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { Button } from '@/components/ui/button';
-import { Check, SkipForward, ArrowDown, Scissors, List, CheckSquare, ClockAlertTriangle } from 'lucide-react';
+import { Check, SkipForward, ArrowDown, Scissors, List, CheckSquare, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
 import { AllTasksList } from '@/components/AllTasksList';
@@ -156,7 +157,7 @@ const Index = () => {
                   Completed
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setCurrentView('expired')}>
-                  <ClockAlertTriangle className="mr-2 h-4 w-4" />
+                  <AlertTriangle className="mr-2 h-4 w-4" />
                   Expired
                 </DropdownMenuItem>
               </DropdownMenuContent>
