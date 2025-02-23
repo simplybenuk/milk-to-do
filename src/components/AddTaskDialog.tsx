@@ -37,13 +37,13 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="sm:max-w-[425px] p-0 gap-0 bg-background fixed bottom-0 left-0 right-0 top-auto rounded-b-none sm:rounded-lg sm:bottom-auto sm:top-[50%] sm:left-[50%] sm:right-auto sm:-translate-x-1/2 sm:-translate-y-1/2"
+        className="fixed inset-x-0 bottom-0 top-auto !mt-0 !rounded-b-none border-b-0 sm:static sm:!rounded-lg"
       >
-        <div className="overflow-y-auto max-h-[60vh] sm:max-h-none p-6">
+        <div className="overflow-y-auto p-6">
           <DialogHeader>
             <DialogTitle>Add New Task</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4 mb-6">
             <textarea
               placeholder="What needs to be done?"
               value={title}
