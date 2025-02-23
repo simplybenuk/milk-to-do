@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
@@ -13,6 +13,27 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [isOpen, setIsOpen] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+
+  // Update viewport height when it changes (e.g., when keyboard opens)
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Add visual viewport event listener for iOS
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +57,16 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
           <Plus className="h-6 w-6" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="animate-slide-up sm:max-w-[425px] pb-6">
+      <DialogContent 
+        className="animate-slide-up sm:max-w-[425px] pb-6 fixed"
+        style={{
+          bottom: 0,
+          top: 'auto',
+          transform: 'translateY(0)',
+          maxHeight: `${viewportHeight * 0.8}px`,
+          overflowY: 'auto'
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Add New Task</DialogTitle>
         </DialogHeader>
