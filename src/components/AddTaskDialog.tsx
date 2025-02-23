@@ -37,9 +37,9 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom fixed bottom-0 left-0 right-0 top-[unset] !mt-0 !rounded-b-none border-0 max-h-[85vh] p-0 md:p-6 md:static md:!rounded-lg md:max-w-lg md:translate-x-[-50%] md:translate-y-[-50%]"
+        className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom fixed left-0 right-0 bottom-0 top-auto z-50 grid w-full gap-4 border-b-0 !rounded-b-none bg-background p-0 shadow-lg sm:static sm:!rounded-lg sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%]"
       >
-        <div className="w-full max-w-full p-6 overflow-y-auto">
+        <div className="w-full p-6">
           <DialogHeader>
             <DialogTitle>Add New Task</DialogTitle>
           </DialogHeader>
