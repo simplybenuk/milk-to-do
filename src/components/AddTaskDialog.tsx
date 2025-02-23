@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
@@ -13,27 +13,6 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [isOpen, setIsOpen] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
-
-  // Update viewport height when it changes (e.g., when keyboard opens)
-  useEffect(() => {
-    const handleResize = () => {
-      setViewportHeight(window.innerHeight);
-    };
-
-    window.addEventListener('resize', handleResize);
-    // Add visual viewport event listener for iOS
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
-    }
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
-      }
-    };
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,42 +37,37 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="animate-slide-up sm:max-w-[425px] pb-6 fixed"
-        style={{
-          bottom: 0,
-          top: 'auto',
-          transform: 'translateY(0)',
-          maxHeight: `${viewportHeight * 0.8}px`,
-          overflowY: 'auto'
-        }}
+        className="sm:max-w-[425px] p-0 gap-0 bg-background fixed bottom-0 left-0 right-0 top-auto rounded-b-none sm:rounded-lg sm:bottom-auto sm:top-[50%] sm:left-[50%] sm:right-auto sm:-translate-x-1/2 sm:-translate-y-1/2"
       >
-        <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <textarea
-            placeholder="What needs to be done?"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px] resize-none"
-          />
-          <div className="flex gap-2">
-            {(["low", "medium", "high"] as Priority[]).map((p) => (
-              <Button
-                key={p}
-                type="button"
-                variant={priority === p ? "default" : "outline"}
-                onClick={() => setPriority(p)}
-                className="flex-1 capitalize"
-              >
-                {p}
-              </Button>
-            ))}
-          </div>
-          <Button type="submit" className="w-full">
-            Add Task
-          </Button>
-        </form>
+        <div className="overflow-y-auto max-h-[60vh] sm:max-h-none p-6">
+          <DialogHeader>
+            <DialogTitle>Add New Task</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <textarea
+              placeholder="What needs to be done?"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px] resize-none"
+            />
+            <div className="flex gap-2">
+              {(["low", "medium", "high"] as Priority[]).map((p) => (
+                <Button
+                  key={p}
+                  type="button"
+                  variant={priority === p ? "default" : "outline"}
+                  onClick={() => setPriority(p)}
+                  className="flex-1 capitalize"
+                >
+                  {p}
+                </Button>
+              ))}
+            </div>
+            <Button type="submit" className="w-full">
+              Add Task
+            </Button>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
