@@ -37,9 +37,9 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="fixed inset-x-0 bottom-0 top-auto !mt-0 !rounded-b-none border-b-0 sm:static sm:!rounded-lg"
+        className="fixed inset-x-0 bottom-0 top-auto !mt-0 !rounded-b-none border-b-0 w-full sm:w-[425px] sm:static sm:!rounded-lg"
       >
-        <div className="overflow-y-auto p-6">
+        <div className="overflow-y-auto p-6 w-full">
           <DialogHeader>
             <DialogTitle>Add New Task</DialogTitle>
           </DialogHeader>
