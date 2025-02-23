@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
@@ -13,6 +13,27 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [isOpen, setIsOpen] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+
+  // Update viewport height when it changes (e.g., when keyboard opens)
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Add visual viewport event listener for iOS
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,37 +58,42 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom fixed left-0 right-0 bottom-0 top-auto z-50 grid w-full gap-4 border-b-0 !rounded-b-none bg-background p-0 shadow-lg sm:static sm:!rounded-lg sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%]"
+        className="animate-slide-up sm:max-w-[425px] pb-6 fixed"
+        style={{
+          bottom: 0,
+          top: 'auto',
+          transform: 'translateY(0)',
+          maxHeight: `${viewportHeight * 0.8}px`,
+          overflowY: 'auto'
+        }}
       >
-        <div className="w-full p-6">
-          <DialogHeader>
-            <DialogTitle>Add New Task</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4 mb-6">
-            <textarea
-              placeholder="What needs to be done?"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px] resize-none"
-            />
-            <div className="flex gap-2">
-              {(["low", "medium", "high"] as Priority[]).map((p) => (
-                <Button
-                  key={p}
-                  type="button"
-                  variant={priority === p ? "default" : "outline"}
-                  onClick={() => setPriority(p)}
-                  className="flex-1 capitalize"
-                >
-                  {p}
-                </Button>
-              ))}
-            </div>
-            <Button type="submit" className="w-full">
-              Add Task
-            </Button>
-          </form>
-        </div>
+        <DialogHeader>
+          <DialogTitle>Add New Task</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          <textarea
+            placeholder="What needs to be done?"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px] resize-none"
+          />
+          <div className="flex gap-2">
+            {(["low", "medium", "high"] as Priority[]).map((p) => (
+              <Button
+                key={p}
+                type="button"
+                variant={priority === p ? "default" : "outline"}
+                onClick={() => setPriority(p)}
+                className="flex-1 capitalize"
+              >
+                {p}
+              </Button>
+            ))}
+          </div>
+          <Button type="submit" className="w-full">
+            Add Task
+          </Button>
+        </form>
       </DialogContent>
     </Dialog>
   );
