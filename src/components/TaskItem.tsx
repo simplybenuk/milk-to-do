@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
-import { Clock } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 
 interface TaskItemProps {
   task: Task;
@@ -33,16 +32,15 @@ export function TaskItem({ task }: TaskItemProps) {
         <h3 className="text-xl font-medium text-milk-900 mb-4">
           {task.title}
         </h3>
-        <div className="flex items-center gap-4 text-sm text-milk-500">
+        <div className="flex flex-col gap-2">
           <span className={cn(
-            "inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium",
+            "inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium w-fit",
             priorityColors[task.priority]
           )}>
             {task.priority}
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {formatDistanceToNow(task.expiryDate, { addSuffix: true })}
+          <span className="text-sm text-milk-500">
+            Expires: {format(task.expiryDate, "d MMM HH:mm")}
           </span>
         </div>
       </div>
