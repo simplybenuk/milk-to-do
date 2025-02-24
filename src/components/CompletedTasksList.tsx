@@ -4,7 +4,7 @@ import useTaskStore from '@/stores/useTaskStore';
 
 export function CompletedTasksList() {
   const { tasks } = useTaskStore();
-  const completedTasks = tasks.filter(task => task.completed);
+  const completedTasks = tasks.filter(task => task.status === 'closed');
   
   return (
     <div className="space-y-4">

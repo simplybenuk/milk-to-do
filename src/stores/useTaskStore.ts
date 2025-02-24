@@ -24,6 +24,9 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   fetchTasks: async () => {
     set({ isLoading: true, error: null });
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user logged in');
+
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
@@ -46,15 +49,19 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   addTask: async (title, priority, expiryDate, parentId) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user logged in');
+
       const { data: newTask, error } = await supabase
         .from('tasks')
-        .insert([{
+        .insert({
           title,
           priority,
           expiry_date: expiryDate.toISOString(),
           parent_id: parentId,
           status: 'open' as TaskStatus,
-        }])
+          owner_id: user.id,
+        })
         .select()
         .single();
 
@@ -80,8 +87,8 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { error } = await supabase
         .from('tasks')
         .update({
-          status: 'closed' as TaskStatus,
-          closed_status: 'complete' as ClosedStatusReason,
+          status: 'closed',
+          closed_status: 'complete',
         })
         .eq('id', id);
 
@@ -140,18 +147,20 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   incrementSkipCount: async (id) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('tasks')
         .update({
-          skip_count: supabase.rpc('increment_skip_count', { row_id: id }),
+          skip_count: supabase.rpc('increment', { row_id: id })
         })
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
 
       if (error) throw error;
 
       set(state => ({
         tasks: state.tasks.map(task =>
-          task.id === id ? { ...task, skip_count: task.skip_count + 1 } : task
+          task.id === id ? { ...task, skip_count: (task.skip_count || 0) + 1 } : task
         ),
       }));
     } catch (error) {

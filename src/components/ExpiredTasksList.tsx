@@ -5,7 +5,7 @@ import useTaskStore from '@/stores/useTaskStore';
 export function ExpiredTasksList() {
   const { tasks } = useTaskStore();
   const expiredTasks = tasks.filter(task => 
-    !task.completed && task.expiryDate.getTime() < Date.now()
+    task.status === 'open' && task.expiry_date.getTime() < Date.now()
   );
   
   return (

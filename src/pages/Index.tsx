@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
@@ -20,7 +21,7 @@ const Index = () => {
 
   const handleComplete = (taskId: string) => {
     completeTask(taskId);
-    const remainingTasks = sortedTasks.filter(task => !task.completed);
+    const remainingTasks = sortedTasks.filter(task => task.status === 'open');
     if (remainingTasks.length > 0) {
       if (currentIndex >= remainingTasks.length - 1) {
         setCurrentIndex(0); // Reset to start if we're at the end
@@ -41,7 +42,7 @@ const Index = () => {
   };
 
   const moveToNextTask = () => {
-    const remainingTasks = sortedTasks.filter(task => !task.completed);
+    const remainingTasks = sortedTasks.filter(task => task.status === 'open');
     if (currentIndex >= remainingTasks.length - 1) {
       setCurrentIndex(0); // Reset to start if we're at the end
     } else {
@@ -96,7 +97,7 @@ const Index = () => {
           </>
         );
       default:
-        const openTasks = sortedTasks.filter(task => !task.completed);
+        const openTasks = sortedTasks.filter(task => task.status === 'open');
         return openTasks.length > 0 ? (
           <CurrentTask
             task={currentTask}
@@ -143,6 +144,6 @@ const Index = () => {
       }} />
     </div>
   );
-};
+}
 
 export default Index;

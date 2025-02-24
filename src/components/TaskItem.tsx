@@ -25,7 +25,7 @@ export function TaskItem({ task }: TaskItemProps) {
         "relative flex items-start gap-4 rounded-lg border p-6 shadow-lg transition-all bg-white",
         "hover:shadow-xl animate-fade-in",
         isCompleting && "animate-task-complete",
-        task.completed && "opacity-50"
+        task.status === 'closed' && "opacity-50"
       )}
     >
       <div className="flex-1 min-w-0">
@@ -40,7 +40,7 @@ export function TaskItem({ task }: TaskItemProps) {
             {task.priority}
           </span>
           <span className="text-sm text-milk-500">
-            Expires: {format(task.expiryDate, "d MMM HH:mm")}
+            Expires: {format(task.expiry_date, "d MMM HH:mm")}
           </span>
         </div>
       </div>
