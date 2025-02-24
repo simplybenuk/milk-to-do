@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +29,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
+        .eq('owner_id', user.id)
         .order('priority_score', { ascending: false });
 
       if (error) throw error;
@@ -38,6 +38,8 @@ const useTaskStore = create<TaskStore>((set, get) => ({
         ...task,
         created_at: new Date(task.created_at),
         expiry_date: new Date(task.expiry_date),
+        child_task_ids: task.child_task_ids || [],
+        tags: task.tags || [],
       }));
 
       set({ tasks, isLoading: false });
@@ -52,30 +54,35 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
-      const { data: newTask, error } = await supabase
+      const newTask = {
+        title,
+        priority,
+        expiry_date: expiryDate.toISOString(),
+        parent_id: parentId || null,
+        status: 'open' as TaskStatus,
+        owner_id: user.id,
+        skip_count: 0,
+        child_task_ids: [],
+        tags: [],
+      };
+
+      const { data, error } = await supabase
         .from('tasks')
-        .insert({
-          title,
-          priority,
-          expiry_date: expiryDate.toISOString(),
-          parent_id: parentId,
-          status: 'open' as TaskStatus,
-          owner_id: user.id,
-        })
+        .insert(newTask)
         .select()
         .single();
 
       if (error) throw error;
 
       const task: Task = {
-        ...newTask,
-        created_at: new Date(newTask.created_at),
-        expiry_date: new Date(newTask.expiry_date),
-        child_task_ids: newTask.child_task_ids || [],
-        tags: newTask.tags || [],
+        ...data,
+        created_at: new Date(data.created_at),
+        expiry_date: new Date(data.expiry_date),
+        child_task_ids: data.child_task_ids || [],
+        tags: data.tags || [],
       };
 
-      set(state => ({ tasks: [task, ...state.tasks] }));
+      await get().fetchTasks();
     } catch (error) {
       console.error('Error adding task:', error);
       set({ error: 'Failed to add task' });
@@ -134,11 +141,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
       if (error) throw error;
 
-      set(state => ({
-        tasks: state.tasks.map(task =>
-          task.id === id ? { ...task, priority } : task
-        ),
-      }));
+      await get().fetchTasks();
     } catch (error) {
       console.error('Error updating task priority:', error);
       set({ error: 'Failed to update task priority' });
@@ -147,16 +150,12 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   incrementSkipCount: async (id) => {
     try {
-      const { data: newCount, error: rpcError } = await supabase
+      const { error: rpcError } = await supabase
         .rpc('increment', { row_id: id });
 
       if (rpcError) throw rpcError;
 
-      set(state => ({
-        tasks: state.tasks.map(task =>
-          task.id === id ? { ...task, skip_count: newCount } : task
-        ),
-      }));
+      await get().fetchTasks();
     } catch (error) {
       console.error('Error incrementing skip count:', error);
       set({ error: 'Failed to increment skip count' });
