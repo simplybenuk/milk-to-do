@@ -30,6 +30,72 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          child_task_ids: string[] | null
+          closed_status:
+            | Database["public"]["Enums"]["closed_status_reason"]
+            | null
+          created_at: string
+          expiry_date: string
+          id: string
+          owner_id: string
+          parent_id: string | null
+          priority: Database["public"]["Enums"]["task_priority"]
+          skip_count: number
+          status: Database["public"]["Enums"]["task_status"]
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          child_task_ids?: string[] | null
+          closed_status?:
+            | Database["public"]["Enums"]["closed_status_reason"]
+            | null
+          created_at?: string
+          expiry_date?: string
+          id?: string
+          owner_id: string
+          parent_id?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          skip_count?: number
+          status?: Database["public"]["Enums"]["task_status"]
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          child_task_ids?: string[] | null
+          closed_status?:
+            | Database["public"]["Enums"]["closed_status_reason"]
+            | null
+          created_at?: string
+          expiry_date?: string
+          id?: string
+          owner_id?: string
+          parent_id?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          skip_count?: number
+          status?: Database["public"]["Enums"]["task_status"]
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -38,7 +104,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      closed_status_reason: "expired" | "complete" | "parent"
+      task_priority: "low" | "medium" | "high"
+      task_status: "open" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
