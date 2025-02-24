@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
 import { supabase } from '@/integrations/supabase/client';
@@ -147,20 +146,14 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   incrementSkipCount: async (id) => {
     try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .update({
-          skip_count: supabase.rpc('increment', { row_id: id })
-        })
-        .eq('id', id)
-        .select()
-        .single();
+      const { data: newCount, error: rpcError } = await supabase
+        .rpc('increment', { row_id: id });
 
-      if (error) throw error;
+      if (rpcError) throw rpcError;
 
       set(state => ({
         tasks: state.tasks.map(task =>
-          task.id === id ? { ...task, skip_count: (task.skip_count || 0) + 1 } : task
+          task.id === id ? { ...task, skip_count: newCount } : task
         ),
       }));
     } catch (error) {

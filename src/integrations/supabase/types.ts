@@ -101,7 +101,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment: {
+        Args: {
+          row_id: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       closed_status_reason: "expired" | "complete" | "parent"
