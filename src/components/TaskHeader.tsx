@@ -1,6 +1,8 @@
 
 import { Button } from '@/components/ui/button';
-import { List, Check, CheckSquare, AlertTriangle } from 'lucide-react';
+import { List, Check, CheckSquare, AlertTriangle, LogOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +16,13 @@ interface TaskHeaderProps {
 }
 
 export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
   return (
     <header className="mb-8 text-center relative">
       <div className="absolute right-0 top-0">
@@ -39,6 +48,10 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
             <DropdownMenuItem onClick={() => onViewChange('expired')}>
               <AlertTriangle className="mr-2 h-4 w-4" />
               Expired
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
