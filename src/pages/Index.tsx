@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -11,13 +11,18 @@ import { TaskHeader } from '@/components/TaskHeader';
 import { CurrentTask } from '@/components/CurrentTask';
 
 const Index = () => {
-  const { tasks, completeTask, getTasksByPriority, updateTaskPriority } = useTaskStore();
+  const { tasks, completeTask, getTasksByPriority, updateTaskPriority, fetchTasks } = useTaskStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showPriorityDialog, setShowPriorityDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'main' | 'all' | 'completed' | 'expired'>('main');
   const sortedTasks = getTasksByPriority();
   const currentTask = sortedTasks[currentIndex];
   const { toast } = useToast();
+
+  // Fetch tasks when component mounts
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const handleComplete = (taskId: string) => {
     completeTask(taskId);
