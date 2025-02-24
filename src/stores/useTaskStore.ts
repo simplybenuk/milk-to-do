@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,7 +30,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('priority_score', { ascending: false });
 
       if (error) throw error;
 
@@ -166,16 +167,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     const { tasks } = get();
     return [...tasks].sort((a, b) => {
       if (a.status !== b.status) return a.status === 'closed' ? 1 : -1;
-      
-      const priorityWeight = { high: 3, medium: 2, low: 1 };
-      const aPriority = priorityWeight[a.priority];
-      const bPriority = priorityWeight[b.priority];
-      
-      if (aPriority !== bPriority) return bPriority - aPriority;
-      
-      const aTimeLeft = a.expiry_date.getTime() - Date.now();
-      const bTimeLeft = b.expiry_date.getTime() - Date.now();
-      return aTimeLeft - bTimeLeft;
+      return b.priority_score - a.priority_score;
     });
   },
 }));

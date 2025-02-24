@@ -42,6 +42,7 @@ export type Database = {
           owner_id: string
           parent_id: string | null
           priority: Database["public"]["Enums"]["task_priority"]
+          priority_score: number | null
           skip_count: number
           status: Database["public"]["Enums"]["task_status"]
           tags: string[] | null
@@ -58,6 +59,7 @@ export type Database = {
           owner_id: string
           parent_id?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
+          priority_score?: number | null
           skip_count?: number
           status?: Database["public"]["Enums"]["task_status"]
           tags?: string[] | null
@@ -74,6 +76,7 @@ export type Database = {
           owner_id?: string
           parent_id?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
+          priority_score?: number | null
           skip_count?: number
           status?: Database["public"]["Enums"]["task_status"]
           tags?: string[] | null
