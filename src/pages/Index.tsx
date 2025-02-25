@@ -15,8 +15,8 @@ const Index = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showPriorityDialog, setShowPriorityDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'main' | 'all' | 'completed' | 'expired'>('main');
-  const sortedTasks = getTasksByPriority();
-  const currentTask = sortedTasks[currentIndex];
+  const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
+  const currentTask = sortedOpenTasks[currentIndex];
   const { toast } = useToast();
 
   // Fetch tasks when component mounts
@@ -24,17 +24,15 @@ const Index = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const handleComplete = (taskId: string) => {
-    completeTask(taskId);
-    const remainingTasks = sortedTasks.filter(task => task.status === 'open');
-    if (remainingTasks.length > 0) {
-      if (currentIndex >= remainingTasks.length - 1) {
-        setCurrentIndex(0); // Reset to start if we're at the end
-      } else {
-        setCurrentIndex(currentIndex + 1);
-      }
-    } else {
-      setCurrentIndex(0); // Reset to start if all tasks are completed
+  const handleComplete = async (taskId: string) => {
+    await completeTask(taskId);
+    // After completion, get the new list of open tasks
+    const remainingTasks = getTasksByPriority().filter(task => task.status === 'open');
+    
+    if (remainingTasks.length === 0) {
+      setCurrentIndex(0);
+    } else if (currentIndex >= remainingTasks.length) {
+      setCurrentIndex(0);
     }
   };
 
@@ -47,9 +45,8 @@ const Index = () => {
   };
 
   const moveToNextTask = () => {
-    const remainingTasks = sortedTasks.filter(task => task.status === 'open');
-    if (currentIndex >= remainingTasks.length - 1) {
-      setCurrentIndex(0); // Reset to start if we're at the end
+    if (currentIndex >= sortedOpenTasks.length - 1) {
+      setCurrentIndex(0);
     } else {
       setCurrentIndex(currentIndex + 1);
     }
@@ -102,14 +99,13 @@ const Index = () => {
           </>
         );
       default:
-        const openTasks = sortedTasks.filter(task => task.status === 'open');
-        return openTasks.length > 0 ? (
+        return sortedOpenTasks.length > 0 ? (
           <CurrentTask
             task={currentTask}
             onComplete={handleComplete}
             onSkip={handleSkip}
             currentIndex={currentIndex}
-            totalTasks={openTasks.length}
+            totalTasks={sortedOpenTasks.length}
           />
         ) : (
           <div className="text-center py-12">
