@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,6 +44,8 @@ const useTaskStore = create<TaskStore>((set, get) => ({
         ...task,
         created_at: new Date(task.created_at),
         expiry_date: new Date(task.expiry_date),
+        completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
+        expired_at: task.expired_at ? new Date(task.expired_at) : undefined,
         child_task_ids: task.child_task_ids || [],
         tags: task.tags || [],
       }));
@@ -83,6 +86,8 @@ const useTaskStore = create<TaskStore>((set, get) => ({
         ...data,
         created_at: new Date(data.created_at),
         expiry_date: new Date(data.expiry_date),
+        completed_at: data.completed_at ? new Date(data.completed_at) : undefined,
+        expired_at: data.expired_at ? new Date(data.expired_at) : undefined,
         child_task_ids: data.child_task_ids || [],
         tags: data.tags || [],
       };
