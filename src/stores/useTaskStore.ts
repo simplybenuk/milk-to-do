@@ -1,25 +1,16 @@
 
 import { create } from 'zustand';
-import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
+import { TaskStore } from './types/taskStore.types';
 import { supabase } from '@/integrations/supabase/client';
-
-interface TaskStore {
-  tasks: Task[];
-  isLoading: boolean;
-  error: string | null;
-  fetchTasks: () => Promise<void>;
-  addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string) => Promise<void>;
-  completeTask: (id: string) => Promise<void>;
-  deleteTask: (id: string) => Promise<void>;
-  updateTaskPriority: (id: string, priority: Priority) => Promise<void>;
-  incrementSkipCount: (id: string) => Promise<void>;
-  getTasksByPriority: () => Task[];
-  getTaskStats: () => { 
-    completedLastWeek: Task[],
-    completedLastMonth: Task[],
-    expired: Task[]
-  };
-}
+import {
+  fetchTasksFromDB,
+  addTaskToDB,
+  completeTaskInDB,
+  deleteTaskFromDB,
+  updateTaskPriorityInDB,
+  incrementSkipCountInDB,
+} from './actions/taskActions';
+import { calculateTaskStats, sortTasksByPriority } from './utils/taskUtils';
 
 const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
@@ -32,24 +23,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('owner_id', user.id)
-        .order('priority_score', { ascending: false });
-
-      if (error) throw error;
-
-      const tasks = data.map(task => ({
-        ...task,
-        created_at: new Date(task.created_at),
-        expiry_date: new Date(task.expiry_date),
-        completed_at: task.completed_at ? new Date(task.completed_at) : undefined,
-        expired_at: task.expired_at ? new Date(task.expired_at) : undefined,
-        child_task_ids: task.child_task_ids || [],
-        tags: task.tags || [],
-      }));
-
+      const tasks = await fetchTasksFromDB(user.id);
       set({ tasks, isLoading: false });
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -62,36 +36,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
-      const newTask = {
-        title,
-        priority,
-        expiry_date: expiryDate.toISOString(),
-        parent_id: parentId || null,
-        status: 'open' as TaskStatus,
-        owner_id: user.id,
-        skip_count: 0,
-        child_task_ids: [],
-        tags: [],
-      };
-
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert(newTask)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const task: Task = {
-        ...data,
-        created_at: new Date(data.created_at),
-        expiry_date: new Date(data.expiry_date),
-        completed_at: data.completed_at ? new Date(data.completed_at) : undefined,
-        expired_at: data.expired_at ? new Date(data.expired_at) : undefined,
-        child_task_ids: data.child_task_ids || [],
-        tags: data.tags || [],
-      };
-
+      await addTaskToDB(title, priority, expiryDate, user.id, parentId);
       await get().fetchTasks();
     } catch (error) {
       console.error('Error adding task:', error);
@@ -101,17 +46,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   completeTask: async (id) => {
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          status: 'closed',
-          closed_status: 'complete',
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await completeTaskInDB(id);
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id
@@ -132,13 +67,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   deleteTask: async (id) => {
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await deleteTaskFromDB(id);
       set(state => ({
         tasks: state.tasks.filter(task => task.id !== id),
       }));
@@ -150,13 +79,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   updateTaskPriority: async (id, priority) => {
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ priority })
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await updateTaskPriorityInDB(id, priority);
       await get().fetchTasks();
     } catch (error) {
       console.error('Error updating task priority:', error);
@@ -166,11 +89,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   incrementSkipCount: async (id) => {
     try {
-      const { error: rpcError } = await supabase
-        .rpc('increment', { row_id: id });
-
-      if (rpcError) throw rpcError;
-
+      await incrementSkipCountInDB(id);
       await get().fetchTasks();
     } catch (error) {
       console.error('Error incrementing skip count:', error);
@@ -179,32 +98,11 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   },
 
   getTasksByPriority: () => {
-    const { tasks } = get();
-    return [...tasks].sort((a, b) => {
-      if (a.status !== b.status) return a.status === 'closed' ? 1 : -1;
-      return b.priority_score - a.priority_score;
-    });
+    return sortTasksByPriority(get().tasks);
   },
 
   getTaskStats: () => {
-    const { tasks } = get();
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    return {
-      completedLastWeek: tasks.filter(task => 
-        task.completed_at && 
-        task.completed_at >= oneWeekAgo
-      ),
-      completedLastMonth: tasks.filter(task => 
-        task.completed_at && 
-        task.completed_at >= oneMonthAgo
-      ),
-      expired: tasks.filter(task => 
-        task.expired_at !== null
-      ),
-    };
+    return calculateTaskStats(get().tasks);
   },
 }));
 
