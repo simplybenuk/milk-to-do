@@ -25,14 +25,13 @@ export function CurrentTask({
 
   return (
     <div className="w-full max-w-xl animate-fade-in">
-      <div className="text-center mb-4 text-sm text-milk-600">
-        Task {currentIndex + 1} of {totalTasks}
+      <div className="flex items-center justify-center gap-2 mb-4 text-sm text-milk-600">
+        <span>Task {currentIndex + 1} of {totalTasks}</span>
         {showReturnButton && (
           <Button
             onClick={onReturnToTop}
             variant="outline"
             size="sm"
-            className="ml-2"
           >
             <ArrowUp className="mr-2 h-4 w-4" />
             Return to Top Priority
