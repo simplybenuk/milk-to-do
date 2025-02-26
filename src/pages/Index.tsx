@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
@@ -19,14 +18,12 @@ const Index = () => {
   const currentTask = sortedOpenTasks[currentIndex];
   const { toast } = useToast();
 
-  // Fetch tasks when component mounts
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
   const handleComplete = async (taskId: string) => {
     await completeTask(taskId);
-    // After completion, get the new list of open tasks
     const remainingTasks = getTasksByPriority().filter(task => task.status === 'open');
     
     if (remainingTasks.length === 0) {
@@ -73,6 +70,14 @@ const Index = () => {
       description: "Task splitting feature will be available soon!",
     });
     setShowPriorityDialog(false);
+  };
+
+  const handleBlocked = () => {
+    toast({
+      description: "Moving to next task without updating priority",
+    });
+    setShowPriorityDialog(false);
+    moveToNextTask();
   };
 
   const renderContent = () => {
@@ -133,6 +138,7 @@ const Index = () => {
         onOpenChange={setShowPriorityDialog}
         onDowngradePriority={handleDowngradePriority}
         onSplitTask={handleSplitTask}
+        onBlocked={handleBlocked}
         onSkipAnyway={() => {
           setShowPriorityDialog(false);
           moveToNextTask();

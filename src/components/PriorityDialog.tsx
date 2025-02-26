@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ArrowDown, Scissors } from 'lucide-react';
+import { ArrowDown, Scissors, Lock } from 'lucide-react';
 
 interface PriorityDialogProps {
   open: boolean;
@@ -9,6 +9,7 @@ interface PriorityDialogProps {
   onDowngradePriority: () => void;
   onSplitTask: () => void;
   onSkipAnyway: () => void;
+  onBlocked?: () => void;
 }
 
 export function PriorityDialog({
@@ -17,6 +18,7 @@ export function PriorityDialog({
   onDowngradePriority,
   onSplitTask,
   onSkipAnyway,
+  onBlocked = () => onOpenChange(false),
 }: PriorityDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -24,7 +26,7 @@ export function PriorityDialog({
         <DialogHeader>
           <DialogTitle>This task seems important</DialogTitle>
           <DialogDescription>
-            Would you like to break it down into smaller tasks or lower its priority?
+            Would you like to break it down into smaller tasks, lower its priority, or mark it as blocked?
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-4">
@@ -43,6 +45,14 @@ export function PriorityDialog({
           >
             <Scissors className="mr-2 h-4 w-4" />
             Split into Smaller Tasks
+          </Button>
+          <Button
+            onClick={onBlocked}
+            variant="outline"
+            className="w-full"
+          >
+            <Lock className="mr-2 h-4 w-4" />
+            Blocked by Others
           </Button>
           <Button
             onClick={onSkipAnyway}
