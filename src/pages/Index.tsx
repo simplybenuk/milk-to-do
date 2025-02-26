@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
@@ -48,6 +49,13 @@ const Index = () => {
     } else {
       setCurrentIndex(currentIndex + 1);
     }
+  };
+
+  const handleReturnToTop = () => {
+    setCurrentIndex(0);
+    toast({
+      description: "Returned to top priority task",
+    });
   };
 
   const handleDowngradePriority = () => {
@@ -112,6 +120,7 @@ const Index = () => {
             task={currentTask}
             onComplete={handleComplete}
             onSkip={handleSkip}
+            onReturnToTop={handleReturnToTop}
             currentIndex={currentIndex}
             totalTasks={sortedOpenTasks.length}
           />

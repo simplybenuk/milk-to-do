@@ -2,21 +2,42 @@
 import { Task } from '@/types/task';
 import { TaskItem } from './TaskItem';
 import { Button } from '@/components/ui/button';
-import { Check, SkipForward } from 'lucide-react';
+import { Check, SkipForward, ArrowUp } from 'lucide-react';
 
 interface CurrentTaskProps {
   task: Task;
   onComplete: (id: string) => void;
   onSkip: () => void;
+  onReturnToTop: () => void;
   currentIndex: number;
   totalTasks: number;
 }
 
-export function CurrentTask({ task, onComplete, onSkip, currentIndex, totalTasks }: CurrentTaskProps) {
+export function CurrentTask({ 
+  task, 
+  onComplete, 
+  onSkip, 
+  onReturnToTop,
+  currentIndex, 
+  totalTasks 
+}: CurrentTaskProps) {
+  const showReturnButton = currentIndex > 0;
+
   return (
     <div className="w-full max-w-xl animate-fade-in">
       <div className="text-center mb-4 text-sm text-milk-600">
         Task {currentIndex + 1} of {totalTasks}
+        {showReturnButton && (
+          <Button
+            onClick={onReturnToTop}
+            variant="outline"
+            size="sm"
+            className="ml-2"
+          >
+            <ArrowUp className="mr-2 h-4 w-4" />
+            Return to Top Priority
+          </Button>
+        )}
       </div>
       <TaskItem
         key={task.id}
