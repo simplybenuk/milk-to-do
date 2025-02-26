@@ -36,7 +36,9 @@ export type Database = {
           closed_status:
             | Database["public"]["Enums"]["closed_status_reason"]
             | null
+          completed_at: string | null
           created_at: string
+          expired_at: string | null
           expiry_date: string
           id: string
           owner_id: string
@@ -53,7 +55,9 @@ export type Database = {
           closed_status?:
             | Database["public"]["Enums"]["closed_status_reason"]
             | null
+          completed_at?: string | null
           created_at?: string
+          expired_at?: string | null
           expiry_date?: string
           id?: string
           owner_id: string
@@ -70,7 +74,9 @@ export type Database = {
           closed_status?:
             | Database["public"]["Enums"]["closed_status_reason"]
             | null
+          completed_at?: string | null
           created_at?: string
+          expired_at?: string | null
           expiry_date?: string
           id?: string
           owner_id?: string

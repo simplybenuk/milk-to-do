@@ -10,6 +10,8 @@ export interface Task {
   priority: Priority;
   created_at: Date;
   expiry_date: Date;
+  completed_at?: Date;
+  expired_at?: Date;
   status: TaskStatus;
   closed_status?: ClosedStatusReason;
   parent_id?: string;

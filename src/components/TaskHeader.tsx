@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { List, Check, CheckSquare, AlertTriangle, LogOut } from 'lucide-react';
+import { List, Check, CheckSquare, AlertTriangle, LogOut, BarChart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface TaskHeaderProps {
-  currentView: 'main' | 'all' | 'completed' | 'expired';
-  onViewChange: (view: 'main' | 'all' | 'completed' | 'expired') => void;
+  currentView: 'main' | 'all' | 'completed' | 'expired' | 'stats';
+  onViewChange: (view: 'main' | 'all' | 'completed' | 'expired' | 'stats') => void;
 }
 
 export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
@@ -49,6 +49,10 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
               <AlertTriangle className="mr-2 h-4 w-4" />
               Expired
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onViewChange('stats')}>
+              <BarChart className="mr-2 h-4 w-4" />
+              Statistics
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout
@@ -60,10 +64,12 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
         Welcome to Milk
       </div>
       <h1 className="text-4xl font-bold text-milk-900 mb-2">
-        {currentView === 'main' ? 'Your Top Priority' : 'Task Overview'}
+        {currentView === 'main' ? 'Your Top Priority' : 
+         currentView === 'stats' ? 'Task Statistics' : 'Task Overview'}
       </h1>
       <p className="text-milk-600">
-        {currentView === 'main' ? 'Focus on what matters most right now' : 'Review your tasks'}
+        {currentView === 'main' ? 'Focus on what matters most right now' : 
+         currentView === 'stats' ? 'Track your progress and task completion' : 'Review your tasks'}
       </p>
     </header>
   );

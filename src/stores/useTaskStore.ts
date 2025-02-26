@@ -13,6 +13,11 @@ interface TaskStore {
   updateTaskPriority: (id: string, priority: Priority) => Promise<void>;
   incrementSkipCount: (id: string) => Promise<void>;
   getTasksByPriority: () => Task[];
+  getTaskStats: () => { 
+    completedLastWeek: Task[],
+    completedLastMonth: Task[],
+    expired: Task[]
+  };
 }
 
 const useTaskStore = create<TaskStore>((set, get) => ({
@@ -96,6 +101,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
         .update({
           status: 'closed',
           closed_status: 'complete',
+          completed_at: new Date().toISOString(),
         })
         .eq('id', id);
 
@@ -104,7 +110,12 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id
-            ? { ...task, status: 'closed', closed_status: 'complete' }
+            ? { 
+                ...task, 
+                status: 'closed', 
+                closed_status: 'complete',
+                completed_at: new Date()
+              }
             : task
         ),
       }));
@@ -168,6 +179,27 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       if (a.status !== b.status) return a.status === 'closed' ? 1 : -1;
       return b.priority_score - a.priority_score;
     });
+  },
+
+  getTaskStats: () => {
+    const { tasks } = get();
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    return {
+      completedLastWeek: tasks.filter(task => 
+        task.completed_at && 
+        task.completed_at >= oneWeekAgo
+      ),
+      completedLastMonth: tasks.filter(task => 
+        task.completed_at && 
+        task.completed_at >= oneMonthAgo
+      ),
+      expired: tasks.filter(task => 
+        task.expired_at !== null
+      ),
+    };
   },
 }));
 

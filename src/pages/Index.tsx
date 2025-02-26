@@ -8,12 +8,13 @@ import { ExpiredTasksList } from '@/components/ExpiredTasksList';
 import { PriorityDialog } from '@/components/PriorityDialog';
 import { TaskHeader } from '@/components/TaskHeader';
 import { CurrentTask } from '@/components/CurrentTask';
+import { TaskStats } from '@/components/TaskStats';
 
 const Index = () => {
   const { tasks, completeTask, getTasksByPriority, updateTaskPriority, fetchTasks } = useTaskStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showPriorityDialog, setShowPriorityDialog] = useState(false);
-  const [currentView, setCurrentView] = useState<'main' | 'all' | 'completed' | 'expired'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'all' | 'completed' | 'expired' | 'stats'>('main');
   const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
   const currentTask = sortedOpenTasks[currentIndex];
   const { toast } = useToast();
@@ -103,6 +104,8 @@ const Index = () => {
             <ExpiredTasksList />
           </>
         );
+      case 'stats':
+        return <TaskStats />;
       default:
         return sortedOpenTasks.length > 0 ? (
           <CurrentTask
