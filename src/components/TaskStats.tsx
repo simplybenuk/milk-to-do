@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import {
   Card,
@@ -12,7 +12,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 
 export function TaskStats() {
   const { tasks, fetchTasks } = useTaskStore();
-  const stats = useTaskStore(state => state.getTaskStats());
+  
+  const stats = useMemo(() => useTaskStore.getState().getTaskStats(), [tasks]);
 
   useEffect(() => {
     fetchTasks();
@@ -30,6 +31,22 @@ export function TaskStats() {
       expired: stats.expired.filter(t => t.expired_at && t.expired_at >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
     },
   ], [stats]);
+
+  if (!tasks.length) {
+    return (
+      <div className="space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Task Completion Overview</CardTitle>
+            <CardDescription>No tasks available yet</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center text-gray-500">Start adding tasks to see your statistics</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
