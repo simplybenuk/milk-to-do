@@ -35,7 +35,7 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onViewChange('main')}>
               <Check className="mr-2 h-4 w-4" />
-              Current Task
+              Focus
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onViewChange('all')}>
               <List className="mr-2 h-4 w-4" />
