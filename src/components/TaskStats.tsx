@@ -19,18 +19,30 @@ export function TaskStats() {
     fetchTasks();
   }, [fetchTasks]);
 
-  const chartData = useMemo(() => [
-    {
-      name: 'Last Week',
-      completed: stats.completedLastWeek.length,
-      expired: stats.expired.filter(t => t.expired_at && t.expired_at >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length,
-    },
-    {
-      name: 'Last Month',
-      completed: stats.completedLastMonth.length,
-      expired: stats.expired.filter(t => t.expired_at && t.expired_at >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
-    },
-  ], [stats]);
+  const chartData = useMemo(() => {
+    const lastWeekExpired = stats.expired.filter(t => 
+      t.expired_at && 
+      t.expired_at >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    ).length;
+    
+    const lastMonthExpired = stats.expired.filter(t => 
+      t.expired_at && 
+      t.expired_at >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    ).length;
+
+    return [
+      {
+        name: 'Last Week',
+        completed: stats.completedLastWeek.length,
+        expired: lastWeekExpired,
+      },
+      {
+        name: 'Last Month',
+        completed: stats.completedLastMonth.length,
+        expired: lastMonthExpired,
+      },
+    ];
+  }, [stats]);
 
   if (!tasks.length) {
     return (
