@@ -34,7 +34,14 @@ export function TaskStats() {
     // Create an array of the last X days
     for (let i = daysToShow - 1; i >= 0; i--) {
       const date = subDays(now, i);
-      const dateStr = format(date, 'MMM dd');
+      
+      // Format date based on timeRange
+      // For week view: day of week (Mon, Tue, etc.)
+      // For month view: day/month (01/05, etc.)
+      const dateStr = timeRange === 'week' 
+        ? format(date, 'EEE') // Mon, Tue, Wed, etc.
+        : format(date, 'dd/MM'); // 01/05, 02/05, etc.
+        
       const startOfDay = new Date(date.setHours(0, 0, 0, 0));
       const endOfDay = new Date(date.setHours(23, 59, 59, 999));
 
@@ -126,7 +133,7 @@ export function TaskStats() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyChartData}>
                 <XAxis dataKey="date" />
-                <YAxis />
+                <YAxis allowDecimals={false} /> {/* Only show whole numbers */}
                 <Tooltip />
                 <Bar dataKey="completed" fill="#22c55e" name="Completed" />
                 <Bar dataKey="expired" fill="#ef4444" name="Expired" />
@@ -146,7 +153,7 @@ export function TaskStats() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={summaryChartData}>
                 <XAxis dataKey="name" />
-                <YAxis />
+                <YAxis allowDecimals={false} /> {/* Only show whole numbers */}
                 <Tooltip />
                 <Bar dataKey="completed" fill="#22c55e" name="Completed" />
                 <Bar dataKey="expired" fill="#ef4444" name="Expired" />
