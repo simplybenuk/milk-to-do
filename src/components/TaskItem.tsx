@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ExternalLink } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -32,6 +32,42 @@ export function TaskItem({ task, onDelete }: TaskItemProps) {
     high: "bg-red-100 text-red-800",
   };
 
+  // Function to detect URLs in text and convert them to clickable links
+  const renderTextWithLinks = (text: string) => {
+    // Regular expression to match URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    
+    if (!urlRegex.test(text)) {
+      return text;
+    }
+    
+    // Split the text by URLs and create an array of elements
+    const parts = text.split(urlRegex);
+    const matches = text.match(urlRegex) || [];
+    
+    return parts.map((part, index) => {
+      // Current part is not a URL
+      if (index % 2 === 0) {
+        return part;
+      }
+      
+      // Current part is a URL, replace with anchor tag
+      const url = matches[Math.floor(index / 2)];
+      return (
+        <a 
+          key={index} 
+          href={url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+        >
+          {url}
+          <ExternalLink className="h-3 w-3 inline" />
+        </a>
+      );
+    });
+  };
+
   return (
     <>
       <div
@@ -44,7 +80,7 @@ export function TaskItem({ task, onDelete }: TaskItemProps) {
       >
         <div className="flex-1 min-w-0 overflow-hidden overflow-ellipsis">
           <h3 className="text-lg sm:text-xl font-medium text-milk-900 mb-2 sm:mb-4 break-words">
-            {task.title}
+            {renderTextWithLinks(task.title)}
           </h3>
           <div className="flex flex-col gap-2">
             <span className={cn(
