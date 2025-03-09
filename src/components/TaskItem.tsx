@@ -36,14 +36,14 @@ export function TaskItem({ task, onDelete }: TaskItemProps) {
     <>
       <div
         className={cn(
-          "relative flex items-start gap-4 rounded-lg border p-6 shadow-lg transition-all bg-white",
+          "relative flex items-start gap-4 rounded-lg border p-6 shadow-lg transition-all bg-white max-w-full",
           "hover:shadow-xl animate-fade-in",
           isCompleting && "animate-task-complete",
           task.status === 'closed' && "opacity-50"
         )}
       >
-        <div className="flex-1 min-w-0">
-          <h3 className="text-xl font-medium text-milk-900 mb-4">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <h3 className="text-xl font-medium text-milk-900 mb-4 break-words">
             {task.title}
           </h3>
           <div className="flex flex-col gap-2">
@@ -61,7 +61,7 @@ export function TaskItem({ task, onDelete }: TaskItemProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="absolute bottom-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50"
+          className="absolute bottom-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
           onClick={() => setShowDeleteDialog(true)}
         >
           <Trash2 className="h-5 w-5" />
