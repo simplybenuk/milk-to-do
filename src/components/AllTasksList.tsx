@@ -5,7 +5,7 @@ import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 
 export function AllTasksList() {
-  const { tasks, deleteTask } = useTaskStore();
+  const { tasks, deleteTask, completeTask } = useTaskStore();
   const { toast } = useToast();
   const openTasks = tasks.filter(task => task.status === 'open');
   
@@ -14,6 +14,14 @@ export function AllTasksList() {
     toast({
       title: "Task deleted",
       description: "The task has been permanently removed.",
+    });
+  };
+
+  const handleComplete = async (taskId: string) => {
+    await completeTask(taskId);
+    toast({
+      title: "Task completed",
+      description: "Great job! The task has been marked as complete.",
     });
   };
 
@@ -26,8 +34,9 @@ export function AllTasksList() {
           <TaskItem
             key={task.id}
             task={task}
-            onComplete={() => {}}
+            onComplete={handleComplete}
             onDelete={handleDelete}
+            showCompleteButton={true}
           />
         ))
       )}

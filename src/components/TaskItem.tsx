@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Trash2, ExternalLink } from 'lucide-react';
+import { Trash2, ExternalLink, CheckCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -20,9 +19,10 @@ interface TaskItemProps {
   task: Task;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  showCompleteButton?: boolean;
 }
 
-export function TaskItem({ task, onDelete }: TaskItemProps) {
+export function TaskItem({ task, onComplete, onDelete, showCompleteButton = false }: TaskItemProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -68,6 +68,14 @@ export function TaskItem({ task, onDelete }: TaskItemProps) {
     });
   };
 
+  const handleComplete = () => {
+    setIsCompleting(true);
+    // Add slight delay to allow animation to play
+    setTimeout(() => {
+      onComplete(task.id);
+    }, 300);
+  };
+
   return (
     <>
       <div
@@ -94,14 +102,29 @@ export function TaskItem({ task, onDelete }: TaskItemProps) {
             </span>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute bottom-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
-          onClick={() => setShowDeleteDialog(true)}
-        >
-          <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
-        </Button>
+        
+        <div className="absolute bottom-4 right-4 flex gap-2">
+          {showCompleteButton && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-green-500 hover:text-green-700 hover:bg-green-50 shrink-0"
+              onClick={handleComplete}
+              title="Complete task"
+            >
+              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
+            onClick={() => setShowDeleteDialog(true)}
+            title="Delete task"
+          >
+            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
+        </div>
       </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
