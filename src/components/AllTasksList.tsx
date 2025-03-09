@@ -18,15 +18,19 @@ export function AllTasksList() {
   };
 
   return (
-    <div className="space-y-4">
-      {openTasks.map((task) => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          onComplete={() => {}}
-          onDelete={handleDelete}
-        />
-      ))}
+    <div className="w-full max-w-full space-y-4 px-2">
+      {openTasks.length === 0 ? (
+        <p className="text-center text-milk-500">No tasks available</p>
+      ) : (
+        openTasks.map((task) => (
+          <TaskItem
+            key={task.id}
+            task={task}
+            onComplete={() => {}}
+            onDelete={handleDelete}
+          />
+        ))
+      )}
     </div>
   );
 }

@@ -36,24 +36,24 @@ export function TaskItem({ task, onDelete }: TaskItemProps) {
     <>
       <div
         className={cn(
-          "relative flex items-start gap-4 rounded-lg border p-6 shadow-lg transition-all bg-white max-w-full",
+          "relative flex items-start gap-4 rounded-lg border p-4 sm:p-6 shadow-lg transition-all bg-white w-full max-w-full",
           "hover:shadow-xl animate-fade-in",
           isCompleting && "animate-task-complete",
           task.status === 'closed' && "opacity-50"
         )}
       >
-        <div className="flex-1 min-w-0 overflow-hidden">
-          <h3 className="text-xl font-medium text-milk-900 mb-4 break-words">
+        <div className="flex-1 min-w-0 overflow-hidden overflow-ellipsis">
+          <h3 className="text-lg sm:text-xl font-medium text-milk-900 mb-2 sm:mb-4 break-words">
             {task.title}
           </h3>
           <div className="flex flex-col gap-2">
             <span className={cn(
-              "inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium w-fit",
+              "inline-flex items-center rounded-full px-2.5 py-1 text-xs sm:text-sm font-medium w-fit",
               priorityColors[task.priority]
             )}>
               {task.priority}
             </span>
-            <span className="text-sm text-milk-500">
+            <span className="text-xs sm:text-sm text-milk-500">
               Expires: {format(task.expiry_date, "d MMM HH:mm")}
             </span>
           </div>
@@ -64,7 +64,7 @@ export function TaskItem({ task, onDelete }: TaskItemProps) {
           className="absolute bottom-4 right-4 text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
           onClick={() => setShowDeleteDialog(true)}
         >
-          <Trash2 className="h-5 w-5" />
+          <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
       </div>
 
