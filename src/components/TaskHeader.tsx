@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 interface TaskHeaderProps {
@@ -29,9 +30,6 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
   return (
     <header className="mb-8 text-center relative">
       <div className="absolute right-0 top-0 flex">
-        <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
-          <Settings className="h-5 w-5" />
-        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -58,6 +56,11 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
             <DropdownMenuItem onClick={() => onViewChange('stats')}>
               <BarChart className="mr-2 h-4 w-4" />
               Statistics
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
