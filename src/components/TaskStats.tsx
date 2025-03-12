@@ -166,11 +166,11 @@ export function TaskStats() {
               <p className="mt-2 text-3xl font-bold text-green-900">{stats.completedLastWeek.length}</p>
             </div>
             <div className="rounded-lg bg-blue-50 p-4">
-              <p className="text-sm font-medium text-blue-600">Completed Last Month</p>
-              <p className="mt-2 text-3xl font-bold text-blue-900">{stats.completedLastMonth.length}</p>
+              <p className="text-sm font-medium text-blue-600">Completed Total</p>
+              <p className="mt-2 text-3xl font-bold text-blue-900">{tasks.filter(t => t.completed_at).length}</p>
             </div>
             <div className="rounded-lg bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-600">Total Expired</p>
+              <p className="text-sm font-medium text-red-600">Expired Total</p>
               <p className="mt-2 text-3xl font-bold text-red-900">{stats.expired.length}</p>
             </div>
           </div>
