@@ -4,7 +4,7 @@ import App from './App.tsx'
 import './index.css'
 import { registerSW } from 'virtual:pwa-register'
 
-// Register service worker for PWA
+// Register service worker for PWA with proper error handling
 const updateSW = registerSW({
   onNeedRefresh() {
     // Prompt user to update when new version is available
@@ -15,6 +15,12 @@ const updateSW = registerSW({
   onOfflineReady() {
     console.log('App ready to work offline');
   },
+  onRegistered(registration) {
+    console.log('Service worker registered successfully', registration);
+  },
+  onRegisterError(error) {
+    console.error('Service worker registration failed:', error);
+  }
 });
 
 createRoot(document.getElementById("root")!).render(<App />);
