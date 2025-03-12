@@ -26,7 +26,7 @@ export const calculateTaskStats = (tasks: Task[]) => {
       task.completed_at >= oneMonthAgo
     ),
     expired: tasks.filter(task => 
-      task.expired_at !== null
+      task.closed_status === 'expired' && task.expired_at !== null
     ),
   };
 };
