@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'pwa-192x192.png', 'pwa-512x512.png'],
+      includeAssets: ['favicon.ico', 'pwa-192x192.png', 'pwa-512x512.png', 'milk_logo192.png', 'milk_logo512.png'],
       manifest: {
         name: 'Milk - The Expiring To-Do App',
         short_name: 'Milk',
@@ -35,6 +35,26 @@ export default defineConfig(({ mode }) => ({
             purpose: 'any maskable'
           }
         ]
+      },
+      workbox: {
+        runtimeCaching: [{
+          urlPattern: /^https:\/\/vtkjlrftizocaqhbsyts\.supabase\.co/,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 // 1 day
+            },
+            networkTimeoutSeconds: 10
+          }
+        }],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg}'],
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
+        navigateFallback: 'index.html',
       }
     })
   ].filter(Boolean),

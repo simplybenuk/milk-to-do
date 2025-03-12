@@ -1,8 +1,10 @@
 
 import { Button } from '@/components/ui/button';
-import { List, Check, CheckSquare, AlertTriangle, LogOut, BarChart } from 'lucide-react';
+import { List, Check, CheckSquare, AlertTriangle, LogOut, BarChart, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { SettingsDialog } from './SettingsDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +19,7 @@ interface TaskHeaderProps {
 
 export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
   const navigate = useNavigate();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -25,7 +28,10 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
 
   return (
     <header className="mb-8 text-center relative">
-      <div className="absolute right-0 top-0">
+      <div className="absolute right-0 top-0 flex">
+        <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
+          <Settings className="h-5 w-5" />
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -71,6 +77,8 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
         {currentView === 'main' ? 'Focus on what matters most right now' : 
          currentView === 'stats' ? 'Track your progress and task completion' : 'Review your tasks'}
       </p>
+      
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </header>
   );
 }
