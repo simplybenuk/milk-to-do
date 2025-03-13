@@ -17,6 +17,17 @@ const updateSW = registerSW({
   },
   onRegistered(registration) {
     console.log('Service worker registered successfully', registration);
+    
+    // Check if we need to schedule a notification
+    const scheduledTime = localStorage.getItem('scheduledNotificationTime');
+    if (scheduledTime && localStorage.getItem('notificationsEnabled') === 'true' && registration) {
+      const [hours, minutes] = scheduledTime.split(':').map(Number);
+      registration.active?.postMessage({
+        type: 'SCHEDULE_NOTIFICATION',
+        payload: { hour: hours, minute: minutes }
+      });
+      console.log(`Restored scheduled notification for ${scheduledTime}`);
+    }
   },
   onRegisterError(error) {
     console.error('Service worker registration failed:', error);

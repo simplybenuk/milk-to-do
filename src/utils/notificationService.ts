@@ -36,11 +36,48 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
   }
 };
 
-// Send a reminder notification to the user about expiring tasks
+// Send a reminder notification to the user about tasks
 export const sendTaskReminder = () => {
-  return sendNotification('Milk: Task Reminder', {
-    body: 'You have tasks that need your attention.',
+  return sendNotification('Milk: Daily Task Reminder', {
+    body: 'Time to check your tasks for today!',
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
   });
+};
+
+// Schedule a daily notification at a specific time
+export const scheduleDailyNotification = (hour: number, minute: number) => {
+  if (!areNotificationsEnabled()) return false;
+  
+  const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  localStorage.setItem('scheduledNotificationTime', timeString);
+  
+  // Register with service worker if available
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SCHEDULE_NOTIFICATION',
+      payload: { hour, minute }
+    });
+  }
+  
+  return true;
+};
+
+// Cancel scheduled notifications
+export const cancelScheduledNotifications = () => {
+  localStorage.removeItem('scheduledNotificationTime');
+  
+  // Notify service worker if available
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'CANCEL_NOTIFICATIONS'
+    });
+  }
+  
+  return true;
+};
+
+// Get the currently scheduled notification time (if any)
+export const getScheduledNotificationTime = (): string | null => {
+  return localStorage.getItem('scheduledNotificationTime');
 };
