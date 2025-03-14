@@ -9,17 +9,17 @@ interface ExtendedNotificationOptions extends NotificationOptions {
 // Send a notification to the user
 export const sendNotification = (title: string, options?: ExtendedNotificationOptions) => {
   if (!isNotificationSupported()) {
-    console.log('Notifications not supported');
+    console.error('Notifications not supported in this browser');
     return false;
   }
   
   if (!areNotificationsEnabled()) {
-    console.log('Notifications not enabled by user');
+    console.error('Notifications not enabled by user in app settings');
     return false;
   }
   
   if (!hasNotificationPermission()) {
-    console.log('Notification permission not granted');
+    console.error('Notification permission not granted by user');
     return false;
   }
 
@@ -56,6 +56,7 @@ export const sendNotification = (title: string, options?: ExtendedNotificationOp
     
     // Handle notification click
     notification.onclick = function() {
+      console.log('Notification clicked, focusing window');
       window.focus();
       notification.close();
     };
@@ -97,14 +98,34 @@ export const triggerTestNotification = () => {
     return false;
   }
   
+  // Try sending both ways for maximum reliability
+  let successSW = false;
+  let successDirect = false;
+  
+  // 1. Try service worker first
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    try {
+      console.log('Sending test notification through service worker');
+      navigator.serviceWorker.controller.postMessage({
+        type: 'TRIGGER_TEST_NOTIFICATION'
+      });
+      successSW = true;
+      console.log('Test notification request sent to service worker');
+    } catch (error) {
+      console.error('Error sending test notification via service worker:', error);
+    }
+  } else {
+    console.warn('No active service worker found for sending notification');
+  }
+  
+  // 2. Also try direct notification for immediate feedback
   try {
-    // Try direct notification first for immediate feedback
     console.log('Creating a direct notification for testing');
     const notification = new Notification('Milk: Test Notification', {
-      body: 'This is a test notification. If you can see this, notifications are working!',
+      body: 'This is a test notification sent directly. If you can see this, direct notifications are working!',
       icon: '/milk_logo192.png',
       badge: '/milk_logo192.png',
-      tag: 'test-notification',
+      tag: 'test-notification-direct',
       // @ts-ignore - vibrate is valid for notifications but not in TypeScript types
       vibrate: [200, 100, 200], // Add vibration pattern for mobile
       requireInteraction: true, // Make notification stay until interaction
@@ -114,35 +135,18 @@ export const triggerTestNotification = () => {
     });
     
     notification.onclick = function() {
+      console.log('Direct notification clicked, focusing window');
       window.focus();
       notification.close();
     };
     
+    successDirect = true;
     console.log('Test notification sent successfully via direct API');
-    
-    // Also try through service worker for completeness
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      console.log('Also triggering test notification through service worker');
-      navigator.serviceWorker.controller.postMessage({
-        type: 'TRIGGER_TEST_NOTIFICATION'
-      });
-    }
-    
-    return true;
   } catch (error) {
     console.error('Error sending direct test notification:', error);
-    
-    // If direct notification failed, try through service worker as fallback
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      console.log('Falling back to service worker for test notification');
-      navigator.serviceWorker.controller.postMessage({
-        type: 'TRIGGER_TEST_NOTIFICATION'
-      });
-      return true;
-    }
-    
-    return false;
   }
+  
+  return successSW || successDirect; // Return true if either method worked
 };
 
 // Import required functions from notification core

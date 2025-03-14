@@ -1,4 +1,3 @@
-
 /**
  * Milk App Service Worker
  * This service worker handles caching, offline support, and push notifications
@@ -40,9 +39,11 @@ function handleInstall(event) {
         console.log('[Service Worker] Caching app shell');
         return cache.addAll(urlsToCache);
       })
+      .then(() => {
+        console.log('[Service Worker] Skip waiting on install');
+        return self.skipWaiting();
+      })
   );
-  // Ensure the service worker activates right away
-  self.skipWaiting();
 }
 
 /**
@@ -68,6 +69,12 @@ function handleActivate(event) {
       });
     })
   );
+  
+  // Send a test notification after activation
+  setTimeout(() => {
+    console.log('[Service Worker] Sending test notification after activation');
+    sendTestNotification();
+  }, 5000);
 }
 
 /**
@@ -156,19 +163,19 @@ function scheduleNotification(hour, minute) {
   // Start the scheduling process
   scheduleNextNotification();
   
-  // For debugging - send a test notification in 10 seconds
+  // For debugging - send a test notification in 5 seconds
   setTimeout(() => {
-    console.log('[Service Worker] Sending a quick test notification (10 seconds after scheduling)');
-    sendDailyReminder('[Test] Scheduled reminder system active');
-  }, 10000);
+    console.log('[Service Worker] Sending immediate test notification (5 seconds after scheduling)');
+    sendDailyReminder('[Test] ');
+  }, 5000);
 }
 
 /**
  * Sends the daily reminder notification
  */
-function sendDailyReminder(debugInfo = '') {
+function sendDailyReminder(debugPrefix = '') {
   console.log('[Service Worker] Sending daily reminder notification');
-  return self.registration.showNotification(`Milk: Daily Task Reminder ${debugInfo}`.trim(), {
+  return self.registration.showNotification(`${debugPrefix}Milk: Daily Task Reminder`, {
     body: 'Time to check your tasks for today!',
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
@@ -204,6 +211,8 @@ function cancelScheduledNotifications() {
  * Regular notifications directly from message events
  */
 function showNotification(title, options) {
+  console.log('[Service Worker] Showing notification:', title, options);
+  
   return self.registration.showNotification(title, {
     ...options,
     requireInteraction: true,
@@ -220,12 +229,6 @@ function showNotification(title, options) {
 }
 
 /**
- * ===================================================
- * EVENT HANDLERS
- * ===================================================
- */
-
-/**
  * Handles notification click events - focuses or opens the app
  */
 function handleNotificationClick(event) {
@@ -236,7 +239,7 @@ function handleNotificationClick(event) {
     clients.matchAll({ type: 'window' }).then((clientList) => {
       // If a window is already open, focus it
       for (const client of clientList) {
-        if (client.url.includes('/') && 'focus' in client) {
+        if ('focus' in client) {
           return client.focus();
         }
       }
@@ -304,7 +307,7 @@ function handleNotificationMessages(data) {
     if (data.payload) {
       const { title, options } = data.payload;
       console.log('[Service Worker] Showing notification:', title, options);
-      showNotification(title, options);
+      showNotification(title, options || {});
       return true;
     }
   }
@@ -342,3 +345,9 @@ self.addEventListener('push', handlePush);
 
 // Log service worker initialization
 console.log('[Service Worker] Service worker initialized and event listeners registered');
+
+// Send a test notification 10 seconds after initialization
+setTimeout(() => {
+  console.log('[Service Worker] Sending initial test notification');
+  sendTestNotification();
+}, 10000);

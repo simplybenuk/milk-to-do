@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -8,45 +9,39 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { 
   isNotificationSupported, 
-  areNotificationsEnabled, 
   scheduleDailyNotification,
   cancelScheduledNotifications,
   getScheduledNotificationTime,
-  sendTaskReminder,
-  requestNotificationPermission,
-  triggerTestNotification,
-  hasNotificationPermission
 } from '@/utils/notifications';
+import { useNotifications } from '@/hooks/use-notifications';
 
 const Settings = () => {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'default'>('default');
-  const [isSupported, setIsSupported] = useState(false);
+  const { 
+    isSupported, 
+    isEnabled: notificationsEnabled, 
+    permission: notificationPermission,
+    isSending,
+    enableNotifications,
+    disableNotifications,
+    sendTest
+  } = useNotifications();
+  
   const [dailyReminder, setDailyReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState('09:00');
-  const [isSendingTest, setIsSendingTest] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     console.log('Settings page mounted, initializing state');
-    const supported = isNotificationSupported();
-    setIsSupported(supported);
-
-    if (supported) {
-      setNotificationPermission(Notification.permission);
-      
-      const savedPreference = areNotificationsEnabled();
-      setNotificationsEnabled(savedPreference);
-      
-      const savedScheduledTime = getScheduledNotificationTime();
-      if (savedScheduledTime) {
-        setDailyReminder(true);
-        setReminderTime(savedScheduledTime);
-        console.log(`Loaded scheduled time: ${savedScheduledTime}`);
-      } else {
-        setDailyReminder(false);
-        console.log('No saved schedule time found');
-      }
+    
+    // Load scheduled notification time
+    const savedScheduledTime = getScheduledNotificationTime();
+    if (savedScheduledTime) {
+      setDailyReminder(true);
+      setReminderTime(savedScheduledTime);
+      console.log(`Loaded scheduled time: ${savedScheduledTime}`);
+    } else {
+      setDailyReminder(false);
+      console.log('No saved schedule time found');
     }
   }, []); 
 
@@ -54,36 +49,22 @@ const Settings = () => {
     if (!isSupported) return;
 
     if (!notificationsEnabled) {
-      if (notificationPermission !== 'granted') {
-        const permissionGranted = await requestNotificationPermission();
-        setNotificationPermission(permissionGranted ? 'granted' : 'denied');
-        
-        if (permissionGranted) {
-          setNotificationsEnabled(true);
-          localStorage.setItem('notificationsEnabled', 'true');
-          toast.success('Notifications enabled');
-          
-          setTimeout(() => {
-            console.log('Sending test notification after enabling');
-            sendTaskReminder();
-          }, 500);
-        } else {
-          toast.error('Notification permission denied. Please enable notifications in your browser settings.');
-        }
-      } else {
-        setNotificationsEnabled(true);
-        localStorage.setItem('notificationsEnabled', 'true');
+      const success = await enableNotifications();
+      
+      if (success) {
         toast.success('Notifications enabled');
         
+        // Attempt to send a confirmation notification
         setTimeout(() => {
           console.log('Sending test notification after enabling');
-          sendTaskReminder();
-        }, 500);
+          sendTest();
+        }, 1000);
+      } else {
+        toast.error('Failed to enable notifications. Please check browser settings.');
       }
     } else {
-      setNotificationsEnabled(false);
+      disableNotifications();
       setDailyReminder(false);
-      localStorage.setItem('notificationsEnabled', 'false');
       cancelScheduledNotifications();
       toast.success('Notifications disabled');
     }
@@ -121,28 +102,15 @@ const Settings = () => {
   };
 
   const handleTestNotification = () => {
-    console.log('Sending test notification from button click');
-    setIsSendingTest(true);
+    console.log('Requesting to send test notification');
     
-    // First, make sure permission is granted
-    if (notificationPermission !== 'granted') {
-      toast.error('Notification permission not granted');
-      setIsSendingTest(false);
-      return;
-    }
-    
-    // Then test if notification works
-    const success = triggerTestNotification();
+    const success = sendTest();
     
     if (success) {
-      toast.success('Test notification sent. Check your device notifications.');
-      console.log('Test notification successfully triggered');
+      toast.success('Test notification requested. Check your device for notifications.');
     } else {
-      toast.error('Failed to send test notification');
-      console.error('Failed to trigger test notification');
+      toast.error('Failed to request test notification. Check console for details.');
     }
-    
-    setIsSendingTest(false);
   };
 
   const getNotificationStatus = () => {
@@ -234,10 +202,10 @@ const Settings = () => {
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-2"
-                    disabled={isSendingTest || !hasNotificationPermission()}
+                    disabled={isSending || !notificationsEnabled || notificationPermission !== 'granted'}
                   >
                     <AlertCircle className="h-4 w-4" />
-                    {isSendingTest ? 'Sending...' : 'Send Test Notification'}
+                    {isSending ? 'Sending...' : 'Send Test Notification'}
                   </Button>
                   <p className="text-xs text-muted-foreground mt-2">
                     This will send a real notification to your device. If you don't see it, check your device's notification settings.
@@ -252,9 +220,16 @@ const Settings = () => {
               </p>
             )}
             {notificationPermission === 'denied' && (
-              <p className="text-sm text-red-500">
-                Notification permission denied. Please enable notifications in your browser settings.
-              </p>
+              <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+                <p className="font-semibold">Notification permission denied</p>
+                <p className="mt-1">You'll need to enable notifications in your browser settings:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Chrome: Site settings &gt; Notifications</li>
+                  <li>Firefox: Site permissions &gt; Notifications</li>
+                  <li>Safari: Preferences &gt; Websites &gt; Notifications</li>
+                  <li>Mobile: Check system notification settings for your browser</li>
+                </ul>
+              </div>
             )}
           </div>
         </div>
