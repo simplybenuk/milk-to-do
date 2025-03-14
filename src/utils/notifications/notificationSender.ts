@@ -34,8 +34,8 @@ export const sendNotification = (title: string, options?: ExtendedNotificationOp
           options: {
             ...options,
             // Ensure these fields are set for better compatibility
-            silent: false,
-            requireInteraction: true,
+            silent: options?.silent ?? false,
+            requireInteraction: options?.requireInteraction ?? true,
             // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
             timestamp: Date.now()
           }
@@ -48,8 +48,8 @@ export const sendNotification = (title: string, options?: ExtendedNotificationOp
     console.log('Sending notification directly (no service worker)');
     const notification = new Notification(title, {
       ...options,
-      silent: false,
-      requireInteraction: true,
+      silent: options?.silent ?? false,
+      requireInteraction: options?.requireInteraction ?? true,
       // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
       timestamp: Date.now()
     });
@@ -86,46 +86,63 @@ export const sendTaskReminder = () => {
 export const triggerTestNotification = () => {
   console.log('Attempting to trigger a test notification');
   
-  // Force notification regardless of the service worker 
-  if (isNotificationSupported() && hasNotificationPermission()) {
-    try {
-      console.log('Creating a direct notification for testing');
-      const notification = new Notification('Milk: Test Notification', {
-        body: 'This is a test notification. If you can see this, notifications are working!',
-        icon: '/milk_logo192.png',
-        badge: '/milk_logo192.png',
-        tag: 'test-notification',
-        // @ts-ignore - vibrate is valid for notifications but not in TypeScript types
-        vibrate: [200, 100, 200], // Add vibration pattern for mobile
-        requireInteraction: true, // Make notification stay until interaction
-        renotify: true, // Replace existing notification with same tag
-        // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
-        timestamp: Date.now()
-      });
-      
-      notification.onclick = function() {
-        window.focus();
-        notification.close();
-      };
-      
-      console.log('Test notification sent successfully via direct API');
-      return true;
-    } catch (error) {
-      console.error('Error sending direct test notification:', error);
-    }
+  // Check permissions first
+  if (!hasNotificationPermission()) {
+    console.error('Cannot send test notification: Permission not granted');
+    return false;
   }
   
-  // If direct notification failed or not possible, try through service worker
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    console.log('Triggering test notification through service worker');
-    navigator.serviceWorker.controller.postMessage({
-      type: 'TRIGGER_TEST_NOTIFICATION'
+  if (!areNotificationsEnabled()) {
+    console.error('Cannot send test notification: Notifications not enabled in app settings');
+    return false;
+  }
+  
+  try {
+    // Try direct notification first for immediate feedback
+    console.log('Creating a direct notification for testing');
+    const notification = new Notification('Milk: Test Notification', {
+      body: 'This is a test notification. If you can see this, notifications are working!',
+      icon: '/milk_logo192.png',
+      badge: '/milk_logo192.png',
+      tag: 'test-notification',
+      // @ts-ignore - vibrate is valid for notifications but not in TypeScript types
+      vibrate: [200, 100, 200], // Add vibration pattern for mobile
+      requireInteraction: true, // Make notification stay until interaction
+      renotify: true, // Replace existing notification with same tag
+      // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
+      timestamp: Date.now()
     });
+    
+    notification.onclick = function() {
+      window.focus();
+      notification.close();
+    };
+    
+    console.log('Test notification sent successfully via direct API');
+    
+    // Also try through service worker for completeness
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      console.log('Also triggering test notification through service worker');
+      navigator.serviceWorker.controller.postMessage({
+        type: 'TRIGGER_TEST_NOTIFICATION'
+      });
+    }
+    
     return true;
+  } catch (error) {
+    console.error('Error sending direct test notification:', error);
+    
+    // If direct notification failed, try through service worker as fallback
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      console.log('Falling back to service worker for test notification');
+      navigator.serviceWorker.controller.postMessage({
+        type: 'TRIGGER_TEST_NOTIFICATION'
+      });
+      return true;
+    }
+    
+    return false;
   }
-  
-  console.log('Unable to send test notification - no supported methods available');
-  return false;
 };
 
 // Import required functions from notification core
