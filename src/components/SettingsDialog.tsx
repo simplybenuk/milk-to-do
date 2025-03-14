@@ -20,7 +20,8 @@ import {
   scheduleDailyNotification,
   cancelScheduledNotifications,
   getScheduledNotificationTime,
-  sendTaskReminder
+  sendTaskReminder,
+  requestNotificationPermission
 } from '@/utils/notificationService';
 
 interface SettingsDialogProps {
@@ -35,24 +36,32 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [dailyReminder, setDailyReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState('09:00');
 
+  // Reset dialog state when opened
   useEffect(() => {
-    // Check if notifications are supported
-    const supported = 'Notification' in window;
-    setIsSupported(supported);
+    if (open) {
+      console.log('Settings dialog opened, refreshing state');
+      // Check if notifications are supported
+      const supported = isNotificationSupported();
+      setIsSupported(supported);
 
-    if (supported) {
-      // Get current permission status
-      setNotificationPermission(Notification.permission);
-      
-      // Get saved notification preference
-      const savedPreference = localStorage.getItem('notificationsEnabled');
-      setNotificationsEnabled(savedPreference === 'true');
-      
-      // Get saved scheduled notification time
-      const savedScheduledTime = getScheduledNotificationTime();
-      if (savedScheduledTime) {
-        setDailyReminder(true);
-        setReminderTime(savedScheduledTime);
+      if (supported) {
+        // Get current permission status
+        setNotificationPermission(Notification.permission);
+        
+        // Get saved notification preference
+        const savedPreference = areNotificationsEnabled();
+        setNotificationsEnabled(savedPreference);
+        
+        // Get saved scheduled notification time
+        const savedScheduledTime = getScheduledNotificationTime();
+        if (savedScheduledTime) {
+          setDailyReminder(true);
+          setReminderTime(savedScheduledTime);
+          console.log(`Loaded scheduled time: ${savedScheduledTime}`);
+        } else {
+          setDailyReminder(false);
+          console.log('No saved schedule time found');
+        }
       }
     }
   }, [open]); // Re-run when dialog opens
@@ -64,17 +73,20 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       // User wants to enable notifications
       if (notificationPermission !== 'granted') {
         // Request permission
-        const permission = await Notification.requestPermission();
-        setNotificationPermission(permission);
+        const permissionGranted = await requestNotificationPermission();
+        setNotificationPermission(permissionGranted ? 'granted' : 'denied');
         
-        if (permission === 'granted') {
+        if (permissionGranted) {
           // Permission granted, enable notifications
           setNotificationsEnabled(true);
           localStorage.setItem('notificationsEnabled', 'true');
           toast.success('Notifications enabled');
           
           // Test notification
-          sendTaskReminder();
+          setTimeout(() => {
+            console.log('Sending test notification after enabling');
+            sendTaskReminder();
+          }, 500);
         } else {
           // Permission denied
           toast.error('Notification permission denied. Please enable notifications in your browser settings.');
@@ -86,7 +98,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         toast.success('Notifications enabled');
         
         // Test notification
-        sendTaskReminder();
+        setTimeout(() => {
+          console.log('Sending test notification after enabling');
+          sendTaskReminder();
+        }, 500);
       }
     } else {
       // User wants to disable notifications
@@ -104,6 +119,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     if (!dailyReminder) {
       // Enable daily reminder
       const [hours, minutes] = reminderTime.split(':').map(Number);
+      console.log(`Scheduling notification for ${hours}:${minutes}`);
+      
       if (scheduleDailyNotification(hours, minutes)) {
         setDailyReminder(true);
         toast.success(`Daily reminder set for ${reminderTime}`);
@@ -118,13 +135,15 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   const handleReminderTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setReminderTime(e.target.value);
+    const newTime = e.target.value;
+    setReminderTime(newTime);
     
     if (dailyReminder) {
       // Update scheduled time
-      const [hours, minutes] = e.target.value.split(':').map(Number);
+      const [hours, minutes] = newTime.split(':').map(Number);
+      console.log(`Updating scheduled time to ${hours}:${minutes}`);
       scheduleDailyNotification(hours, minutes);
-      toast.success(`Daily reminder updated to ${e.target.value}`);
+      toast.success(`Daily reminder updated to ${newTime}`);
     }
   };
 

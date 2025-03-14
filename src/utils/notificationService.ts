@@ -16,10 +16,15 @@ export const hasNotificationPermission = () => {
 
 // Request notification permission
 export const requestNotificationPermission = async () => {
-  if (!isNotificationSupported()) return false;
+  if (!isNotificationSupported()) {
+    console.log('Notifications not supported in this browser');
+    return false;
+  }
   
   try {
+    console.log('Requesting notification permission...');
     const permission = await Notification.requestPermission();
+    console.log(`Permission result: ${permission}`);
     return permission === 'granted';
   } catch (error) {
     console.error('Error requesting notification permission:', error);
@@ -45,15 +50,21 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
   }
 
   try {
-    // Try to send through service worker first
+    // Try to send through service worker first if available
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      console.log('Sending notification through service worker');
       navigator.serviceWorker.controller.postMessage({
-        type: 'TRIGGER_TEST_NOTIFICATION'
+        type: 'SEND_NOTIFICATION',
+        payload: {
+          title,
+          options
+        }
       });
-      console.log('Requested service worker to send notification');
       return true;
     }
-    // Fallback to the Notification API
+    
+    // Fallback to the Notification API directly
+    console.log('Sending notification directly (no service worker)');
     const notification = new Notification(title, options);
     
     // Handle notification click
@@ -62,7 +73,7 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
       notification.close();
     };
     
-    console.log('Notification sent successfully');
+    console.log('Notification sent successfully via direct API');
     return true;
   } catch (error) {
     console.error('Error sending notification:', error);
@@ -72,10 +83,12 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
 
 // Send a reminder notification to the user about tasks
 export const sendTaskReminder = () => {
+  console.log('Attempting to send task reminder notification');
   return sendNotification('Milk: Daily Task Reminder', {
     body: 'Time to check your tasks for today!',
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
+    tag: 'task-reminder',
   });
 };
 
@@ -91,21 +104,50 @@ export const scheduleDailyNotification = (hour: number, minute: number) => {
   localStorage.setItem('scheduledNotificationTime', timeString);
   
   // Register with service worker if available
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: 'SCHEDULE_NOTIFICATION',
-      payload: { hour, minute }
+  if ('serviceWorker' in navigator) {
+    console.log('Checking for service worker to schedule notification');
+    
+    const scheduleWithServiceWorker = () => {
+      if (navigator.serviceWorker.controller) {
+        console.log('Service worker controller found, sending schedule message');
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          payload: { hour, minute }
+        });
+        return true;
+      }
+      console.log('No service worker controller available');
+      return false;
+    };
+    
+    // Try immediately
+    if (scheduleWithServiceWorker()) {
+      return true;
+    }
+    
+    // If no controller immediately available, wait for it to activate
+    console.log('No active service worker, waiting for one to become active');
+    navigator.serviceWorker.ready.then((registration) => {
+      console.log('Service worker now ready, attempting to schedule notification');
+      if (registration.active) {
+        registration.active.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          payload: { hour, minute }
+        });
+        console.log('Schedule message sent to active service worker');
+      }
     });
-    console.log('Sent schedule message to service worker');
+    
     return true;
   }
   
-  console.log('Service worker not available for scheduling');
+  console.log('Service worker not supported');
   return false;
 };
 
 // Cancel scheduled notifications
 export const cancelScheduledNotifications = () => {
+  console.log('Cancelling scheduled notifications');
   localStorage.removeItem('scheduledNotificationTime');
   
   // Notify service worker if available
@@ -121,7 +163,9 @@ export const cancelScheduledNotifications = () => {
 
 // Get the currently scheduled notification time (if any)
 export const getScheduledNotificationTime = (): string | null => {
-  return localStorage.getItem('scheduledNotificationTime');
+  const time = localStorage.getItem('scheduledNotificationTime');
+  console.log(`Retrieved scheduled time from localStorage: ${time}`);
+  return time;
 };
 
 // Get scheduled notification details as hour and minute

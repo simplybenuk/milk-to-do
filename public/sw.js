@@ -27,16 +27,23 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activating Service Worker ...', event);
   // Claim clients right away so the page is controlled by the service worker
-  event.waitUntil(self.clients.claim());
-  
-  // Check for any scheduled notifications from localStorage
-  self.clients.matchAll().then(clients => {
-    if (clients.length > 0) {
-      clients[0].postMessage({
-        type: 'GET_NOTIFICATION_SCHEDULE'
+  event.waitUntil(
+    self.clients.claim().then(() => {
+      console.log('[Service Worker] Claimed all clients');
+      
+      // Check for any scheduled notifications from localStorage
+      return self.clients.matchAll().then(clients => {
+        if (clients.length > 0) {
+          console.log('[Service Worker] Requesting notification schedule from client');
+          clients[0].postMessage({
+            type: 'GET_NOTIFICATION_SCHEDULE'
+          });
+        } else {
+          console.log('[Service Worker] No clients to request schedule from');
+        }
       });
-    }
-  });
+    })
+  );
 });
 
 self.addEventListener('fetch', (event) => {
@@ -69,6 +76,12 @@ self.addEventListener('message', (event) => {
   } else if (event.data.type === 'TRIGGER_TEST_NOTIFICATION') {
     // Immediately show a test notification
     sendTestNotification();
+  } else if (event.data.type === 'SEND_NOTIFICATION') {
+    if (event.data.payload) {
+      const { title, options } = event.data.payload;
+      console.log('[Service Worker] Showing notification:', title, options);
+      self.registration.showNotification(title, options);
+    }
   }
 });
 
@@ -147,8 +160,17 @@ function scheduleNotification(hour, minute) {
     console.log(`[Service Worker] Next notification scheduled for ${scheduledTime.toLocaleString()}`);
     console.log(`[Service Worker] Time until notification: ${Math.floor(timeUntilNotification / 60000)} minutes`);
     
+    // For debugging - send a notification in 10 seconds if time is far away
+    if (timeUntilNotification > 60000) {
+      console.log('[Service Worker] Sending a test notification in 10 seconds');
+      setTimeout(() => {
+        sendDailyReminder('[Test] In 10 seconds');
+      }, 10000);
+    }
+    
     // Schedule the notification
     scheduledNotificationTimer = setTimeout(() => {
+      console.log('[Service Worker] Scheduled time reached, sending notification');
       sendDailyReminder();
       // Schedule the next day's notification
       scheduleNextNotification();
@@ -160,9 +182,9 @@ function scheduleNotification(hour, minute) {
 }
 
 // Function to send the daily reminder notification
-function sendDailyReminder() {
+function sendDailyReminder(debugInfo = '') {
   console.log('[Service Worker] Sending daily reminder notification');
-  self.registration.showNotification('Milk: Daily Task Reminder', {
+  self.registration.showNotification(`Milk: Daily Task Reminder ${debugInfo}`.trim(), {
     body: 'Time to check your tasks for today!',
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
