@@ -1,9 +1,8 @@
-
 // Schedule notification functionality
 
 // Schedule a daily notification at a specific time
 export const scheduleDailyNotification = (hour: number, minute: number) => {
-  if (!localStorage.getItem('notificationsEnabled') === 'true') {
+  if (localStorage.getItem('notificationsEnabled') !== 'true') {
     console.log('Cannot schedule notification: notifications not enabled');
     return false;
   }
