@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { format, subDays } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 
 export function TaskStats() {
   const { tasks, fetchTasks } = useTaskStore();
@@ -42,27 +42,34 @@ export function TaskStats() {
         ? format(date, 'EEE') // Mon, Tue, Wed, etc.
         : format(date, 'dd/MM'); // 01/05, 02/05, etc.
         
-      const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-      const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+      const dayStart = startOfDay(new Date(date));
+      const dayEnd = endOfDay(new Date(date));
 
       // Count tasks completed on this day
       const completedCount = tasks.filter(task => 
         task.completed_at && 
-        task.completed_at >= startOfDay && 
-        task.completed_at <= endOfDay
+        task.completed_at >= dayStart && 
+        task.completed_at <= dayEnd
       ).length;
 
       // Count tasks expired on this day
       const expiredCount = tasks.filter(task => 
         task.expired_at && 
-        task.expired_at >= startOfDay && 
-        task.expired_at <= endOfDay
+        task.expired_at >= dayStart && 
+        task.expired_at <= dayEnd
+      ).length;
+
+      // Count new tasks created on this day
+      const newTasksCount = tasks.filter(task => 
+        task.created_at >= dayStart && 
+        task.created_at <= dayEnd
       ).length;
 
       data.push({
         date: dateStr,
         completed: completedCount,
-        expired: expiredCount
+        expired: expiredCount,
+        new: newTasksCount
       });
     }
 
@@ -70,14 +77,26 @@ export function TaskStats() {
   }, [tasks, timeRange]);
 
   const summaryChartData = useMemo(() => {
+    const lastWeekDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const lastMonthDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
     const lastWeekExpired = stats.expired.filter(t => 
       t.expired_at && 
-      t.expired_at >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      t.expired_at >= lastWeekDate
     ).length;
     
     const lastMonthExpired = stats.expired.filter(t => 
       t.expired_at && 
-      t.expired_at >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      t.expired_at >= lastMonthDate
+    ).length;
+
+    // Count new tasks created in the last week and month
+    const lastWeekNewTasks = tasks.filter(t => 
+      t.created_at >= lastWeekDate
+    ).length;
+
+    const lastMonthNewTasks = tasks.filter(t => 
+      t.created_at >= lastMonthDate
     ).length;
 
     return [
@@ -85,14 +104,16 @@ export function TaskStats() {
         name: 'Last Week',
         completed: stats.completedLastWeek.length,
         expired: lastWeekExpired,
+        new: lastWeekNewTasks
       },
       {
         name: 'Last Month',
         completed: stats.completedLastMonth.length,
         expired: lastMonthExpired,
+        new: lastMonthNewTasks
       },
     ];
-  }, [stats]);
+  }, [stats, tasks]);
 
   if (!tasks.length) {
     return (
@@ -117,7 +138,7 @@ export function TaskStats() {
           <div>
             <CardTitle>Daily Task Activity</CardTitle>
             <CardDescription>
-              Tasks completed and expired in the last {timeRange === 'week' ? '7' : '28'} days
+              Tasks created, completed and expired in the last {timeRange === 'week' ? '7' : '28'} days
             </CardDescription>
           </div>
           <Button 
@@ -135,6 +156,7 @@ export function TaskStats() {
                 <XAxis dataKey="date" />
                 <YAxis allowDecimals={false} /> {/* Only show whole numbers */}
                 <Tooltip />
+                <Bar dataKey="new" fill="#3b82f6" name="New" />
                 <Bar dataKey="completed" fill="#22c55e" name="Completed" />
                 <Bar dataKey="expired" fill="#ef4444" name="Expired" />
               </BarChart>
@@ -146,7 +168,7 @@ export function TaskStats() {
       <Card>
         <CardHeader>
           <CardTitle>Task Completion Summary</CardTitle>
-          <CardDescription>Your task completion and expiry statistics</CardDescription>
+          <CardDescription>Your task creation, completion and expiry statistics</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] w-full">
@@ -155,23 +177,33 @@ export function TaskStats() {
                 <XAxis dataKey="name" />
                 <YAxis allowDecimals={false} /> {/* Only show whole numbers */}
                 <Tooltip />
+                <Bar dataKey="new" fill="#3b82f6" name="New" />
                 <Bar dataKey="completed" fill="#22c55e" name="Completed" />
                 <Bar dataKey="expired" fill="#ef4444" name="Expired" />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <div className="rounded-lg bg-blue-50 p-4">
+              <p className="text-sm font-medium text-blue-600">New Last Week</p>
+              <p className="mt-2 text-3xl font-bold text-blue-900">{summaryChartData[0].new}</p>
+            </div>
             <div className="rounded-lg bg-green-50 p-4">
               <p className="text-sm font-medium text-green-600">Completed Last Week</p>
               <p className="mt-2 text-3xl font-bold text-green-900">{stats.completedLastWeek.length}</p>
             </div>
-            <div className="rounded-lg bg-blue-50 p-4">
-              <p className="text-sm font-medium text-blue-600">Completed Total</p>
-              <p className="mt-2 text-3xl font-bold text-blue-900">{tasks.filter(t => t.completed_at).length}</p>
-            </div>
             <div className="rounded-lg bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-600">Expired Total</p>
-              <p className="mt-2 text-3xl font-bold text-red-900">{stats.expired.length}</p>
+              <p className="text-sm font-medium text-red-600">Expired Last Week</p>
+              <p className="mt-2 text-3xl font-bold text-red-900">{
+                stats.expired.filter(t => 
+                  t.expired_at && 
+                  t.expired_at >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+                ).length
+              }</p>
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4">
+              <p className="text-sm font-medium text-gray-600">Total Active Tasks</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900">{tasks.filter(t => t.status === 'open').length}</p>
             </div>
           </div>
         </CardContent>
