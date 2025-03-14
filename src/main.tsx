@@ -1,3 +1,4 @@
+
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -73,6 +74,33 @@ const updateSW = registerSW({
 // Create a listener for messages from the service worker
 if ('serviceWorker' in navigator) {
   console.log('Setting up service worker message listener');
+  
+  // Make sure we're registered for push notifications
+  navigator.serviceWorker.ready.then(registration => {
+    console.log('Service worker is ready, checking push subscription');
+    
+    // Check for existing push subscription
+    registration.pushManager.getSubscription().then(subscription => {
+      if (!subscription && 'Notification' in window && Notification.permission === 'granted') {
+        console.log('No push subscription found, attempting to subscribe');
+        
+        // Try to subscribe for push
+        registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(
+            'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
+          )
+        }).then(subscription => {
+          console.log('Push subscription successful', subscription);
+        }).catch(err => {
+          console.error('Push subscription failed:', err);
+        });
+      }
+    });
+  }).catch(err => {
+    console.error('Error with service worker ready state:', err);
+  });
+  
   navigator.serviceWorker.addEventListener('message', (event) => {
     console.log('Received message from service worker:', event.data);
     
@@ -90,13 +118,22 @@ if ('serviceWorker' in navigator) {
       }
     }
   });
-  
-  // Make sure service worker is running
-  navigator.serviceWorker.ready.then(registration => {
-    console.log('Service worker is ready:', registration);
-  }).catch(err => {
-    console.error('Error with service worker ready state:', err);
-  });
+}
+
+// Helper function to convert base64 to Uint8Array for VAPID keys
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

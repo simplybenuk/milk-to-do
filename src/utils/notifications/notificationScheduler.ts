@@ -1,3 +1,4 @@
+
 // Schedule notification functionality
 
 // Schedule a daily notification at a specific time
@@ -44,6 +45,8 @@ export const scheduleDailyNotification = (hour: number, minute: number) => {
         });
         console.log('Schedule message sent to active service worker');
       }
+    }).catch(err => {
+      console.error('Error while waiting for service worker to be ready:', err);
     });
     
     return true;

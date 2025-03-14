@@ -105,7 +105,10 @@ function sendTestNotification() {
     data: {
       url: self.location.origin
     },
-    requireInteraction: true  // This makes the notification stick around until user interacts with it
+    requireInteraction: true,  // This makes the notification stick around until user interacts with it
+    vibrate: [200, 100, 200],  // Add vibration pattern for mobile
+    renotify: true,            // Replace existing notification with same tag
+    timestamp: Date.now()      // Add timestamp for better ordering
   }).then(() => {
     console.log('[Service Worker] Test notification sent successfully');
     return true;
@@ -141,14 +144,6 @@ function scheduleNotification(hour, minute) {
     console.log(`[Service Worker] Next notification scheduled for ${scheduledTime.toLocaleString()}`);
     console.log(`[Service Worker] Time until notification: ${Math.floor(timeUntilNotification / 60000)} minutes`);
     
-    // For debugging - send a notification in 10 seconds if time is far away
-    if (timeUntilNotification > 60000) {
-      console.log('[Service Worker] Sending a test notification in 10 seconds');
-      setTimeout(() => {
-        sendDailyReminder('[Test] In 10 seconds');
-      }, 10000);
-    }
-    
     // Schedule the notification
     scheduledNotificationTimer = setTimeout(() => {
       console.log('[Service Worker] Scheduled time reached, sending notification');
@@ -160,6 +155,12 @@ function scheduleNotification(hour, minute) {
   
   // Start the scheduling process
   scheduleNextNotification();
+  
+  // For debugging - send a test notification in 10 seconds
+  setTimeout(() => {
+    console.log('[Service Worker] Sending a quick test notification (10 seconds after scheduling)');
+    sendDailyReminder('[Test] Scheduled reminder system active');
+  }, 10000);
 }
 
 /**
@@ -167,14 +168,24 @@ function scheduleNotification(hour, minute) {
  */
 function sendDailyReminder(debugInfo = '') {
   console.log('[Service Worker] Sending daily reminder notification');
-  self.registration.showNotification(`Milk: Daily Task Reminder ${debugInfo}`.trim(), {
+  return self.registration.showNotification(`Milk: Daily Task Reminder ${debugInfo}`.trim(), {
     body: 'Time to check your tasks for today!',
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
     tag: 'daily-reminder',
     data: {
       url: self.location.origin
-    }
+    },
+    vibrate: [200, 100, 200],  // Add vibration pattern for mobile
+    requireInteraction: true,  // Make notification stay until interaction
+    renotify: true,            // Replace existing notification with same tag
+    timestamp: Date.now()      // Add timestamp for better ordering
+  }).then(() => {
+    console.log('[Service Worker] Daily reminder notification sent successfully');
+    return true;
+  }).catch(error => {
+    console.error('[Service Worker] Error sending daily reminder notification:', error);
+    return false;
   });
 }
 
@@ -187,6 +198,25 @@ function cancelScheduledNotifications() {
     scheduledNotificationTimer = null;
     console.log('[Service Worker] Scheduled notifications cancelled');
   }
+}
+
+/**
+ * Regular notifications directly from message events
+ */
+function showNotification(title, options) {
+  return self.registration.showNotification(title, {
+    ...options,
+    requireInteraction: true,
+    vibrate: options.vibrate || [200, 100, 200],
+    timestamp: Date.now(),
+    renotify: true
+  }).then(() => {
+    console.log(`[Service Worker] Notification "${title}" sent successfully`);
+    return true;
+  }).catch(error => {
+    console.error(`[Service Worker] Error sending notification "${title}":`, error);
+    return false;
+  });
 }
 
 /**
@@ -223,17 +253,29 @@ function handleNotificationClick(event) {
  */
 function handlePush(event) {
   console.log('[Service Worker] Push notification received:', event);
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Milk: Task Reminder';
-  const options = {
-    body: data.body || 'You have tasks that need your attention.',
+  
+  let title = 'Milk: Task Reminder';
+  let options = {
+    body: 'You have tasks that need your attention.',
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
+    vibrate: [200, 100, 200],
+    requireInteraction: true,
+    renotify: true,
+    timestamp: Date.now()
   };
+  
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      title = data.title || title;
+      options = { ...options, ...data.options };
+    } catch (e) {
+      console.error('[Service Worker] Error parsing push data:', e);
+    }
+  }
 
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 }
 
 /**
@@ -262,11 +304,7 @@ function handleNotificationMessages(data) {
     if (data.payload) {
       const { title, options } = data.payload;
       console.log('[Service Worker] Showing notification:', title, options);
-      self.registration.showNotification(title, options).then(() => {
-        console.log('[Service Worker] Notification shown successfully');
-      }).catch(error => {
-        console.error('[Service Worker] Error showing notification:', error);
-      });
+      showNotification(title, options);
       return true;
     }
   }

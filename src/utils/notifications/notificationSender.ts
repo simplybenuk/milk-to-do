@@ -26,7 +26,13 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
         type: 'SEND_NOTIFICATION',
         payload: {
           title,
-          options
+          options: {
+            ...options,
+            // Ensure these fields are set for better compatibility
+            silent: false,
+            requireInteraction: true,
+            timestamp: Date.now()
+          }
         }
       });
       return true;
@@ -34,7 +40,12 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
     
     // Fallback to the Notification API directly
     console.log('Sending notification directly (no service worker)');
-    const notification = new Notification(title, options);
+    const notification = new Notification(title, {
+      ...options,
+      silent: false,
+      requireInteraction: true,
+      timestamp: Date.now()
+    });
     
     // Handle notification click
     notification.onclick = function() {
@@ -58,6 +69,8 @@ export const sendTaskReminder = () => {
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
     tag: 'task-reminder',
+    vibrate: [200, 100, 200], // Add vibration pattern for mobile
+    renotify: true, // Replace existing notification with same tag
   });
 };
 
@@ -66,7 +79,6 @@ export const triggerTestNotification = () => {
   console.log('Attempting to trigger a test notification');
   
   // Force notification regardless of the service worker 
-  // This is specifically for testing purposes
   if (isNotificationSupported() && hasNotificationPermission()) {
     try {
       console.log('Creating a direct notification for testing');
@@ -75,6 +87,10 @@ export const triggerTestNotification = () => {
         icon: '/milk_logo192.png',
         badge: '/milk_logo192.png',
         tag: 'test-notification',
+        vibrate: [200, 100, 200], // Add vibration pattern for mobile
+        requireInteraction: true, // Make notification stay until interaction
+        renotify: true, // Replace existing notification with same tag
+        timestamp: Date.now()
       });
       
       notification.onclick = function() {
