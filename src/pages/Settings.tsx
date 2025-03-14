@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -17,7 +16,7 @@ import {
   requestNotificationPermission,
   triggerTestNotification,
   hasNotificationPermission
-} from '@/utils/notificationService';
+} from '@/utils/notifications';
 
 const Settings = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);

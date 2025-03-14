@@ -1,9 +1,8 @@
-
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { registerSW } from 'virtual:pwa-register'
-import { getScheduledNotificationDetails } from '@/utils/notificationService'
+import { getScheduledNotificationDetails } from '@/utils/notifications'
 
 console.log('Initializing app and service worker registration');
 

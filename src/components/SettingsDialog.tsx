@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -22,7 +21,7 @@ import {
   getScheduledNotificationTime,
   sendTaskReminder,
   requestNotificationPermission
-} from '@/utils/notificationService';
+} from '@/utils/notifications';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -36,23 +35,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [dailyReminder, setDailyReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState('09:00');
 
-  // Reset dialog state when opened
   useEffect(() => {
     if (open) {
       console.log('Settings dialog opened, refreshing state');
-      // Check if notifications are supported
       const supported = isNotificationSupported();
       setIsSupported(supported);
 
       if (supported) {
-        // Get current permission status
         setNotificationPermission(Notification.permission);
         
-        // Get saved notification preference
         const savedPreference = areNotificationsEnabled();
         setNotificationsEnabled(savedPreference);
         
-        // Get saved scheduled notification time
         const savedScheduledTime = getScheduledNotificationTime();
         if (savedScheduledTime) {
           setDailyReminder(true);
@@ -64,47 +58,39 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         }
       }
     }
-  }, [open]); // Re-run when dialog opens
+  }, [open]);
 
   const handleToggleNotifications = async () => {
     if (!isSupported) return;
 
     if (!notificationsEnabled) {
-      // User wants to enable notifications
       if (notificationPermission !== 'granted') {
-        // Request permission
         const permissionGranted = await requestNotificationPermission();
         setNotificationPermission(permissionGranted ? 'granted' : 'denied');
         
         if (permissionGranted) {
-          // Permission granted, enable notifications
           setNotificationsEnabled(true);
           localStorage.setItem('notificationsEnabled', 'true');
           toast.success('Notifications enabled');
           
-          // Test notification
           setTimeout(() => {
             console.log('Sending test notification after enabling');
             sendTaskReminder();
           }, 500);
         } else {
-          // Permission denied
           toast.error('Notification permission denied. Please enable notifications in your browser settings.');
         }
       } else {
-        // Permission already granted, just enable notifications
         setNotificationsEnabled(true);
         localStorage.setItem('notificationsEnabled', 'true');
         toast.success('Notifications enabled');
         
-        // Test notification
         setTimeout(() => {
           console.log('Sending test notification after enabling');
           sendTaskReminder();
         }, 500);
       }
     } else {
-      // User wants to disable notifications
       setNotificationsEnabled(false);
       setDailyReminder(false);
       localStorage.setItem('notificationsEnabled', 'false');
@@ -117,7 +103,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     if (!notificationsEnabled) return;
 
     if (!dailyReminder) {
-      // Enable daily reminder
       const [hours, minutes] = reminderTime.split(':').map(Number);
       console.log(`Scheduling notification for ${hours}:${minutes}`);
       
@@ -126,7 +111,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         toast.success(`Daily reminder set for ${reminderTime}`);
       }
     } else {
-      // Disable daily reminder
       if (cancelScheduledNotifications()) {
         setDailyReminder(false);
         toast.success('Daily reminder disabled');
@@ -139,7 +123,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     setReminderTime(newTime);
     
     if (dailyReminder) {
-      // Update scheduled time
       const [hours, minutes] = newTime.split(':').map(Number);
       console.log(`Updating scheduled time to ${hours}:${minutes}`);
       scheduleDailyNotification(hours, minutes);
