@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -14,7 +15,8 @@ import {
   getScheduledNotificationTime,
   sendTaskReminder,
   requestNotificationPermission,
-  triggerTestNotification
+  triggerTestNotification,
+  hasNotificationPermission
 } from '@/utils/notificationService';
 
 const Settings = () => {
@@ -23,6 +25,7 @@ const Settings = () => {
   const [isSupported, setIsSupported] = useState(false);
   const [dailyReminder, setDailyReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState('09:00');
+  const [isSendingTest, setIsSendingTest] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -120,12 +123,43 @@ const Settings = () => {
 
   const handleTestNotification = () => {
     console.log('Sending test notification from button click');
+    setIsSendingTest(true);
+    
+    // First, make sure permission is granted
+    if (notificationPermission !== 'granted') {
+      toast.error('Notification permission not granted');
+      setIsSendingTest(false);
+      return;
+    }
+    
+    // Then test if notification works
     const success = triggerTestNotification();
+    
     if (success) {
-      toast.success('Test notification sent');
+      toast.success('Test notification sent. Check your device notifications.');
+      console.log('Test notification successfully triggered');
     } else {
       toast.error('Failed to send test notification');
+      console.error('Failed to trigger test notification');
     }
+    
+    setIsSendingTest(false);
+  };
+
+  const getNotificationStatus = () => {
+    if (!isSupported) {
+      return "Not supported in this browser";
+    }
+    if (notificationPermission === 'denied') {
+      return "Blocked in browser settings";
+    }
+    if (notificationPermission !== 'granted') {
+      return "Permission not granted";
+    }
+    if (!notificationsEnabled) {
+      return "Disabled in app settings";
+    }
+    return "Enabled";
   };
 
   return (
@@ -159,6 +193,12 @@ const Settings = () => {
                 onCheckedChange={handleToggleNotifications}
                 disabled={!isSupported}
               />
+            </div>
+            
+            <div className="px-3 py-2 bg-gray-50 rounded-md text-sm">
+              <p>Status: <span className={notificationsEnabled && notificationPermission === 'granted' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                {getNotificationStatus()}
+              </span></p>
             </div>
             
             {notificationsEnabled && (
@@ -195,10 +235,14 @@ const Settings = () => {
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-2"
+                    disabled={isSendingTest || !hasNotificationPermission()}
                   >
                     <AlertCircle className="h-4 w-4" />
-                    Send Test Notification
+                    {isSendingTest ? 'Sending...' : 'Send Test Notification'}
                   </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This will send a real notification to your device. If you don't see it, check your device's notification settings.
+                  </p>
                 </div>
               </div>
             )}

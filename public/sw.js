@@ -75,12 +75,17 @@ self.addEventListener('message', (event) => {
     }
   } else if (event.data.type === 'TRIGGER_TEST_NOTIFICATION') {
     // Immediately show a test notification
+    console.log('[Service Worker] Received request to send test notification');
     sendTestNotification();
   } else if (event.data.type === 'SEND_NOTIFICATION') {
     if (event.data.payload) {
       const { title, options } = event.data.payload;
       console.log('[Service Worker] Showing notification:', title, options);
-      self.registration.showNotification(title, options);
+      self.registration.showNotification(title, options).then(() => {
+        console.log('[Service Worker] Notification shown successfully');
+      }).catch(error => {
+        console.error('[Service Worker] Error showing notification:', error);
+      });
     }
   }
 });
@@ -125,14 +130,22 @@ self.addEventListener('notificationclick', (event) => {
 // Function to send a test notification
 function sendTestNotification() {
   console.log('[Service Worker] Sending test notification');
-  self.registration.showNotification('Milk: Test Notification', {
-    body: 'This is a test notification. If you can see this, notifications are working!',
+  
+  return self.registration.showNotification('Milk: Test Notification', {
+    body: 'This is a test notification from the service worker. If you can see this, notifications are working!',
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
     tag: 'test-notification',
     data: {
       url: self.location.origin
-    }
+    },
+    requireInteraction: true  // This makes the notification stick around until user interacts with it
+  }).then(() => {
+    console.log('[Service Worker] Test notification sent successfully');
+    return true;
+  }).catch(error => {
+    console.error('[Service Worker] Error sending test notification:', error);
+    return false;
   });
 }
 
