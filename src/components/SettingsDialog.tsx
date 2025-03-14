@@ -19,7 +19,8 @@ import {
   areNotificationsEnabled, 
   scheduleDailyNotification,
   cancelScheduledNotifications,
-  getScheduledNotificationTime
+  getScheduledNotificationTime,
+  sendTaskReminder
 } from '@/utils/notificationService';
 
 interface SettingsDialogProps {
@@ -54,7 +55,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         setReminderTime(savedScheduledTime);
       }
     }
-  }, []);
+  }, [open]); // Re-run when dialog opens
 
   const handleToggleNotifications = async () => {
     if (!isSupported) return;
@@ -71,6 +72,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           setNotificationsEnabled(true);
           localStorage.setItem('notificationsEnabled', 'true');
           toast.success('Notifications enabled');
+          
+          // Test notification
+          sendTaskReminder();
         } else {
           // Permission denied
           toast.error('Notification permission denied. Please enable notifications in your browser settings.');
@@ -80,6 +84,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         setNotificationsEnabled(true);
         localStorage.setItem('notificationsEnabled', 'true');
         toast.success('Notifications enabled');
+        
+        // Test notification
+        sendTaskReminder();
       }
     } else {
       // User wants to disable notifications

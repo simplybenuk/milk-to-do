@@ -1,3 +1,4 @@
+
 const CACHE_NAME = 'milk-cache-v1';
 const urlsToCache = [
   '/',
@@ -11,10 +12,31 @@ const urlsToCache = [
 let scheduledNotificationTimer = null;
 
 self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Installing Service Worker ...', event);
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then((cache) => {
+        console.log('[Service Worker] Caching app shell');
+        return cache.addAll(urlsToCache);
+      })
   );
+  // Ensure the service worker activates right away
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activating Service Worker ...', event);
+  // Claim clients right away so the page is controlled by the service worker
+  event.waitUntil(self.clients.claim());
+  
+  // Check for any scheduled notifications from localStorage
+  self.clients.matchAll().then(clients => {
+    if (clients.length > 0) {
+      clients[0].postMessage({
+        type: 'GET_NOTIFICATION_SCHEDULE'
+      });
+    }
+  });
 });
 
 self.addEventListener('fetch', (event) => {
@@ -31,17 +53,28 @@ self.addEventListener('fetch', (event) => {
 
 // Handle message events from the client
 self.addEventListener('message', (event) => {
-  console.log('Service worker received message:', event.data);
+  console.log('[Service Worker] Received message:', event.data);
   
   if (event.data.type === 'SCHEDULE_NOTIFICATION') {
+    console.log('[Service Worker] Scheduling notification:', event.data.payload);
     scheduleNotification(event.data.payload.hour, event.data.payload.minute);
   } else if (event.data.type === 'CANCEL_NOTIFICATIONS') {
     cancelScheduledNotifications();
+  } else if (event.data.type === 'NOTIFICATION_SCHEDULE_RESPONSE' && event.data.payload) {
+    const { hour, minute } = event.data.payload;
+    if (hour !== undefined && minute !== undefined) {
+      console.log(`[Service Worker] Restoring notification schedule: ${hour}:${minute}`);
+      scheduleNotification(hour, minute);
+    }
+  } else if (event.data.type === 'TRIGGER_TEST_NOTIFICATION') {
+    // Immediately show a test notification
+    sendTestNotification();
   }
 });
 
 // Handle push notifications
 self.addEventListener('push', (event) => {
+  console.log('[Service Worker] Push notification received:', event);
   const data = event.data ? event.data.json() : {};
   const title = data.title || 'Milk: Task Reminder';
   const options = {
@@ -57,6 +90,7 @@ self.addEventListener('push', (event) => {
 
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
+  console.log('[Service Worker] Notification clicked:', event);
   event.notification.close();
   
   event.waitUntil(
@@ -75,12 +109,26 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
+// Function to send a test notification
+function sendTestNotification() {
+  console.log('[Service Worker] Sending test notification');
+  self.registration.showNotification('Milk: Test Notification', {
+    body: 'This is a test notification. If you can see this, notifications are working!',
+    icon: '/milk_logo192.png',
+    badge: '/milk_logo192.png',
+    tag: 'test-notification',
+    data: {
+      url: self.location.origin
+    }
+  });
+}
+
 // Function to schedule a daily notification
 function scheduleNotification(hour, minute) {
   // Clear any existing scheduled notification timer
   cancelScheduledNotifications();
   
-  console.log(`Scheduling daily notification for ${hour}:${minute}`);
+  console.log(`[Service Worker] Scheduling daily notification for ${hour}:${minute}`);
   
   // Calculate the next notification time
   const scheduleNextNotification = () => {
@@ -96,8 +144,8 @@ function scheduleNotification(hour, minute) {
     
     const timeUntilNotification = scheduledTime.getTime() - now.getTime();
     
-    console.log(`Next notification scheduled for ${scheduledTime.toLocaleString()}`);
-    console.log(`Time until notification: ${Math.floor(timeUntilNotification / 60000)} minutes`);
+    console.log(`[Service Worker] Next notification scheduled for ${scheduledTime.toLocaleString()}`);
+    console.log(`[Service Worker] Time until notification: ${Math.floor(timeUntilNotification / 60000)} minutes`);
     
     // Schedule the notification
     scheduledNotificationTimer = setTimeout(() => {
@@ -113,6 +161,7 @@ function scheduleNotification(hour, minute) {
 
 // Function to send the daily reminder notification
 function sendDailyReminder() {
+  console.log('[Service Worker] Sending daily reminder notification');
   self.registration.showNotification('Milk: Daily Task Reminder', {
     body: 'Time to check your tasks for today!',
     icon: '/milk_logo192.png',
@@ -129,12 +178,6 @@ function cancelScheduledNotifications() {
   if (scheduledNotificationTimer) {
     clearTimeout(scheduledNotificationTimer);
     scheduledNotificationTimer = null;
-    console.log('Scheduled notifications cancelled');
+    console.log('[Service Worker] Scheduled notifications cancelled');
   }
 }
-
-// Set up scheduled notifications when the SW activates
-self.addEventListener('activate', (event) => {
-  console.log('Service worker activated');
-  event.waitUntil(self.clients.claim());
-});

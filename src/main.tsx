@@ -3,9 +3,11 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { registerSW } from 'virtual:pwa-register'
+import { getScheduledNotificationDetails } from '@/utils/notificationService'
 
 // Register service worker for PWA with proper error handling
 const updateSW = registerSW({
+  immediate: true, // Register immediately
   onNeedRefresh() {
     // Prompt user to update when new version is available
     if (confirm('New content available. Reload app?')) {
@@ -18,20 +20,51 @@ const updateSW = registerSW({
   onRegistered(registration) {
     console.log('Service worker registered successfully', registration);
     
-    // Check if we need to schedule a notification
-    const scheduledTime = localStorage.getItem('scheduledNotificationTime');
-    if (scheduledTime && localStorage.getItem('notificationsEnabled') === 'true' && registration) {
-      const [hours, minutes] = scheduledTime.split(':').map(Number);
-      registration.active?.postMessage({
-        type: 'SCHEDULE_NOTIFICATION',
-        payload: { hour: hours, minute: minutes }
-      });
-      console.log(`Restored scheduled notification for ${scheduledTime}`);
+    // Check if notifications are enabled
+    if (localStorage.getItem('notificationsEnabled') === 'true') {
+      // Check if we need to schedule a notification
+      const notificationDetails = getScheduledNotificationDetails();
+      
+      if (notificationDetails && registration) {
+        console.log(`Attempting to restore scheduled notification for ${notificationDetails.hour}:${notificationDetails.minute}`);
+        
+        // Use a small delay to ensure the service worker is fully activated
+        setTimeout(() => {
+          if (registration.active) {
+            registration.active.postMessage({
+              type: 'SCHEDULE_NOTIFICATION',
+              payload: notificationDetails
+            });
+            console.log(`Restored scheduled notification for ${notificationDetails.hour}:${notificationDetails.minute}`);
+          } else {
+            console.error('Service worker not active yet, cannot schedule notification');
+          }
+        }, 1000);
+      }
     }
   },
   onRegisterError(error) {
     console.error('Service worker registration failed:', error);
   }
 });
+
+// Create a listener for messages from the service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    console.log('Received message from service worker:', event.data);
+    
+    // Handle messages from service worker
+    if (event.data.type === 'GET_NOTIFICATION_SCHEDULE') {
+      const notificationDetails = getScheduledNotificationDetails();
+      if (notificationDetails) {
+        event.source?.postMessage({
+          type: 'NOTIFICATION_SCHEDULE_RESPONSE',
+          payload: notificationDetails
+        });
+        console.log('Sent notification schedule to service worker');
+      }
+    }
+  });
+}
 
 createRoot(document.getElementById("root")!).render(<App />);
