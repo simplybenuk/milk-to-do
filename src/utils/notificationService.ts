@@ -92,6 +92,28 @@ export const sendTaskReminder = () => {
   });
 };
 
+// Trigger a test notification immediately for debugging purposes
+export const triggerTestNotification = () => {
+  console.log('Attempting to trigger a test notification');
+  
+  // Try to use service worker first if available
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    console.log('Triggering test notification through service worker');
+    navigator.serviceWorker.controller.postMessage({
+      type: 'TRIGGER_TEST_NOTIFICATION'
+    });
+    return true;
+  }
+  
+  // Fallback to direct notification
+  return sendNotification('Milk: Test Notification', {
+    body: 'This is a test notification. If you can see this, notifications are working!',
+    icon: '/milk_logo192.png',
+    badge: '/milk_logo192.png',
+    tag: 'test-notification',
+  });
+};
+
 // Schedule a daily notification at a specific time
 export const scheduleDailyNotification = (hour: number, minute: number) => {
   if (!areNotificationsEnabled()) {

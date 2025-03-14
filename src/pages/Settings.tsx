@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Bell, Clock, ArrowLeft } from 'lucide-react';
+import { Bell, Clock, ArrowLeft, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -14,7 +13,8 @@ import {
   cancelScheduledNotifications,
   getScheduledNotificationTime,
   sendTaskReminder,
-  requestNotificationPermission
+  requestNotificationPermission,
+  triggerTestNotification
 } from '@/utils/notificationService';
 
 const Settings = () => {
@@ -25,22 +25,17 @@ const Settings = () => {
   const [reminderTime, setReminderTime] = useState('09:00');
   const navigate = useNavigate();
 
-  // Initialize state when component mounts
   useEffect(() => {
     console.log('Settings page mounted, initializing state');
-    // Check if notifications are supported
     const supported = isNotificationSupported();
     setIsSupported(supported);
 
     if (supported) {
-      // Get current permission status
       setNotificationPermission(Notification.permission);
       
-      // Get saved notification preference
       const savedPreference = areNotificationsEnabled();
       setNotificationsEnabled(savedPreference);
       
-      // Get saved scheduled notification time
       const savedScheduledTime = getScheduledNotificationTime();
       if (savedScheduledTime) {
         setDailyReminder(true);
@@ -57,41 +52,33 @@ const Settings = () => {
     if (!isSupported) return;
 
     if (!notificationsEnabled) {
-      // User wants to enable notifications
       if (notificationPermission !== 'granted') {
-        // Request permission
         const permissionGranted = await requestNotificationPermission();
         setNotificationPermission(permissionGranted ? 'granted' : 'denied');
         
         if (permissionGranted) {
-          // Permission granted, enable notifications
           setNotificationsEnabled(true);
           localStorage.setItem('notificationsEnabled', 'true');
           toast.success('Notifications enabled');
           
-          // Test notification
           setTimeout(() => {
             console.log('Sending test notification after enabling');
             sendTaskReminder();
           }, 500);
         } else {
-          // Permission denied
           toast.error('Notification permission denied. Please enable notifications in your browser settings.');
         }
       } else {
-        // Permission already granted, just enable notifications
         setNotificationsEnabled(true);
         localStorage.setItem('notificationsEnabled', 'true');
         toast.success('Notifications enabled');
         
-        // Test notification
         setTimeout(() => {
           console.log('Sending test notification after enabling');
           sendTaskReminder();
         }, 500);
       }
     } else {
-      // User wants to disable notifications
       setNotificationsEnabled(false);
       setDailyReminder(false);
       localStorage.setItem('notificationsEnabled', 'false');
@@ -104,7 +91,6 @@ const Settings = () => {
     if (!notificationsEnabled) return;
 
     if (!dailyReminder) {
-      // Enable daily reminder
       const [hours, minutes] = reminderTime.split(':').map(Number);
       console.log(`Scheduling notification for ${hours}:${minutes}`);
       
@@ -113,7 +99,6 @@ const Settings = () => {
         toast.success(`Daily reminder set for ${reminderTime}`);
       }
     } else {
-      // Disable daily reminder
       if (cancelScheduledNotifications()) {
         setDailyReminder(false);
         toast.success('Daily reminder disabled');
@@ -126,11 +111,20 @@ const Settings = () => {
     setReminderTime(newTime);
     
     if (dailyReminder) {
-      // Update scheduled time
       const [hours, minutes] = newTime.split(':').map(Number);
       console.log(`Updating scheduled time to ${hours}:${minutes}`);
       scheduleDailyNotification(hours, minutes);
       toast.success(`Daily reminder updated to ${newTime}`);
+    }
+  };
+
+  const handleTestNotification = () => {
+    console.log('Sending test notification from button click');
+    const success = triggerTestNotification();
+    if (success) {
+      toast.success('Test notification sent');
+    } else {
+      toast.error('Failed to send test notification');
     }
   };
 
@@ -194,6 +188,18 @@ const Settings = () => {
                     />
                   </div>
                 )}
+
+                <div className="pt-2">
+                  <Button 
+                    onClick={handleTestNotification}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    Send Test Notification
+                  </Button>
+                </div>
               </div>
             )}
             
