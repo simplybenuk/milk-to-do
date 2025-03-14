@@ -1,8 +1,13 @@
 
-import { isNotificationSupported, areNotificationsEnabled, hasNotificationPermission } from './notificationCore';
+// Extend the standard NotificationOptions type to include mobile-specific properties
+interface ExtendedNotificationOptions extends NotificationOptions {
+  vibrate?: number[];
+  timestamp?: number;
+  renotify?: boolean;
+}
 
 // Send a notification to the user
-export const sendNotification = (title: string, options?: NotificationOptions) => {
+export const sendNotification = (title: string, options?: ExtendedNotificationOptions) => {
   if (!isNotificationSupported()) {
     console.log('Notifications not supported');
     return false;
@@ -31,6 +36,7 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
             // Ensure these fields are set for better compatibility
             silent: false,
             requireInteraction: true,
+            // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
             timestamp: Date.now()
           }
         }
@@ -44,6 +50,7 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
       ...options,
       silent: false,
       requireInteraction: true,
+      // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
       timestamp: Date.now()
     });
     
@@ -69,6 +76,7 @@ export const sendTaskReminder = () => {
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
     tag: 'task-reminder',
+    // @ts-ignore - vibrate is valid for notifications but not in TypeScript types
     vibrate: [200, 100, 200], // Add vibration pattern for mobile
     renotify: true, // Replace existing notification with same tag
   });
@@ -87,9 +95,11 @@ export const triggerTestNotification = () => {
         icon: '/milk_logo192.png',
         badge: '/milk_logo192.png',
         tag: 'test-notification',
+        // @ts-ignore - vibrate is valid for notifications but not in TypeScript types
         vibrate: [200, 100, 200], // Add vibration pattern for mobile
         requireInteraction: true, // Make notification stay until interaction
         renotify: true, // Replace existing notification with same tag
+        // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
         timestamp: Date.now()
       });
       
@@ -117,3 +127,6 @@ export const triggerTestNotification = () => {
   console.log('Unable to send test notification - no supported methods available');
   return false;
 };
+
+// Import required functions from notification core
+import { isNotificationSupported, areNotificationsEnabled, hasNotificationPermission } from './notificationCore';
