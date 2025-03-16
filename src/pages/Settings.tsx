@@ -1,12 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Bell, Clock, ArrowLeft, AlertCircle, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
 import { 
   scheduleDailyNotification,
   cancelScheduledNotifications,
@@ -14,7 +8,14 @@ import {
   getNextScheduledNotificationTime
 } from '@/utils/notifications';
 import { useNotifications } from '@/hooks/use-notifications';
-import { format } from 'date-fns';
+
+// Import our new components
+import { NotificationToggle } from '@/components/settings/NotificationToggle';
+import { DailyReminderSettings } from '@/components/settings/DailyReminderSettings';
+import { NotificationPermissionInfo } from '@/components/settings/NotificationPermissionInfo';
+import { NotificationStatus } from '@/components/settings/NotificationStatus';
+import { TestNotificationButton } from '@/components/settings/TestNotificationButton';
+import { SettingsHeader } from '@/components/settings/SettingsHeader';
 
 const Settings = () => {
   const { 
@@ -30,7 +31,6 @@ const Settings = () => {
   const [dailyReminder, setDailyReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState('09:00');
   const [nextNotification, setNextNotification] = useState<Date | null>(null);
-  const navigate = useNavigate();
 
   // Update the next notification time
   const updateNextNotificationTime = () => {
@@ -129,133 +129,51 @@ const Settings = () => {
     }
   };
 
-  const getNotificationStatus = () => {
-    if (!isSupported) {
-      return "Not supported in this browser";
-    }
-    if (notificationPermission === 'denied') {
-      return "Blocked in browser settings";
-    }
-    if (notificationPermission !== 'granted') {
-      return "Permission not granted";
-    }
-    if (!notificationsEnabled) {
-      return "Disabled in app settings";
-    }
-    return "Enabled";
-  };
-
   return (
     <div className="min-h-screen bg-milk-50 p-4 sm:p-6 md:p-8">
       <div className="mx-auto max-w-3xl">
-        <header className="mb-8 relative">
-          <div className="absolute left-0 top-0">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </div>
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center rounded-full bg-milk-100 px-3 py-1 text-sm text-milk-800 mb-4">
-              App Settings
-            </div>
-            <h1 className="text-4xl font-bold text-milk-900 mb-2">Settings</h1>
-            <p className="text-milk-600">Configure your preferences</p>
-          </div>
-        </header>
+        <SettingsHeader 
+          title="Settings" 
+          subtitle="Configure your preferences" 
+        />
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                <Label htmlFor="notifications">Notifications</Label>
-              </div>
-              <Switch
-                id="notifications"
-                checked={notificationsEnabled}
-                onCheckedChange={handleToggleNotifications}
-                disabled={!isSupported}
-              />
-            </div>
+            <NotificationToggle
+              enabled={notificationsEnabled}
+              onToggle={handleToggleNotifications}
+              disabled={!isSupported}
+            />
             
-            <div className="px-3 py-2 bg-gray-50 rounded-md text-sm">
-              <p>Status: <span className={notificationsEnabled && notificationPermission === 'granted' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                {getNotificationStatus()}
-              </span></p>
-            </div>
+            <NotificationStatus 
+              isSupported={isSupported}
+              notificationsEnabled={notificationsEnabled}
+              notificationPermission={notificationPermission}
+            />
             
             {notificationsEnabled && (
-              <div className="space-y-4 pl-6 border-l-2 border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <Label htmlFor="dailyReminder">Daily reminder</Label>
-                  </div>
-                  <Switch
-                    id="dailyReminder"
-                    checked={dailyReminder}
-                    onCheckedChange={handleToggleDailyReminder}
-                    disabled={!notificationsEnabled}
-                  />
-                </div>
-                
-                {dailyReminder && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="reminderTime" className="text-sm">Time:</Label>
-                      <Input
-                        id="reminderTime"
-                        type="time"
-                        value={reminderTime}
-                        onChange={handleReminderTimeChange}
-                        className="w-24"
-                      />
-                    </div>
-                    
-                    {nextNotification && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                        <Calendar className="h-3.5 w-3.5" />
-                        <span>Next notification: {format(nextNotification, 'PPp')}</span>
-                      </div>
-                    )}
-                  </>
-                )}
+              <>
+                <DailyReminderSettings
+                  enabled={dailyReminder}
+                  onToggle={handleToggleDailyReminder}
+                  reminderTime={reminderTime}
+                  onTimeChange={handleReminderTimeChange}
+                  nextNotification={nextNotification}
+                  notificationsEnabled={notificationsEnabled}
+                />
 
-                <div className="pt-2">
-                  <Button 
-                    onClick={handleTestNotification}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                    disabled={isSending || !notificationsEnabled || notificationPermission !== 'granted'}
-                  >
-                    <AlertCircle className="h-4 w-4" />
-                    {isSending ? 'Sending...' : 'Send Test Notification'}
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    This will send a real notification to your device. If you don't see it, check your device's notification settings.
-                  </p>
-                </div>
-              </div>
+                <TestNotificationButton
+                  onTest={handleTestNotification}
+                  isSending={isSending}
+                  disabled={!notificationsEnabled || notificationPermission !== 'granted'}
+                />
+              </>
             )}
             
-            {!isSupported && (
-              <p className="text-sm text-muted-foreground">
-                Notifications are not supported in this browser.
-              </p>
-            )}
-            {notificationPermission === 'denied' && (
-              <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-                <p className="font-semibold">Notification permission denied</p>
-                <p className="mt-1">You'll need to enable notifications in your browser settings:</p>
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Chrome: Site settings &gt; Notifications</li>
-                  <li>Firefox: Site permissions &gt; Notifications</li>
-                  <li>Safari: Preferences &gt; Websites &gt; Notifications</li>
-                  <li>Mobile: Check system notification settings for your browser</li>
-                </ul>
-              </div>
-            )}
+            <NotificationPermissionInfo
+              isSupported={isSupported}
+              permission={notificationPermission}
+            />
           </div>
         </div>
       </div>
