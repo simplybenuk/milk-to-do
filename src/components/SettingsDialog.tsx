@@ -9,12 +9,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Bell, UserCog, Clock, Calendar } from 'lucide-react';
+import { UserCog } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 import { 
   scheduleDailyNotification,
   cancelScheduledNotifications,
@@ -22,6 +18,9 @@ import {
   getNextScheduledNotificationTime
 } from '@/utils/notifications';
 import { useNotifications } from '@/hooks/use-notifications';
+import { NotificationToggle } from '@/components/settings/NotificationToggle';
+import { DailyReminderSettings } from '@/components/settings/DailyReminderSettings';
+import { NotificationPermissionInfo } from '@/components/settings/NotificationPermissionInfo';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -116,8 +115,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     }
   };
 
-  const handleReminderTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = e.target.value;
+  const handleReminderTimeChange = (newTime: string) => {
     setReminderTime(newTime);
     
     if (dailyReminder) {
@@ -142,68 +140,25 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4" />
-              <Label htmlFor="notifications">Notifications</Label>
-            </div>
-            <Switch
-              id="notifications"
-              checked={notificationsEnabled}
-              onCheckedChange={handleToggleNotifications}
-              disabled={!isSupported}
-            />
-          </div>
+          <NotificationToggle 
+            enabled={notificationsEnabled}
+            onToggle={handleToggleNotifications}
+            disabled={!isSupported}
+          />
           
-          {notificationsEnabled && (
-            <div className="space-y-4 pl-6 border-l-2 border-gray-100">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <Label htmlFor="dailyReminder">Daily reminder</Label>
-                </div>
-                <Switch
-                  id="dailyReminder"
-                  checked={dailyReminder}
-                  onCheckedChange={handleToggleDailyReminder}
-                  disabled={!notificationsEnabled}
-                />
-              </div>
-              
-              {dailyReminder && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="reminderTime" className="text-sm">Time:</Label>
-                    <Input
-                      id="reminderTime"
-                      type="time"
-                      value={reminderTime}
-                      onChange={handleReminderTimeChange}
-                      className="w-24"
-                    />
-                  </div>
-                  
-                  {nextNotification && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>Next notification: {format(nextNotification, 'PPp')}</span>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
+          <DailyReminderSettings
+            enabled={dailyReminder}
+            onToggle={handleToggleDailyReminder}
+            reminderTime={reminderTime}
+            onTimeChange={handleReminderTimeChange}
+            nextNotification={nextNotification}
+            notificationsEnabled={notificationsEnabled}
+          />
           
-          {!isSupported && (
-            <p className="text-sm text-muted-foreground">
-              Notifications are not supported in this browser.
-            </p>
-          )}
-          {notificationPermission === 'denied' && (
-            <p className="text-sm text-red-500">
-              Notification permission denied. Please enable notifications in your browser settings.
-            </p>
-          )}
+          <NotificationPermissionInfo
+            isSupported={isSupported}
+            permission={notificationPermission}
+          />
         </div>
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>Close</Button>
