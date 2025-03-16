@@ -56,17 +56,8 @@ function handleActivate(event) {
     self.clients.claim().then(() => {
       console.log('[Service Worker] Claimed all clients');
       
-      // Check for any scheduled notifications from localStorage
-      return self.clients.matchAll().then(clients => {
-        if (clients.length > 0) {
-          console.log('[Service Worker] Requesting notification schedule from client');
-          clients[0].postMessage({
-            type: 'GET_NOTIFICATION_SCHEDULE'
-          });
-        } else {
-          console.log('[Service Worker] No clients to request schedule from');
-        }
-      });
+      // We won't automatically request notification schedule here anymore
+      // This prevents unwanted notifications when opening the app
     })
   );
 }

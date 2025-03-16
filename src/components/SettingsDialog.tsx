@@ -76,12 +76,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       
       if (success) {
         toast.success('Notifications enabled');
-        
-        // Send a test notification
-        setTimeout(() => {
-          console.log('Sending test notification after enabling');
-          sendTest();
-        }, 500);
       } else {
         toast.error('Notification permission denied. Please enable notifications in your browser settings.');
       }

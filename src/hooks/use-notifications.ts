@@ -81,11 +81,12 @@ export function useNotifications() {
     
     setIsSending(true);
     
+    // Small delay to ensure UI updates before notification shows
     setTimeout(() => {
       const result = triggerTestNotification();
       console.log('Test notification result:', result);
       setIsSending(false);
-    }, 500);
+    }, 300);
     
     return true;
   }, [isSupported, isEnabled, permission]);
