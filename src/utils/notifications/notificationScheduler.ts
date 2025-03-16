@@ -31,6 +31,8 @@ export const scheduleDailyNotification = (hour: number, minute: number) => {
     
     // Try immediately
     if (scheduleWithServiceWorker()) {
+      // Provide feedback that the notification was scheduled
+      console.log(`Daily reminder scheduled for ${timeString}`);
       return true;
     }
     
@@ -86,4 +88,28 @@ export const getScheduledNotificationDetails = () => {
   
   const [hours, minutes] = timeString.split(':').map(Number);
   return { hour: hours, minute: minutes };
+};
+
+// Verify if a daily reminder is currently set
+export const isDailyReminderSet = (): boolean => {
+  return getScheduledNotificationTime() !== null;
+};
+
+// Check if the notification would fire today or tomorrow
+export const getNextScheduledNotificationTime = (): Date | null => {
+  const details = getScheduledNotificationDetails();
+  if (!details) return null;
+  
+  const { hour, minute } = details;
+  const now = new Date();
+  const scheduledTime = new Date();
+  
+  scheduledTime.setHours(hour, minute, 0, 0);
+  
+  // If the scheduled time has already passed today, it will be tomorrow
+  if (scheduledTime <= now) {
+    scheduledTime.setDate(scheduledTime.getDate() + 1);
+  }
+  
+  return scheduledTime;
 };

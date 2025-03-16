@@ -4,16 +4,17 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Bell, Clock, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Bell, Clock, ArrowLeft, AlertCircle, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { 
-  isNotificationSupported, 
   scheduleDailyNotification,
   cancelScheduledNotifications,
   getScheduledNotificationTime,
+  getNextScheduledNotificationTime
 } from '@/utils/notifications';
 import { useNotifications } from '@/hooks/use-notifications';
+import { format } from 'date-fns';
 
 const Settings = () => {
   const { 
@@ -28,7 +29,14 @@ const Settings = () => {
   
   const [dailyReminder, setDailyReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState('09:00');
+  const [nextNotification, setNextNotification] = useState<Date | null>(null);
   const navigate = useNavigate();
+
+  // Update the next notification time
+  const updateNextNotificationTime = () => {
+    const next = getNextScheduledNotificationTime();
+    setNextNotification(next);
+  };
 
   useEffect(() => {
     console.log('Settings page mounted, initializing state');
@@ -39,8 +47,12 @@ const Settings = () => {
       setDailyReminder(true);
       setReminderTime(savedScheduledTime);
       console.log(`Loaded scheduled time: ${savedScheduledTime}`);
+      
+      // Update next notification time
+      updateNextNotificationTime();
     } else {
       setDailyReminder(false);
+      setNextNotification(null);
       console.log('No saved schedule time found');
     }
   }, []); 
@@ -65,6 +77,7 @@ const Settings = () => {
     } else {
       disableNotifications();
       setDailyReminder(false);
+      setNextNotification(null);
       cancelScheduledNotifications();
       toast.success('Notifications disabled');
     }
@@ -79,11 +92,13 @@ const Settings = () => {
       
       if (scheduleDailyNotification(hours, minutes)) {
         setDailyReminder(true);
+        updateNextNotificationTime();
         toast.success(`Daily reminder set for ${reminderTime}`);
       }
     } else {
       if (cancelScheduledNotifications()) {
         setDailyReminder(false);
+        setNextNotification(null);
         toast.success('Daily reminder disabled');
       }
     }
@@ -97,6 +112,7 @@ const Settings = () => {
       const [hours, minutes] = newTime.split(':').map(Number);
       console.log(`Updating scheduled time to ${hours}:${minutes}`);
       scheduleDailyNotification(hours, minutes);
+      updateNextNotificationTime();
       toast.success(`Daily reminder updated to ${newTime}`);
     }
   };
@@ -184,16 +200,25 @@ const Settings = () => {
                 </div>
                 
                 {dailyReminder && (
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="reminderTime" className="text-sm">Time:</Label>
-                    <Input
-                      id="reminderTime"
-                      type="time"
-                      value={reminderTime}
-                      onChange={handleReminderTimeChange}
-                      className="w-24"
-                    />
-                  </div>
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="reminderTime" className="text-sm">Time:</Label>
+                      <Input
+                        id="reminderTime"
+                        type="time"
+                        value={reminderTime}
+                        onChange={handleReminderTimeChange}
+                        className="w-24"
+                      />
+                    </div>
+                    
+                    {nextNotification && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>Next notification: {format(nextNotification, 'PPp')}</span>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="pt-2">

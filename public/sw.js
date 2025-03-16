@@ -70,11 +70,7 @@ function handleActivate(event) {
     })
   );
   
-  // Send a test notification after activation
-  setTimeout(() => {
-    console.log('[Service Worker] Sending test notification after activation');
-    sendTestNotification();
-  }, 5000);
+  // Removed automatic test notification after activation
 }
 
 /**
@@ -163,11 +159,12 @@ function scheduleNotification(hour, minute) {
   // Start the scheduling process
   scheduleNextNotification();
   
-  // For debugging - send a test notification in 5 seconds
-  setTimeout(() => {
-    console.log('[Service Worker] Sending immediate test notification (5 seconds after scheduling)');
-    sendDailyReminder('[Test] ');
-  }, 5000);
+  // Send test notification after scheduling only if requested
+  // This is now commented out to avoid automatic notification when scheduling
+  // setTimeout(() => {
+  //   console.log('[Service Worker] Sending immediate test notification (5 seconds after scheduling)');
+  //   sendDailyReminder('[Test] ');
+  // }, 5000);
 }
 
 /**
@@ -346,8 +343,4 @@ self.addEventListener('push', handlePush);
 // Log service worker initialization
 console.log('[Service Worker] Service worker initialized and event listeners registered');
 
-// Send a test notification 10 seconds after initialization
-setTimeout(() => {
-  console.log('[Service Worker] Sending initial test notification');
-  sendTestNotification();
-}, 10000);
+// Removed automatic test notification at initialization

@@ -34,8 +34,9 @@ const updateSW = registerSW({
       console.error('Error updating service worker:', err);
     });
     
-    // Check if notifications are enabled
-    if (localStorage.getItem('notificationsEnabled') === 'true') {
+    // Check if notifications are enabled and NOT on the auth page
+    if (localStorage.getItem('notificationsEnabled') === 'true' && 
+        !window.location.pathname.includes('/auth')) {
       // Check if we need to schedule a notification
       const notificationDetails = getScheduledNotificationDetails();
       

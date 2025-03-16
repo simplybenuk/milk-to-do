@@ -25,6 +25,20 @@ export function useNotifications() {
       setPermission(Notification.permission);
       setIsEnabled(areNotificationsEnabled());
     }
+    
+    // Set up listener for permission changes
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'notifications' as PermissionName })
+        .then(status => {
+          status.onchange = () => {
+            console.log('Notification permission changed:', Notification.permission);
+            setPermission(Notification.permission);
+          };
+        })
+        .catch(err => {
+          console.error('Error querying notification permission:', err);
+        });
+    }
   }, []);
 
   // Request permission

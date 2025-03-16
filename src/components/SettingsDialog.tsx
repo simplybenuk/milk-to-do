@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -11,17 +12,16 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Bell, UserCog, Clock } from 'lucide-react';
+import { Bell, UserCog, Clock, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 import { 
-  isNotificationSupported, 
-  areNotificationsEnabled, 
   scheduleDailyNotification,
   cancelScheduledNotifications,
   getScheduledNotificationTime,
-  sendTaskReminder,
-  requestNotificationPermission
+  getNextScheduledNotificationTime
 } from '@/utils/notifications';
+import { useNotifications } from '@/hooks/use-notifications';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -29,33 +29,42 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'default'>('default');
-  const [isSupported, setIsSupported] = useState(false);
+  const {
+    isSupported,
+    isEnabled: notificationsEnabled,
+    permission: notificationPermission,
+    enableNotifications,
+    disableNotifications,
+    sendTest
+  } = useNotifications();
+
   const [dailyReminder, setDailyReminder] = useState(false);
   const [reminderTime, setReminderTime] = useState('09:00');
+  const [nextNotification, setNextNotification] = useState<Date | null>(null);
+
+  // Update the next notification time
+  const updateNextNotificationTime = () => {
+    const next = getNextScheduledNotificationTime();
+    setNextNotification(next);
+  };
 
   useEffect(() => {
     if (open) {
       console.log('Settings dialog opened, refreshing state');
-      const supported = isNotificationSupported();
-      setIsSupported(supported);
-
-      if (supported) {
-        setNotificationPermission(Notification.permission);
+    
+      // Load scheduled notification time
+      const savedScheduledTime = getScheduledNotificationTime();
+      if (savedScheduledTime) {
+        setDailyReminder(true);
+        setReminderTime(savedScheduledTime);
+        console.log(`Loaded scheduled time: ${savedScheduledTime}`);
         
-        const savedPreference = areNotificationsEnabled();
-        setNotificationsEnabled(savedPreference);
-        
-        const savedScheduledTime = getScheduledNotificationTime();
-        if (savedScheduledTime) {
-          setDailyReminder(true);
-          setReminderTime(savedScheduledTime);
-          console.log(`Loaded scheduled time: ${savedScheduledTime}`);
-        } else {
-          setDailyReminder(false);
-          console.log('No saved schedule time found');
-        }
+        // Update next notification time
+        updateNextNotificationTime();
+      } else {
+        setDailyReminder(false);
+        setNextNotification(null);
+        console.log('No saved schedule time found');
       }
     }
   }, [open]);
@@ -64,36 +73,23 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     if (!isSupported) return;
 
     if (!notificationsEnabled) {
-      if (notificationPermission !== 'granted') {
-        const permissionGranted = await requestNotificationPermission();
-        setNotificationPermission(permissionGranted ? 'granted' : 'denied');
-        
-        if (permissionGranted) {
-          setNotificationsEnabled(true);
-          localStorage.setItem('notificationsEnabled', 'true');
-          toast.success('Notifications enabled');
-          
-          setTimeout(() => {
-            console.log('Sending test notification after enabling');
-            sendTaskReminder();
-          }, 500);
-        } else {
-          toast.error('Notification permission denied. Please enable notifications in your browser settings.');
-        }
-      } else {
-        setNotificationsEnabled(true);
-        localStorage.setItem('notificationsEnabled', 'true');
+      const success = await enableNotifications();
+      
+      if (success) {
         toast.success('Notifications enabled');
         
+        // Send a test notification
         setTimeout(() => {
           console.log('Sending test notification after enabling');
-          sendTaskReminder();
+          sendTest();
         }, 500);
+      } else {
+        toast.error('Notification permission denied. Please enable notifications in your browser settings.');
       }
     } else {
-      setNotificationsEnabled(false);
+      disableNotifications();
       setDailyReminder(false);
-      localStorage.setItem('notificationsEnabled', 'false');
+      setNextNotification(null);
       cancelScheduledNotifications();
       toast.success('Notifications disabled');
     }
@@ -108,11 +104,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       
       if (scheduleDailyNotification(hours, minutes)) {
         setDailyReminder(true);
+        updateNextNotificationTime();
         toast.success(`Daily reminder set for ${reminderTime}`);
       }
     } else {
       if (cancelScheduledNotifications()) {
         setDailyReminder(false);
+        setNextNotification(null);
         toast.success('Daily reminder disabled');
       }
     }
@@ -126,6 +124,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       const [hours, minutes] = newTime.split(':').map(Number);
       console.log(`Updating scheduled time to ${hours}:${minutes}`);
       scheduleDailyNotification(hours, minutes);
+      updateNextNotificationTime();
       toast.success(`Daily reminder updated to ${newTime}`);
     }
   };
@@ -172,16 +171,25 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               </div>
               
               {dailyReminder && (
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="reminderTime" className="text-sm">Time:</Label>
-                  <Input
-                    id="reminderTime"
-                    type="time"
-                    value={reminderTime}
-                    onChange={handleReminderTimeChange}
-                    className="w-24"
-                  />
-                </div>
+                <>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="reminderTime" className="text-sm">Time:</Label>
+                    <Input
+                      id="reminderTime"
+                      type="time"
+                      value={reminderTime}
+                      onChange={handleReminderTimeChange}
+                      className="w-24"
+                    />
+                  </div>
+                  
+                  {nextNotification && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>Next notification: {format(nextNotification, 'PPp')}</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
