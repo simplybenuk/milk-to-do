@@ -27,6 +27,7 @@ export function DailyReminderSettings({
     return null;
   }
 
+  // Handle the input change and pass the string value to the parent
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onTimeChange(e.target.value);
   };

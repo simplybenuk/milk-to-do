@@ -104,8 +104,8 @@ const Settings = () => {
     }
   };
 
-  const handleReminderTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = e.target.value;
+  // Changed: This function now accepts a string directly as required by DailyReminderSettings
+  const handleReminderTimeChange = (newTime: string) => {
     setReminderTime(newTime);
     
     if (dailyReminder) {
