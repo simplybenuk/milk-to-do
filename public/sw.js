@@ -69,8 +69,6 @@ function handleActivate(event) {
       });
     })
   );
-  
-  // Removed automatic test notification after activation
 }
 
 /**
@@ -158,13 +156,6 @@ function scheduleNotification(hour, minute) {
   
   // Start the scheduling process
   scheduleNextNotification();
-  
-  // Send test notification after scheduling only if requested
-  // This is now commented out to avoid automatic notification when scheduling
-  // setTimeout(() => {
-  //   console.log('[Service Worker] Sending immediate test notification (5 seconds after scheduling)');
-  //   sendDailyReminder('[Test] ');
-  // }, 5000);
 }
 
 /**
@@ -172,7 +163,7 @@ function scheduleNotification(hour, minute) {
  */
 function sendDailyReminder(debugPrefix = '') {
   console.log('[Service Worker] Sending daily reminder notification');
-  return self.registration.showNotification(`${debugPrefix}Milk: Daily Task Reminder`, {
+  return self.registration.showNotification(`${debugPrefix || ''}Milk: Daily Task Reminder`, {
     body: 'Time to check your tasks for today!',
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
@@ -284,8 +275,13 @@ function handlePush(event) {
 function handleNotificationMessages(data) {
   if (data.type === 'SCHEDULE_NOTIFICATION') {
     console.log('[Service Worker] Scheduling notification:', data.payload);
-    scheduleNotification(data.payload.hour, data.payload.minute);
-    return true;
+    if (data.payload && typeof data.payload.hour === 'number' && typeof data.payload.minute === 'number') {
+      scheduleNotification(data.payload.hour, data.payload.minute);
+      return true;
+    } else {
+      console.error('[Service Worker] Invalid scheduling data:', data.payload);
+      return false;
+    }
   } else if (data.type === 'CANCEL_NOTIFICATIONS') {
     cancelScheduledNotifications();
     return true;
@@ -342,5 +338,3 @@ self.addEventListener('push', handlePush);
 
 // Log service worker initialization
 console.log('[Service Worker] Service worker initialized and event listeners registered');
-
-// Removed automatic test notification at initialization

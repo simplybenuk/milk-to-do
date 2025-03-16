@@ -41,11 +41,16 @@ export const scheduleDailyNotification = (hour: number, minute: number) => {
     navigator.serviceWorker.ready.then((registration) => {
       console.log('Service worker now ready, attempting to schedule notification');
       if (registration.active) {
-        registration.active.postMessage({
-          type: 'SCHEDULE_NOTIFICATION',
-          payload: { hour, minute }
-        });
-        console.log('Schedule message sent to active service worker');
+        // Ensure we send the message to the service worker
+        setTimeout(() => {
+          if (registration.active) {
+            registration.active.postMessage({
+              type: 'SCHEDULE_NOTIFICATION',
+              payload: { hour, minute }
+            });
+            console.log('Schedule message sent to active service worker after delay');
+          }
+        }, 1000);
       }
     }).catch(err => {
       console.error('Error while waiting for service worker to be ready:', err);

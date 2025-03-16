@@ -34,37 +34,35 @@ const updateSW = registerSW({
       console.error('Error updating service worker:', err);
     });
     
-    // Check if notifications are enabled and NOT on the auth page
+    // Only restore scheduled notifications if they exist (don't trigger test notifications)
+    const notificationDetails = getScheduledNotificationDetails();
+    
     if (localStorage.getItem('notificationsEnabled') === 'true' && 
+        notificationDetails &&
         !window.location.pathname.includes('/auth')) {
-      // Check if we need to schedule a notification
-      const notificationDetails = getScheduledNotificationDetails();
+      console.log(`Attempting to restore scheduled notification for ${notificationDetails.hour}:${notificationDetails.minute}`);
       
-      if (notificationDetails) {
-        console.log(`Attempting to restore scheduled notification for ${notificationDetails.hour}:${notificationDetails.minute}`);
-        
-        // Use a small delay to ensure the service worker is fully activated
-        setTimeout(() => {
-          if (registration.active) {
-            registration.active.postMessage({
+      // Use a small delay to ensure the service worker is fully activated
+      setTimeout(() => {
+        if (registration.active) {
+          registration.active.postMessage({
+            type: 'SCHEDULE_NOTIFICATION',
+            payload: notificationDetails
+          });
+          console.log(`Restored scheduled notification for ${notificationDetails.hour}:${notificationDetails.minute}`);
+        } else {
+          console.error('Service worker not active yet, cannot schedule notification');
+          
+          // Wait for it to become active
+          navigator.serviceWorker.ready.then((reg) => {
+            console.log('Service worker now ready, attempting to schedule notification');
+            reg.active?.postMessage({
               type: 'SCHEDULE_NOTIFICATION',
               payload: notificationDetails
             });
-            console.log(`Restored scheduled notification for ${notificationDetails.hour}:${notificationDetails.minute}`);
-          } else {
-            console.error('Service worker not active yet, cannot schedule notification');
-            
-            // Wait for it to become active
-            navigator.serviceWorker.ready.then((reg) => {
-              console.log('Service worker now ready, attempting to schedule notification');
-              reg.active?.postMessage({
-                type: 'SCHEDULE_NOTIFICATION',
-                payload: notificationDetails
-              });
-            });
-          }
-        }, 1000);
-      }
+          });
+        }
+      }, 1000);
     }
   },
   onRegisterError(error) {

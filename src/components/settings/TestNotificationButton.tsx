@@ -26,7 +26,7 @@ export function TestNotificationButton({
         {isSending ? 'Sending...' : 'Send Test Notification'}
       </Button>
       <p className="text-xs text-muted-foreground mt-2">
-        This will send a real notification to your device. If you don't see it, check your device's notification settings.
+        This will send a real notification to your device. If you don't see it, check your device's notification settings and browser permissions.
       </p>
     </div>
   );

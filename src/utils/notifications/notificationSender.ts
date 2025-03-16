@@ -98,31 +98,11 @@ export const triggerTestNotification = () => {
     return false;
   }
   
-  // Try sending both ways for maximum reliability
-  let successSW = false;
-  let successDirect = false;
-  
-  // 1. Try service worker first
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    try {
-      console.log('Sending test notification through service worker');
-      navigator.serviceWorker.controller.postMessage({
-        type: 'TRIGGER_TEST_NOTIFICATION'
-      });
-      successSW = true;
-      console.log('Test notification request sent to service worker');
-    } catch (error) {
-      console.error('Error sending test notification via service worker:', error);
-    }
-  } else {
-    console.warn('No active service worker found for sending notification');
-  }
-  
-  // 2. Also try direct notification for immediate feedback
+  // Try direct notification first for immediate feedback
   try {
     console.log('Creating a direct notification for testing');
     const notification = new Notification('Milk: Test Notification', {
-      body: 'This is a test notification sent directly. If you can see this, direct notifications are working!',
+      body: 'This is a test notification sent directly. If you can see this, notifications are working!',
       icon: '/milk_logo192.png',
       badge: '/milk_logo192.png',
       tag: 'test-notification-direct',
@@ -140,13 +120,29 @@ export const triggerTestNotification = () => {
       notification.close();
     };
     
-    successDirect = true;
     console.log('Test notification sent successfully via direct API');
+    return true;
   } catch (error) {
     console.error('Error sending direct test notification:', error);
+    
+    // Fall back to service worker if direct notification fails
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      try {
+        console.log('Falling back to service worker for test notification');
+        navigator.serviceWorker.controller.postMessage({
+          type: 'TRIGGER_TEST_NOTIFICATION'
+        });
+        console.log('Test notification request sent to service worker');
+        return true;
+      } catch (swError) {
+        console.error('Error sending test notification via service worker:', swError);
+        return false;
+      }
+    } else {
+      console.warn('No active service worker found for sending test notification');
+      return false;
+    }
   }
-  
-  return successSW || successDirect; // Return true if either method worked
 };
 
 // Import required functions from notification core
