@@ -11,7 +11,7 @@ import { CurrentTask } from '@/components/CurrentTask';
 import { TaskStats } from '@/components/TaskStats';
 
 const Index = () => {
-  const { tasks, completeTask, getTasksByPriority, updateTaskPriority, fetchTasks } = useTaskStore();
+  const { tasks, completeTask, getTasksByPriority, updateTaskPriority, incrementSkipCount, fetchTasks } = useTaskStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showPriorityDialog, setShowPriorityDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'main' | 'all' | 'completed' | 'expired' | 'stats'>('main');
@@ -22,6 +22,12 @@ const Index = () => {
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  useEffect(() => {
+    if (currentIndex >= sortedOpenTasks.length && sortedOpenTasks.length > 0) {
+      setCurrentIndex(0);
+    }
+  }, [tasks, currentIndex, sortedOpenTasks.length]);
 
   const handleComplete = async (taskId: string) => {
     await completeTask(taskId);
@@ -34,8 +40,12 @@ const Index = () => {
     }
   };
 
-  const handleSkip = () => {
-    if (currentTask && (currentTask.priority === 'high' || currentTask.priority === 'medium')) {
+  const handleSkip = async () => {
+    if (!currentTask) return;
+    
+    await incrementSkipCount(currentTask.id);
+    
+    if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
       setShowPriorityDialog(true);
     } else {
       moveToNextTask();
@@ -57,11 +67,13 @@ const Index = () => {
     });
   };
 
-  const handleDowngradePriority = () => {
+  const handleDowngradePriority = async () => {
     if (!currentTask) return;
     
     const newPriority = currentTask.priority === 'high' ? 'medium' : 'low';
-    updateTaskPriority(currentTask.id, newPriority);
+    const currentTaskId = currentTask.id;
+    
+    await updateTaskPriority(currentTaskId, newPriority);
     
     toast({
       title: "Priority Updated",
@@ -69,7 +81,14 @@ const Index = () => {
     });
     
     setShowPriorityDialog(false);
-    moveToNextTask();
+    
+    const updatedTasks = getTasksByPriority().filter(task => task.status === 'open');
+    
+    if (currentIndex >= updatedTasks.length - 1) {
+      setCurrentIndex(0);
+    } else {
+      setCurrentIndex(currentIndex);
+    }
   };
 
   const handleSplitTask = () => {

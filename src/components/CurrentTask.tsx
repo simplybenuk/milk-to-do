@@ -23,6 +23,15 @@ export function CurrentTask({
 }: CurrentTaskProps) {
   const showReturnButton = currentIndex > 0;
 
+  // Add a safety check for task existence
+  if (!task) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-milk-500">No task available. Try adding a new task!</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-xl animate-fade-in">
       <div className="flex items-center justify-center gap-2 mb-4 text-sm text-milk-600">

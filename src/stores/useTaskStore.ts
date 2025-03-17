@@ -80,6 +80,15 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   updateTaskPriority: async (id, priority) => {
     try {
       await updateTaskPriorityInDB(id, priority);
+      // Update the local state immediately to avoid UI jumps
+      set(state => ({
+        tasks: state.tasks.map(task =>
+          task.id === id
+            ? { ...task, priority }
+            : task
+        ),
+      }));
+      // Then fetch the full updated list (which will include recalculated priority scores)
       await get().fetchTasks();
     } catch (error) {
       console.error('Error updating task priority:', error);
@@ -90,6 +99,15 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   incrementSkipCount: async (id) => {
     try {
       await incrementSkipCountInDB(id);
+      // Update local state to show the skip immediately
+      set(state => ({
+        tasks: state.tasks.map(task =>
+          task.id === id
+            ? { ...task, skip_count: task.skip_count + 1 }
+            : task
+        ),
+      }));
+      // Then fetch full task list for accurate priority scores
       await get().fetchTasks();
     } catch (error) {
       console.error('Error incrementing skip count:', error);
