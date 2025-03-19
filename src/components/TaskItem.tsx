@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
@@ -59,10 +60,10 @@ export function TaskItem({ task, onComplete, onDelete, showCompleteButton = fals
           href={url} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1"
+          className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1 break-all"
         >
           {url}
-          <ExternalLink className="h-3 w-3 inline" />
+          <ExternalLink className="h-3 w-3 inline flex-shrink-0" />
         </a>
       );
     });
@@ -86,8 +87,8 @@ export function TaskItem({ task, onComplete, onDelete, showCompleteButton = fals
           task.status === 'closed' && "opacity-50"
         )}
       >
-        <div className="flex-1 min-w-0 overflow-hidden overflow-ellipsis">
-          <h3 className="text-lg sm:text-xl font-medium text-milk-900 mb-2 sm:mb-4 break-words">
+        <div className="flex-1 min-w-0 overflow-hidden break-words">
+          <h3 className="text-lg sm:text-xl font-medium text-milk-900 mb-2 sm:mb-4 break-words overflow-hidden">
             {renderTextWithLinks(task.title)}
           </h3>
           <div className="flex flex-col gap-2">
