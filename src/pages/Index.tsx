@@ -1,11 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { useToast } from '@/hooks/use-toast';
 import { AllTasksList } from '@/components/AllTasksList';
-import { CompletedTasksList } from '@/components/CompletedTasksList';
-import { ExpiredTasksList } from '@/components/ExpiredTasksList';
+import { ClosedTasksList } from '@/components/ClosedTasksList';
 import { PriorityDialog } from '@/components/PriorityDialog';
 import { SplitTaskDialog } from '@/components/SplitTaskDialog';
 import { TaskHeader } from '@/components/TaskHeader';
@@ -17,7 +15,7 @@ const Index = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showPriorityDialog, setShowPriorityDialog] = useState(false);
   const [showSplitDialog, setShowSplitDialog] = useState(false);
-  const [currentView, setCurrentView] = useState<'main' | 'all' | 'completed' | 'expired' | 'stats'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'all' | 'closed' | 'stats'>('main');
   const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
   const currentTask = sortedOpenTasks[currentIndex];
   const { toast } = useToast();
@@ -100,8 +98,6 @@ const Index = () => {
   };
 
   const handleSplitComplete = () => {
-    // After splitting is complete, refresh the task list
-    // This will be called after the split task dialog completes
     fetchTasks();
     setCurrentIndex(0);
   };
@@ -123,18 +119,11 @@ const Index = () => {
             <AllTasksList />
           </>
         );
-      case 'completed':
+      case 'closed':
         return (
           <>
-            <h2 className="text-2xl font-bold text-milk-900 mb-6">Completed Tasks</h2>
-            <CompletedTasksList />
-          </>
-        );
-      case 'expired':
-        return (
-          <>
-            <h2 className="text-2xl font-bold text-milk-900 mb-6">Expired Tasks</h2>
-            <ExpiredTasksList />
+            <h2 className="text-2xl font-bold text-milk-900 mb-6">Closed Tasks</h2>
+            <ClosedTasksList />
           </>
         );
       case 'stats':
