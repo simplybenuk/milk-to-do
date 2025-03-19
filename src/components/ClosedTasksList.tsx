@@ -4,6 +4,7 @@ import { TaskItem } from './TaskItem';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 import { ClosedStatusReason } from '@/types/task';
+import { SplitTaskDialog } from './SplitTaskDialog';
 import {
   Select,
   SelectContent,
@@ -23,6 +24,8 @@ export function ClosedTasksList() {
   const { tasks, deleteTask } = useTaskStore();
   const { toast } = useToast();
   const [filter, setFilter] = useState<FilterType>("all");
+  const [showSplitDialog, setShowSplitDialog] = useState(false);
+  const [selectedParentTask, setSelectedParentTask] = useState<{ id: string, title: string } | null>(null);
   
   const closedTasks = tasks.filter(task => {
     if (task.status !== 'closed') return false;
@@ -36,6 +39,20 @@ export function ClosedTasksList() {
     toast({
       title: "Task deleted",
       description: "The task has been permanently removed.",
+    });
+  };
+
+  const handleCreateChildTask = (parentId: string, parentTitle: string) => {
+    setSelectedParentTask({ id: parentId, title: parentTitle });
+    setShowSplitDialog(true);
+  };
+
+  const handleSplitComplete = () => {
+    setShowSplitDialog(false);
+    setSelectedParentTask(null);
+    toast({
+      title: "Subtask added",
+      description: "A new subtask has been created successfully.",
     });
   };
 
@@ -94,6 +111,8 @@ export function ClosedTasksList() {
               task={task}
               onComplete={() => {}}
               onDelete={handleDelete}
+              allTasks={tasks}
+              onCreateChildTask={task.closed_status === 'parent' ? handleCreateChildTask : undefined}
             />
           ))}
         </div>
@@ -101,6 +120,16 @@ export function ClosedTasksList() {
         <div className="text-center py-12">
           <p className="text-milk-500">{getEmptyStateMessage()}</p>
         </div>
+      )}
+
+      {selectedParentTask && (
+        <SplitTaskDialog
+          open={showSplitDialog}
+          onOpenChange={setShowSplitDialog}
+          parentTaskId={selectedParentTask.id}
+          parentTaskTitle={selectedParentTask.title}
+          onSplitComplete={handleSplitComplete}
+        />
       )}
     </div>
   );
