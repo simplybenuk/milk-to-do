@@ -1,149 +1,51 @@
-import { useState, useEffect } from 'react';
+
+import { useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
-import { useToast } from '@/hooks/use-toast';
-import { AllTasksList } from '@/components/AllTasksList';
-import { ClosedTasksList } from '@/components/ClosedTasksList';
 import { PriorityDialog } from '@/components/PriorityDialog';
 import { SplitTaskDialog } from '@/components/SplitTaskDialog';
 import { TaskHeader } from '@/components/TaskHeader';
-import { CurrentTask } from '@/components/CurrentTask';
-import { TaskStats } from '@/components/TaskStats';
+import { useAppView } from '@/hooks/useAppView';
+import { useTaskNavigation } from '@/hooks/useTaskNavigation';
+import { MainContent } from '@/components/MainContent';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
-  const { tasks, completeTask, getTasksByPriority, updateTaskPriority, incrementSkipCount, fetchTasks } = useTaskStore();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showPriorityDialog, setShowPriorityDialog] = useState(false);
-  const [showSplitDialog, setShowSplitDialog] = useState(false);
-  const [currentView, setCurrentView] = useState<'main' | 'all' | 'closed' | 'stats'>('main');
-  const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
-  const currentTask = sortedOpenTasks[currentIndex];
+  const { fetchTasks, completeTask } = useTaskStore();
+  const { currentView, setCurrentView } = useAppView('main');
   const { toast } = useToast();
+  
+  const {
+    currentTask,
+    currentIndex,
+    sortedOpenTasks,
+    showPriorityDialog,
+    setShowPriorityDialog,
+    showSplitDialog,
+    setShowSplitDialog,
+    handleSkip,
+    handleReturnToTop,
+    handleDowngradePriority,
+    handleBlocked,
+    moveToNextTask,
+    handleSplitComplete
+  } = useTaskNavigation();
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
-  useEffect(() => {
-    if (currentIndex >= sortedOpenTasks.length && sortedOpenTasks.length > 0) {
-      setCurrentIndex(0);
-    }
-  }, [tasks, currentIndex, sortedOpenTasks.length]);
-
   const handleComplete = async (taskId: string) => {
     await completeTask(taskId);
-    const remainingTasks = getTasksByPriority().filter(task => task.status === 'open');
-    
-    if (remainingTasks.length === 0) {
-      setCurrentIndex(0);
-    } else if (currentIndex >= remainingTasks.length) {
-      setCurrentIndex(0);
-    }
-  };
-
-  const handleSkip = async () => {
-    if (!currentTask) return;
-    
-    await incrementSkipCount(currentTask.id);
-    
-    if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
-      setShowPriorityDialog(true);
-    } else {
-      moveToNextTask();
-    }
-  };
-
-  const moveToNextTask = () => {
-    if (currentIndex >= sortedOpenTasks.length - 1) {
-      setCurrentIndex(0);
-    } else {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  const handleReturnToTop = () => {
-    setCurrentIndex(0);
     toast({
-      description: "Returned to top priority task",
+      title: "Task completed",
+      description: "Great job! The task has been marked as complete.",
     });
-  };
-
-  const handleDowngradePriority = async () => {
-    if (!currentTask) return;
-    
-    const newPriority = currentTask.priority === 'high' ? 'medium' : 'low';
-    const currentTaskId = currentTask.id;
-    
-    await updateTaskPriority(currentTaskId, newPriority);
-    
-    toast({
-      title: "Priority Updated",
-      description: `Task priority changed to ${newPriority}`,
-    });
-    
-    setShowPriorityDialog(false);
-    
-    const updatedTasks = getTasksByPriority().filter(task => task.status === 'open');
-    
-    if (currentIndex >= updatedTasks.length - 1) {
-      setCurrentIndex(0);
-    } else {
-      setCurrentIndex(currentIndex);
-    }
   };
 
   const handleSplitTask = () => {
     setShowPriorityDialog(false);
     setShowSplitDialog(true);
-  };
-
-  const handleSplitComplete = () => {
-    fetchTasks();
-    setCurrentIndex(0);
-  };
-
-  const handleBlocked = () => {
-    toast({
-      description: "Moving to next task without updating priority",
-    });
-    setShowPriorityDialog(false);
-    moveToNextTask();
-  };
-
-  const renderContent = () => {
-    switch (currentView) {
-      case 'all':
-        return (
-          <>
-            <h2 className="text-2xl font-bold text-milk-900 mb-6">All Tasks</h2>
-            <AllTasksList />
-          </>
-        );
-      case 'closed':
-        return (
-          <>
-            <h2 className="text-2xl font-bold text-milk-900 mb-6">Closed Tasks</h2>
-            <ClosedTasksList />
-          </>
-        );
-      case 'stats':
-        return <TaskStats />;
-      default:
-        return sortedOpenTasks.length > 0 ? (
-          <CurrentTask
-            task={currentTask}
-            onComplete={handleComplete}
-            onSkip={handleSkip}
-            onReturnToTop={handleReturnToTop}
-            currentIndex={currentIndex}
-            totalTasks={sortedOpenTasks.length}
-          />
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-milk-500">No tasks yet. Add your first task!</p>
-          </div>
-        );
-    }
   };
 
   return (
@@ -155,7 +57,15 @@ const Index = () => {
         />
 
         <div className="flex flex-col items-center justify-center min-h-[400px]">
-          {renderContent()}
+          <MainContent
+            currentView={currentView}
+            currentTask={currentTask}
+            onComplete={handleComplete}
+            onSkip={handleSkip}
+            onReturnToTop={handleReturnToTop}
+            currentIndex={currentIndex}
+            sortedOpenTasks={sortedOpenTasks}
+          />
         </div>
       </div>
       
