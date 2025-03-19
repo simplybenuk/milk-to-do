@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Task, Priority, TaskStatus } from '@/types/task';
+import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
 import { convertDatabaseDatesToDateObjects } from '../utils/taskUtils';
 
 export const fetchTasksFromDB = async (userId: string): Promise<Task[]> => {
@@ -40,16 +40,37 @@ export const addTaskToDB = async (
     .single();
 
   if (error) throw error;
+  
+  // If this task has a parent, update the parent's child_task_ids array
+  if (parentId) {
+    const { data: parentTask, error: fetchError } = await supabase
+      .from('tasks')
+      .select('child_task_ids')
+      .eq('id', parentId)
+      .single();
+      
+    if (!fetchError && parentTask) {
+      const updatedChildIds = [...(parentTask.child_task_ids || []), data.id];
+      
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({ child_task_ids: updatedChildIds })
+        .eq('id', parentId);
+        
+      if (updateError) console.error('Error updating parent task child_task_ids:', updateError);
+    }
+  }
+  
   return convertDatabaseDatesToDateObjects(data);
 };
 
-export const completeTaskInDB = async (id: string): Promise<void> => {
+export const completeTaskInDB = async (id: string, reason: ClosedStatusReason = 'complete'): Promise<void> => {
   const { error } = await supabase
     .from('tasks')
     .update({
       status: 'closed',
-      closed_status: 'complete',
-      completed_at: new Date().toISOString(),
+      closed_status: reason,
+      completed_at: reason === 'complete' ? new Date().toISOString() : null,
     })
     .eq('id', id);
 

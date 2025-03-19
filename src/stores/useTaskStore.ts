@@ -11,6 +11,7 @@ import {
   incrementSkipCountInDB,
 } from './actions/taskActions';
 import { calculateTaskStats, sortTasksByPriority } from './utils/taskUtils';
+import { ClosedStatusReason } from '@/types/task';
 
 const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
@@ -44,17 +45,17 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
-  completeTask: async (id) => {
+  completeTask: async (id, reason = 'complete' as ClosedStatusReason) => {
     try {
-      await completeTaskInDB(id);
+      await completeTaskInDB(id, reason);
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id
             ? { 
                 ...task, 
                 status: 'closed', 
-                closed_status: 'complete',
-                completed_at: new Date()
+                closed_status: reason,
+                completed_at: reason === 'complete' ? new Date() : undefined
               }
             : task
         ),

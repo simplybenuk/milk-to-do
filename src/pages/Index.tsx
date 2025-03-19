@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
@@ -6,6 +7,7 @@ import { AllTasksList } from '@/components/AllTasksList';
 import { CompletedTasksList } from '@/components/CompletedTasksList';
 import { ExpiredTasksList } from '@/components/ExpiredTasksList';
 import { PriorityDialog } from '@/components/PriorityDialog';
+import { SplitTaskDialog } from '@/components/SplitTaskDialog';
 import { TaskHeader } from '@/components/TaskHeader';
 import { CurrentTask } from '@/components/CurrentTask';
 import { TaskStats } from '@/components/TaskStats';
@@ -14,6 +16,7 @@ const Index = () => {
   const { tasks, completeTask, getTasksByPriority, updateTaskPriority, incrementSkipCount, fetchTasks } = useTaskStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showPriorityDialog, setShowPriorityDialog] = useState(false);
+  const [showSplitDialog, setShowSplitDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'main' | 'all' | 'completed' | 'expired' | 'stats'>('main');
   const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
   const currentTask = sortedOpenTasks[currentIndex];
@@ -92,11 +95,15 @@ const Index = () => {
   };
 
   const handleSplitTask = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Task splitting feature will be available soon!",
-    });
     setShowPriorityDialog(false);
+    setShowSplitDialog(true);
+  };
+
+  const handleSplitComplete = () => {
+    // After splitting is complete, refresh the task list
+    // This will be called after the split task dialog completes
+    fetchTasks();
+    setCurrentIndex(0);
   };
 
   const handleBlocked = () => {
@@ -174,6 +181,16 @@ const Index = () => {
           moveToNextTask();
         }}
       />
+      
+      {currentTask && (
+        <SplitTaskDialog
+          open={showSplitDialog}
+          onOpenChange={setShowSplitDialog}
+          parentTaskId={currentTask.id}
+          parentTaskTitle={currentTask.title}
+          onSplitComplete={handleSplitComplete}
+        />
+      )}
       
       <AddTaskDialog onAddTask={(title, priority, expiryDate) => {
         const { addTask } = useTaskStore.getState();

@@ -1,5 +1,5 @@
 
-import { Task, Priority, TaskStatus } from '@/types/task';
+import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
 
 export interface TaskStore {
   tasks: Task[];
@@ -7,7 +7,7 @@ export interface TaskStore {
   error: string | null;
   fetchTasks: () => Promise<void>;
   addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string) => Promise<void>;
-  completeTask: (id: string) => Promise<void>;
+  completeTask: (id: string, reason?: ClosedStatusReason) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   updateTaskPriority: (id: string, priority: Priority) => Promise<void>;
   incrementSkipCount: (id: string) => Promise<void>;
