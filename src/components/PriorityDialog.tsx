@@ -20,6 +20,23 @@ export function PriorityDialog({
   onSkipAnyway,
   onBlocked = () => onOpenChange(false),
 }: PriorityDialogProps) {
+  // Ensure actions properly close the dialog when needed
+  const handleDowngrade = () => {
+    onDowngradePriority();
+  };
+  
+  const handleSplit = () => {
+    onSplitTask();
+  };
+  
+  const handleBlocked = () => {
+    onBlocked();
+  };
+  
+  const handleSkipAnyway = () => {
+    onSkipAnyway();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -31,7 +48,7 @@ export function PriorityDialog({
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-4">
           <Button
-            onClick={onDowngradePriority}
+            onClick={handleDowngrade}
             variant="outline"
             className="w-full"
           >
@@ -39,7 +56,7 @@ export function PriorityDialog({
             Lower Priority
           </Button>
           <Button
-            onClick={onSplitTask}
+            onClick={handleSplit}
             variant="outline"
             className="w-full"
           >
@@ -47,7 +64,7 @@ export function PriorityDialog({
             Split into Smaller Tasks
           </Button>
           <Button
-            onClick={onBlocked}
+            onClick={handleBlocked}
             variant="outline"
             className="w-full"
           >
@@ -55,7 +72,7 @@ export function PriorityDialog({
             Blocked by Others
           </Button>
           <Button
-            onClick={onSkipAnyway}
+            onClick={handleSkipAnyway}
             variant="ghost"
             className="w-full"
           >

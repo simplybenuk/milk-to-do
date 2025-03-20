@@ -51,6 +51,15 @@ const Index = () => {
   // Determine which task to use for the split dialog
   const taskForSplitDialog = taskToSplit || currentTask;
 
+  // Handle dialog closures explicitly
+  const handlePriorityDialogClose = (open: boolean) => {
+    setShowPriorityDialog(open);
+    // If dialog is being closed manually by user, ensure we don't get stuck
+    if (!open) {
+      console.log("Priority dialog closed manually by user");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-milk-50 p-4 sm:p-6 md:p-8">
       <div className="mx-auto max-w-3xl">
@@ -74,7 +83,7 @@ const Index = () => {
       
       <PriorityDialog
         open={showPriorityDialog}
-        onOpenChange={setShowPriorityDialog}
+        onOpenChange={handlePriorityDialogClose}
         onDowngradePriority={() => {
           handleDowngradePriority();
           moveToNextTask();

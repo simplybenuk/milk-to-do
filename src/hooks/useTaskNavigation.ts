@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
@@ -39,26 +38,49 @@ export function useTaskNavigation() {
   const handleSkipAnyway = async () => {
     if (!currentTask) return;
     
-    await incrementSkipCount(currentTask.id);
-    await fetchTasks();
-    moveToNextTask();
-    
-    toast({
-      description: "Task skipped and skip count increased",
-    });
+    try {
+      await incrementSkipCount(currentTask.id);
+      await fetchTasks();
+      
+      toast({
+        description: "Task skipped and skip count increased",
+      });
+      
+      // Always close the dialog first, then move to next task
+      setShowPriorityDialog(false);
+      moveToNextTask();
+    } catch (error) {
+      console.error("Error in handleSkipAnyway:", error);
+      // Ensure dialog closes even on error
+      setShowPriorityDialog(false);
+    }
   };
 
   // Initial skip handler - decides whether to show dialog or directly handle skip
-  const handleSkip = async () => {
+  const handleSkip = () => {
     if (!currentTask) return;
     
+    console.log(`Handling skip for task: ${currentTask.title} with priority: ${currentTask.priority}`);
+    
     if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
+      // For high or medium priority tasks, show the dialog
       openPriorityDialog(currentTask);
     } else {
       // For low priority tasks, directly increment skip count
+      handleLowPrioritySkip();
+    }
+  };
+  
+  // Separate handler for low priority tasks to keep code clean
+  const handleLowPrioritySkip = async () => {
+    if (!currentTask) return;
+    
+    try {
       await incrementSkipCount(currentTask.id);
       await fetchTasks();
       moveToNextTask();
+    } catch (error) {
+      console.error("Error in handleLowPrioritySkip:", error);
     }
   };
 
