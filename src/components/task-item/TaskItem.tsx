@@ -9,7 +9,7 @@ import { TextWithLinks } from './TextWithLinks';
 import { PriorityBadge } from './PriorityBadge';
 import { ChildTasksList } from './ChildTasksList';
 import { DeleteTaskDialog } from './DeleteTaskDialog';
-import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 
 interface TaskItemProps {
   task: Task;
@@ -80,7 +80,22 @@ export function TaskItem({
             <TextWithLinks text={task.title} />
           </h3>
           <div className="flex flex-col gap-2">
-            <PriorityBadge priority={task.priority} />
+            <div className="flex flex-wrap gap-2 items-center">
+              <PriorityBadge priority={task.priority} />
+              
+              {/* Skip count badge */}
+              {task.skip_count > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  Skipped: {task.skip_count}
+                </Badge>
+              )}
+              
+              {/* Priority score badge */}
+              <Badge variant="secondary" className="text-xs">
+                Score: {Math.round(task.priority_score)}
+              </Badge>
+            </div>
+            
             <span className="text-xs sm:text-sm text-milk-500">
               Expires: {format(task.expiry_date, "d MMM HH:mm")}
             </span>
