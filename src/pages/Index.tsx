@@ -24,6 +24,7 @@ const Index = () => {
     showSplitDialog,
     setShowSplitDialog,
     handleSkip,
+    handleSkipAnyway,
     handleReturnToTop,
     handleDowngradePriority,
     handleBlocked,
@@ -83,10 +84,7 @@ const Index = () => {
           handleBlocked();
           moveToNextTask();
         }}
-        onSkipAnyway={() => {
-          setShowPriorityDialog(false);
-          moveToNextTask();
-        }}
+        onSkipAnyway={handleSkipAnyway}
       />
       
       {taskForSplitDialog && (

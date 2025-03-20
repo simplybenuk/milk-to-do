@@ -35,18 +35,29 @@ export function useTaskNavigation() {
     }
   }, [sortedOpenTasks.length, currentIndex]);
 
-  const handleSkip = async () => {
+  // For "Skip Anyway" action - this will increment the skip count
+  const handleSkipAnyway = async () => {
     if (!currentTask) return;
     
     await incrementSkipCount(currentTask.id);
-    
-    // After incrementing the skip count, we need to refresh the tasks
-    // This ensures we get updated priority scores
     await fetchTasks();
+    moveToNextTask();
+    
+    toast({
+      description: "Task skipped and skip count increased",
+    });
+  };
+
+  // Initial skip handler - decides whether to show dialog or directly handle skip
+  const handleSkip = async () => {
+    if (!currentTask) return;
     
     if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
       openPriorityDialog(currentTask);
     } else {
+      // For low priority tasks, directly increment skip count
+      await incrementSkipCount(currentTask.id);
+      await fetchTasks();
       moveToNextTask();
     }
   };
@@ -82,6 +93,7 @@ export function useTaskNavigation() {
     showSplitDialog,
     setShowSplitDialog,
     handleSkip,
+    handleSkipAnyway,
     handleReturnToTop,
     handleDowngradePriority,
     handleBlocked,
