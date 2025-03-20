@@ -74,7 +74,10 @@ const Index = () => {
         onOpenChange={setShowPriorityDialog}
         onDowngradePriority={handleDowngradePriority}
         onSplitTask={handleSplitTask}
-        onBlocked={handleBlocked}
+        onBlocked={() => {
+          handleBlocked();
+          moveToNextTask();
+        }}
         onSkipAnyway={() => {
           setShowPriorityDialog(false);
           moveToNextTask();
