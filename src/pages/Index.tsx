@@ -28,10 +28,10 @@ const Index = () => {
     handleReturnToTop,
     handleDowngradePriority,
     handleBlocked,
-    moveToNextTask,
-    handleSplitComplete,
     handleSplitTask,
-    taskToSplit
+    handleSplitComplete,
+    taskToSplit,
+    skipInProgress
   } = useTaskNavigation();
 
   useEffect(() => {
@@ -39,8 +39,10 @@ const Index = () => {
   }, [fetchTasks]);
 
   const handleComplete = async (taskId: string) => {
+    if (skipInProgress) return;
+    
     await completeTask(taskId);
-    // After completing a task, we need to refresh the tasks list
+    // After completing a task, refresh the tasks list
     await fetchTasks();
     toast({
       title: "Task completed",
@@ -83,15 +85,9 @@ const Index = () => {
       <PriorityDialog
         open={showPriorityDialog}
         onOpenChange={handlePriorityDialogClose}
-        onDowngradePriority={() => {
-          handleDowngradePriority();
-          moveToNextTask();
-        }}
+        onDowngradePriority={handleDowngradePriority}
         onSplitTask={handleSplitTask}
-        onBlocked={() => {
-          handleBlocked();
-          moveToNextTask();
-        }}
+        onBlocked={handleBlocked}
         onSkipAnyway={handleSkipAnyway}
       />
       

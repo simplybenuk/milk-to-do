@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ArrowDown, Scissors, Lock } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface PriorityDialogProps {
   open: boolean;
@@ -20,25 +21,39 @@ export function PriorityDialog({
   onSkipAnyway,
   onBlocked = () => onOpenChange(false),
 }: PriorityDialogProps) {
-  // Ensure actions properly close the dialog when needed
+  const [isActionInProgress, setIsActionInProgress] = useState(false);
+  
+  // Reset action state when dialog opens or closes
+  useEffect(() => {
+    setIsActionInProgress(false);
+  }, [open]);
+  
+  // Handle actions with debounce to prevent double-clicks
+  const handleAction = (actionFn: () => void) => {
+    if (isActionInProgress) return;
+    
+    setIsActionInProgress(true);
+    actionFn();
+  };
+  
   const handleDowngrade = () => {
     console.log("PriorityDialog: Downgrade button clicked");
-    onDowngradePriority();
+    handleAction(onDowngradePriority);
   };
   
   const handleSplit = () => {
     console.log("PriorityDialog: Split button clicked");
-    onSplitTask();
+    handleAction(onSplitTask);
   };
   
   const handleBlocked = () => {
     console.log("PriorityDialog: Blocked button clicked");
-    onBlocked();
+    handleAction(onBlocked);
   };
   
   const handleSkipAnyway = () => {
     console.log("PriorityDialog: Skip Anyway button clicked");
-    onSkipAnyway();
+    handleAction(onSkipAnyway);
   };
 
   return (
@@ -55,6 +70,7 @@ export function PriorityDialog({
             onClick={handleDowngrade}
             variant="outline"
             className="w-full"
+            disabled={isActionInProgress}
           >
             <ArrowDown className="mr-2 h-4 w-4" />
             Lower Priority
@@ -63,6 +79,7 @@ export function PriorityDialog({
             onClick={handleSplit}
             variant="outline"
             className="w-full"
+            disabled={isActionInProgress}
           >
             <Scissors className="mr-2 h-4 w-4" />
             Split into Smaller Tasks
@@ -71,6 +88,7 @@ export function PriorityDialog({
             onClick={handleBlocked}
             variant="outline"
             className="w-full"
+            disabled={isActionInProgress}
           >
             <Lock className="mr-2 h-4 w-4" />
             Blocked by Others
@@ -79,6 +97,7 @@ export function PriorityDialog({
             onClick={handleSkipAnyway}
             variant="ghost"
             className="w-full"
+            disabled={isActionInProgress}
           >
             Skip Anyway
           </Button>

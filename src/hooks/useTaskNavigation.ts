@@ -1,14 +1,21 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 import { usePriorityDialog } from './usePriorityDialog';
+import { Task } from '@/types/task';
 
 export function useTaskNavigation() {
   const { getTasksByPriority, incrementSkipCount, fetchTasks } = useTaskStore();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isProcessingSkip, setIsProcessingSkip] = useState(false);
+  const [skipInProgress, setSkipInProgress] = useState(false);
   const { toast } = useToast();
+  
+  // Get sorted tasks each time to ensure latest data
+  const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
+  
+  // Get the current task based on the index
+  const currentTask = sortedOpenTasks[currentIndex];
   
   const {
     showPriorityDialog,
@@ -24,27 +31,66 @@ export function useTaskNavigation() {
     resetDialogState
   } = usePriorityDialog();
   
-  // Get sorted tasks each time we need them to ensure we're using the latest data
-  const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
-  
-  // Use updated sortedOpenTasks to get the current task
-  const currentTask = sortedOpenTasks[currentIndex];
-
-  // Make sure we adjust the current index if it's out of bounds
+  // Adjust current index if it's out of bounds
   useEffect(() => {
     if (currentIndex >= sortedOpenTasks.length && sortedOpenTasks.length > 0) {
       setCurrentIndex(0);
     }
   }, [sortedOpenTasks.length, currentIndex]);
 
-  // For "Skip Anyway" action - this will increment the skip count
-  const handleSkipAnyway = async () => {
-    if (!currentTask || isProcessingSkip) return;
+  // Move to the next task while ensuring state is clean
+  const moveToNextTask = useCallback(() => {
+    // Clear any lingering dialogs first
+    resetDialogState();
     
-    setIsProcessingSkip(true);
+    // Update the index
+    if (sortedOpenTasks.length === 0) {
+      return;
+    }
+    
+    if (currentIndex >= sortedOpenTasks.length - 1) {
+      setCurrentIndex(0);
+    } else {
+      setCurrentIndex(prevIndex => prevIndex + 1);
+    }
+    
+    const nextIndex = currentIndex + 1 >= sortedOpenTasks.length ? 0 : currentIndex + 1;
+    console.log(`Moved to task index: ${nextIndex}`);
+  }, [currentIndex, resetDialogState, sortedOpenTasks.length]);
+
+  // Handle low priority task skips (no dialog needed)
+  const handleLowPrioritySkip = async () => {
+    if (!currentTask || skipInProgress) return;
     
     try {
+      setSkipInProgress(true);
+      await incrementSkipCount(currentTask.id);
+      await fetchTasks();
+      moveToNextTask();
+    } catch (error) {
+      console.error("Error in handleLowPrioritySkip:", error);
+      toast({
+        title: "Error",
+        description: "Failed to skip task. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSkipInProgress(false);
+    }
+  };
+
+  // "Skip Anyway" action for high/medium priority tasks
+  const handleSkipAnyway = async () => {
+    if (!currentTask || skipInProgress) return;
+    
+    try {
+      setSkipInProgress(true);
       console.log("Skipping anyway task:", currentTask.title);
+      
+      // First close dialog
+      setShowPriorityDialog(false);
+      
+      // Then perform skip actions
       await incrementSkipCount(currentTask.id);
       await fetchTasks();
       
@@ -52,30 +98,31 @@ export function useTaskNavigation() {
         description: "Task skipped and skip count increased",
       });
       
-      // Always close the dialog first, then move to next task
-      setShowPriorityDialog(false);
-      
-      // Small delay to ensure UI updates properly before moving to next task
+      // Move to next task after a short delay to ensure the dialog is fully closed
       setTimeout(() => {
         moveToNextTask();
-        // Only reset processing state after move is complete
-        setIsProcessingSkip(false);
-      }, 100);
+        setSkipInProgress(false);
+      }, 200);
     } catch (error) {
       console.error("Error in handleSkipAnyway:", error);
-      // Ensure dialog closes even on error
       setShowPriorityDialog(false);
-      setIsProcessingSkip(false);
+      setSkipInProgress(false);
+      
+      toast({
+        title: "Error",
+        description: "Failed to skip task. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
-  // Initial skip handler - decides whether to show dialog or directly handle skip
-  const handleSkip = () => {
-    if (!currentTask || isProcessingSkip) return;
+  // Initial skip handler - shows dialog for high/medium priority
+  const handleSkip = useCallback(() => {
+    if (!currentTask || skipInProgress) return;
     
     console.log(`Handling skip for task: ${currentTask.title} with priority: ${currentTask.priority}`);
     
-    // Reset dialog state first to ensure a clean state
+    // Reset dialog state to ensure clean state
     resetDialogState();
     
     if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
@@ -85,60 +132,63 @@ export function useTaskNavigation() {
       // For low priority tasks, directly increment skip count
       handleLowPrioritySkip();
     }
-  };
-  
-  // Separate handler for low priority tasks to keep code clean
-  const handleLowPrioritySkip = async () => {
-    if (!currentTask || isProcessingSkip) return;
-    
-    setIsProcessingSkip(true);
-    
-    try {
-      await incrementSkipCount(currentTask.id);
-      await fetchTasks();
-      moveToNextTask();
-      setIsProcessingSkip(false);
-    } catch (error) {
-      console.error("Error in handleLowPrioritySkip:", error);
-      setIsProcessingSkip(false);
-    }
-  };
+  }, [currentTask, openPriorityDialog, resetDialogState, skipInProgress]);
 
-  const moveToNextTask = () => {
-    // Double-check that we're in a valid state to move
-    if (isProcessingSkip) {
-      console.log("Already processing a skip, deferring moveToNextTask");
-      return;
-    }
-    
-    // Clear any lingering dialogs
-    resetDialogState();
-    
-    if (currentIndex >= sortedOpenTasks.length - 1) {
-      setCurrentIndex(0);
-    } else {
-      setCurrentIndex(currentIndex + 1);
-    }
-    
-    console.log(`Moved to task index: ${currentIndex + 1 >= sortedOpenTasks.length ? 0 : currentIndex + 1}`);
-  };
-
+  // Handle "Return to top" button
   const handleReturnToTop = () => {
-    if (isProcessingSkip) return;
+    if (skipInProgress) return;
     
-    setCurrentIndex(0);
     resetDialogState();
+    setCurrentIndex(0);
+    
     toast({
       description: "Returned to top priority task",
     });
   };
 
-  // Enhance handleSplitComplete to refresh tasks and reset the current index
-  const enhancedHandleSplitComplete = () => {
-    fetchTasks();
-    setCurrentIndex(0);
-    handleSplitComplete();
-    setIsProcessingSkip(false);
+  // Enhanced handleSplitComplete to refresh tasks and reset index
+  const enhancedHandleSplitComplete = async () => {
+    try {
+      await fetchTasks();
+      resetDialogState();
+      setCurrentIndex(0);
+      handleSplitComplete();
+    } finally {
+      setSkipInProgress(false);
+    }
+  };
+  
+  // Actions after priority change
+  const handleDowngradePriorityAndMoveNext = async () => {
+    try {
+      setSkipInProgress(true);
+      await handleDowngradePriority();
+      
+      // Use timeout to ensure state updates before moving
+      setTimeout(() => {
+        moveToNextTask();
+        setSkipInProgress(false);
+      }, 200);
+    } catch (error) {
+      console.error("Error in handleDowngradePriorityAndMoveNext:", error);
+      setSkipInProgress(false);
+    }
+  };
+  
+  // Handle "Blocked" action
+  const handleBlockedAndMoveNext = () => {
+    try {
+      setSkipInProgress(true);
+      handleBlocked();
+      
+      setTimeout(() => {
+        moveToNextTask();
+        setSkipInProgress(false);
+      }, 200);
+    } catch (error) {
+      console.error("Error in handleBlockedAndMoveNext:", error);
+      setSkipInProgress(false);
+    }
   };
 
   return {
@@ -152,12 +202,13 @@ export function useTaskNavigation() {
     handleSkip,
     handleSkipAnyway,
     handleReturnToTop,
-    handleDowngradePriority,
-    handleBlocked,
+    handleDowngradePriority: handleDowngradePriorityAndMoveNext,
+    handleBlocked: handleBlockedAndMoveNext,
     moveToNextTask,
     handleSplitComplete: enhancedHandleSplitComplete,
     handleSplitTask,
     taskToSplit,
-    resetDialogState
+    resetDialogState,
+    skipInProgress
   };
 }
