@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Trash2, CheckCircle } from 'lucide-react';
+import { Trash2, CheckCircle, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TextWithLinks } from './TextWithLinks';
 import { PriorityBadge } from './PriorityBadge';
 import { ChildTasksList } from './ChildTasksList';
 import { DeleteTaskDialog } from './DeleteTaskDialog';
+import { Link } from 'react-router-dom';
 
 interface TaskItemProps {
   task: Task;
@@ -17,6 +18,7 @@ interface TaskItemProps {
   showCompleteButton?: boolean;
   onCreateChildTask?: (parentId: string, parentTitle: string) => void;
   allTasks?: Task[]; // To find and display child tasks
+  onViewParent?: (parentId: string) => void; // New prop for handling parent view
 }
 
 export function TaskItem({ 
@@ -25,7 +27,8 @@ export function TaskItem({
   onDelete, 
   showCompleteButton = false,
   onCreateChildTask,
-  allTasks = []
+  allTasks = [],
+  onViewParent
 }: TaskItemProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -35,6 +38,8 @@ export function TaskItem({
     ? allTasks.filter(t => task.child_task_ids.includes(t.id))
     : [];
 
+  // Get parent task if this is a child task
+  const parentId = task.parent_id;
   const isParentTask = task.closed_status === 'parent' && childTasks.length > 0;
 
   const handleComplete = () => {
@@ -56,6 +61,21 @@ export function TaskItem({
         )}
       >
         <div className="flex-1 min-w-0 overflow-hidden break-words">
+          {/* Parent task link */}
+          {parentId && (
+            <div className="mb-2 text-xs flex items-center text-milk-600">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-0 h-6 flex items-center gap-1 text-milk-600 hover:text-milk-900"
+                onClick={() => onViewParent && onViewParent(parentId)}
+              >
+                <ArrowUp className="h-3 w-3" />
+                <span>View Parent Task</span>
+              </Button>
+            </div>
+          )}
+          
           <h3 className="text-lg sm:text-xl font-medium text-milk-900 mb-2 sm:mb-4 break-words overflow-hidden">
             <TextWithLinks text={task.title} />
           </h3>
