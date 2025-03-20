@@ -31,6 +31,11 @@ export function useTaskNavigation() {
     handleSplitComplete,
     resetDialogState
   } = usePriorityDialog();
+
+  const {
+    findNextTaskIndex,
+    resetOriginalOrder
+  } = useTaskOrder(sortedOpenTasks, skipInProgress);
   
   // Move to the next task while ensuring state is clean
   const moveToNextTask = useCallback(() => {
@@ -43,14 +48,14 @@ export function useTaskNavigation() {
     }
     
     if (currentTask) {
-      const nextIndex = findNextTaskIndex(currentTask.id);
+      const nextIndex = findNextTaskIndex(currentTask.id, currentIndex);
       setCurrentIndex(nextIndex);
       console.log(`Moved to task index: ${nextIndex}`);
     } else {
       // Fallback if there's no current task
       setCurrentIndex(prevIndex => (prevIndex + 1) % sortedOpenTasks.length);
     }
-  }, [currentTask, resetDialogState, sortedOpenTasks.length]);
+  }, [currentTask, resetDialogState, sortedOpenTasks.length, findNextTaskIndex, currentIndex]);
 
   const {
     skipInProgress,
@@ -64,11 +69,6 @@ export function useTaskNavigation() {
     resetDialogState,
     setShowPriorityDialog
   );
-
-  const {
-    findNextTaskIndex,
-    resetOriginalOrder
-  } = useTaskOrder(sortedOpenTasks, skipInProgress);
   
   // Adjust current index if it's out of bounds
   useEffect(() => {
