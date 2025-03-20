@@ -60,10 +60,30 @@ export function useTaskNavigation() {
     }
   }, [currentTask, resetDialogState, sortedOpenTasks.length, findNextTaskIndex, currentIndex]);
 
+  // Using useCallback to memoize handleLowPrioritySkip for the dependency array
+  const handleLowPrioritySkip = useCallback(async () => {
+    if (!currentTask || skipInProgress) return;
+    
+    try {
+      setSkipInProgress(true);
+      await incrementSkipCount(currentTask.id);
+      await fetchTasks();
+      moveToNextTask();
+    } catch (error) {
+      console.error("Error in handleLowPrioritySkip:", error);
+      toast({
+        title: "Error",
+        description: "Failed to skip task. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSkipInProgress(false);
+    }
+  }, [currentTask, skipInProgress, incrementSkipCount, fetchTasks, moveToNextTask, toast]);
+
   const {
     handleSkip,
-    handleSkipAnyway,
-    handleLowPrioritySkip
+    handleSkipAnyway
   } = useTaskSkipActions(
     currentTask,
     moveToNextTask,

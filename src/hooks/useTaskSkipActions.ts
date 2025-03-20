@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 import { Task } from '@/types/task';
@@ -93,7 +93,7 @@ export function useTaskSkipActions(
       // For low priority tasks, directly increment skip count
       handleLowPrioritySkip();
     }
-  }, [currentTask, openPriorityDialog, resetDialogState, skipInProgress]);
+  }, [currentTask, openPriorityDialog, resetDialogState, skipInProgress, handleLowPrioritySkip]);
 
   return {
     handleSkip,
