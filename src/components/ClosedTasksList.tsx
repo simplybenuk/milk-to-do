@@ -43,6 +43,7 @@ export function ClosedTasksList() {
   };
 
   const handleCreateChildTask = (parentId: string, parentTitle: string) => {
+    console.log("Creating child for parent:", parentId, parentTitle);
     setSelectedParentTask({ id: parentId, title: parentTitle });
     setShowSplitDialog(true);
   };

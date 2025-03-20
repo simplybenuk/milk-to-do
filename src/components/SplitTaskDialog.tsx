@@ -31,15 +31,21 @@ export function SplitTaskDialog({
     e.preventDefault();
     if (!title.trim()) return;
     
-    // Set expiry date to 30 days from now (same as normal tasks)
-    const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    
     try {
-      // Add the child task linked to the parent
-      await addTask(title.trim(), priority, expiryDate, parentTaskId);
+      // Create a copy of the parentTaskId to ensure it's the correct one
+      // when the async operations complete
+      const currentParentId = parentTaskId;
       
-      // Mark the parent task as closed
-      await completeTask(parentTaskId, 'parent');
+      // Set expiry date to 30 days from now (same as normal tasks)
+      const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      
+      console.log("Creating child task for parent:", currentParentId, parentTaskTitle);
+      
+      // Add the child task linked to the parent
+      await addTask(title.trim(), priority, expiryDate, currentParentId);
+      
+      // Mark the parent task as closed with reason 'parent'
+      await completeTask(currentParentId, 'parent');
       
       // Show success message
       toast({
