@@ -22,18 +22,22 @@ export function PriorityDialog({
 }: PriorityDialogProps) {
   // Ensure actions properly close the dialog when needed
   const handleDowngrade = () => {
+    console.log("PriorityDialog: Downgrade button clicked");
     onDowngradePriority();
   };
   
   const handleSplit = () => {
+    console.log("PriorityDialog: Split button clicked");
     onSplitTask();
   };
   
   const handleBlocked = () => {
+    console.log("PriorityDialog: Blocked button clicked");
     onBlocked();
   };
   
   const handleSkipAnyway = () => {
+    console.log("PriorityDialog: Skip Anyway button clicked");
     onSkipAnyway();
   };
 

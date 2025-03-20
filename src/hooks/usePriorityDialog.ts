@@ -13,8 +13,11 @@ export function usePriorityDialog() {
   const { toast } = useToast();
 
   const openPriorityDialog = (task: Task) => {
+    // Store the current task for reference
     taskToSplitRef.current = task;
+    // Make sure to set the dialog to open
     setShowPriorityDialog(true);
+    console.log("Opening priority dialog for task:", task.title);
   };
 
   const handleDowngradePriority = async () => {
@@ -30,6 +33,7 @@ export function usePriorityDialog() {
       description: `Task priority changed to ${newPriority}`,
     });
     
+    // Clear the task reference after handling priority change
     setShowPriorityDialog(false);
   };
 
@@ -37,6 +41,7 @@ export function usePriorityDialog() {
     toast({
       description: "Moving to next task without updating priority",
     });
+    // Clear the task reference after handling blocked status
     setShowPriorityDialog(false);
   };
 
@@ -46,7 +51,16 @@ export function usePriorityDialog() {
   };
 
   const handleSplitComplete = () => {
+    // Reset reference after completing split
     taskToSplitRef.current = null;
+    setShowSplitDialog(false);
+  };
+
+  // Add a cleanup method for proper reset
+  const resetDialogState = () => {
+    taskToSplitRef.current = null;
+    setShowPriorityDialog(false);
+    setShowSplitDialog(false);
   };
 
   return {
@@ -59,6 +73,7 @@ export function usePriorityDialog() {
     handleDowngradePriority,
     handleBlocked,
     handleSplitTask,
-    handleSplitComplete
+    handleSplitComplete,
+    resetDialogState
   };
 }

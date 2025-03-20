@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
@@ -18,7 +19,8 @@ export function useTaskNavigation() {
     handleDowngradePriority,
     handleBlocked,
     handleSplitTask,
-    handleSplitComplete
+    handleSplitComplete,
+    resetDialogState
   } = usePriorityDialog();
   
   // Get sorted tasks each time we need them to ensure we're using the latest data
@@ -39,6 +41,7 @@ export function useTaskNavigation() {
     if (!currentTask) return;
     
     try {
+      console.log("Skipping anyway task:", currentTask.title);
       await incrementSkipCount(currentTask.id);
       await fetchTasks();
       
@@ -48,7 +51,11 @@ export function useTaskNavigation() {
       
       // Always close the dialog first, then move to next task
       setShowPriorityDialog(false);
-      moveToNextTask();
+      
+      // Small delay to ensure UI updates properly before moving to next task
+      setTimeout(() => {
+        moveToNextTask();
+      }, 50);
     } catch (error) {
       console.error("Error in handleSkipAnyway:", error);
       // Ensure dialog closes even on error
@@ -61,6 +68,9 @@ export function useTaskNavigation() {
     if (!currentTask) return;
     
     console.log(`Handling skip for task: ${currentTask.title} with priority: ${currentTask.priority}`);
+    
+    // Reset dialog state first to ensure a clean state
+    resetDialogState();
     
     if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
       // For high or medium priority tasks, show the dialog
@@ -90,10 +100,14 @@ export function useTaskNavigation() {
     } else {
       setCurrentIndex(currentIndex + 1);
     }
+    
+    // After moving to the next task, always reset dialog state
+    resetDialogState();
   };
 
   const handleReturnToTop = () => {
     setCurrentIndex(0);
+    resetDialogState();
     toast({
       description: "Returned to top priority task",
     });
@@ -122,6 +136,7 @@ export function useTaskNavigation() {
     moveToNextTask,
     handleSplitComplete: enhancedHandleSplitComplete,
     handleSplitTask,
-    taskToSplit
+    taskToSplit,
+    resetDialogState
   };
 }
