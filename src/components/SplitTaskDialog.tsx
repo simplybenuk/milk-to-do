@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
@@ -24,28 +24,36 @@ export function SplitTaskDialog({
 }: SplitTaskDialogProps) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
+  const [localParentId, setLocalParentId] = useState(parentTaskId);
+  const [localParentTitle, setLocalParentTitle] = useState(parentTaskTitle);
   const { addTask, completeTask } = useTaskStore();
   const { toast } = useToast();
+
+  // Update local state when props change to ensure we have the latest values
+  useEffect(() => {
+    if (open) {
+      setLocalParentId(parentTaskId);
+      setLocalParentTitle(parentTaskTitle);
+      console.log("SplitTaskDialog opened with parent:", parentTaskId, parentTaskTitle);
+    }
+  }, [open, parentTaskId, parentTaskTitle]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
     
     try {
-      // Create a copy of the parentTaskId to ensure it's the correct one
-      // when the async operations complete
-      const currentParentId = parentTaskId;
+      // Use the local state variables which are synchronized with props when dialog opens
+      console.log("Creating child task for parent:", localParentId, localParentTitle);
       
       // Set expiry date to 30 days from now (same as normal tasks)
       const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       
-      console.log("Creating child task for parent:", currentParentId, parentTaskTitle);
-      
       // Add the child task linked to the parent
-      await addTask(title.trim(), priority, expiryDate, currentParentId);
+      await addTask(title.trim(), priority, expiryDate, localParentId);
       
       // Mark the parent task as closed with reason 'parent'
-      await completeTask(currentParentId, 'parent');
+      await completeTask(localParentId, 'parent');
       
       // Show success message
       toast({
@@ -76,7 +84,7 @@ export function SplitTaskDialog({
         </DialogHeader>
         
         <div className="my-4 text-sm text-muted-foreground">
-          <p>Original task: <span className="font-medium text-foreground">{parentTaskTitle}</span></p>
+          <p>Original task: <span className="font-medium text-foreground">{localParentTitle}</span></p>
           <p className="mt-2">Create a smaller, more manageable task to work on first:</p>
         </div>
         

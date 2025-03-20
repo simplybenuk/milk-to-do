@@ -1,7 +1,7 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
+import { Task } from '@/types/task';
 
 export function useTaskNavigation() {
   const { getTasksByPriority, incrementSkipCount, updateTaskPriority, fetchTasks } = useTaskStore();
@@ -12,6 +12,8 @@ export function useTaskNavigation() {
   
   const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
   const currentTask = sortedOpenTasks[currentIndex];
+  
+  const taskToSplitRef = useRef<Task | null>(null);
 
   useEffect(() => {
     if (currentIndex >= sortedOpenTasks.length && sortedOpenTasks.length > 0) {
@@ -25,6 +27,7 @@ export function useTaskNavigation() {
     await incrementSkipCount(currentTask.id);
     
     if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
+      taskToSplitRef.current = currentTask;
       setShowPriorityDialog(true);
     } else {
       moveToNextTask();
@@ -81,6 +84,12 @@ export function useTaskNavigation() {
   const handleSplitComplete = () => {
     fetchTasks();
     setCurrentIndex(0);
+    taskToSplitRef.current = null;
+  };
+
+  const handleSplitTask = () => {
+    setShowPriorityDialog(false);
+    setShowSplitDialog(true);
   };
 
   return {
@@ -96,6 +105,8 @@ export function useTaskNavigation() {
     handleDowngradePriority,
     handleBlocked,
     moveToNextTask,
-    handleSplitComplete
+    handleSplitComplete,
+    handleSplitTask,
+    taskToSplit: taskToSplitRef.current
   };
 }

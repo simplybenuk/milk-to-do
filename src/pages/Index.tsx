@@ -28,7 +28,9 @@ const Index = () => {
     handleDowngradePriority,
     handleBlocked,
     moveToNextTask,
-    handleSplitComplete
+    handleSplitComplete,
+    handleSplitTask,
+    taskToSplit
   } = useTaskNavigation();
 
   useEffect(() => {
@@ -43,10 +45,8 @@ const Index = () => {
     });
   };
 
-  const handleSplitTask = () => {
-    setShowPriorityDialog(false);
-    setShowSplitDialog(true);
-  };
+  // Determine which task to use for the split dialog
+  const taskForSplitDialog = taskToSplit || currentTask;
 
   return (
     <div className="min-h-screen bg-milk-50 p-4 sm:p-6 md:p-8">
@@ -81,12 +81,12 @@ const Index = () => {
         }}
       />
       
-      {currentTask && (
+      {taskForSplitDialog && (
         <SplitTaskDialog
           open={showSplitDialog}
           onOpenChange={setShowSplitDialog}
-          parentTaskId={currentTask.id}
-          parentTaskTitle={currentTask.title}
+          parentTaskId={taskForSplitDialog.id}
+          parentTaskTitle={taskForSplitDialog.title}
           onSplitComplete={handleSplitComplete}
         />
       )}
