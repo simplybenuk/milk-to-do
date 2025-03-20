@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { TaskItem } from './TaskItem';
+import { TaskItem } from './task-item';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 import { ClosedStatusReason } from '@/types/task';

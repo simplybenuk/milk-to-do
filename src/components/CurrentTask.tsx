@@ -1,6 +1,6 @@
 
 import { Task } from '@/types/task';
-import { TaskItem } from './TaskItem';
+import { TaskItem } from './task-item';
 import { Button } from '@/components/ui/button';
 import { Check, SkipForward, ArrowUp } from 'lucide-react';
 
