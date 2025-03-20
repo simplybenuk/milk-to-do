@@ -58,6 +58,9 @@ export function usePriorityDialog() {
 
   // Add a cleanup method for proper reset
   const resetDialogState = () => {
+    if (showPriorityDialog || showSplitDialog) {
+      console.log("Resetting dialog state");
+    }
     taskToSplitRef.current = null;
     setShowPriorityDialog(false);
     setShowSplitDialog(false);

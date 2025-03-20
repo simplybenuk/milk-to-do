@@ -53,11 +53,10 @@ const Index = () => {
 
   // Handle dialog closures explicitly
   const handlePriorityDialogClose = (open: boolean) => {
-    setShowPriorityDialog(open);
-    // If dialog is being closed manually by user, ensure we don't get stuck
-    if (!open) {
+    if (!open && showPriorityDialog) {
       console.log("Priority dialog closed manually by user");
     }
+    setShowPriorityDialog(open);
   };
 
   return (

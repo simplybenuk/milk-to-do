@@ -7,6 +7,7 @@ import { usePriorityDialog } from './usePriorityDialog';
 export function useTaskNavigation() {
   const { getTasksByPriority, incrementSkipCount, fetchTasks } = useTaskStore();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isProcessingSkip, setIsProcessingSkip] = useState(false);
   const { toast } = useToast();
   
   const {
@@ -38,7 +39,9 @@ export function useTaskNavigation() {
 
   // For "Skip Anyway" action - this will increment the skip count
   const handleSkipAnyway = async () => {
-    if (!currentTask) return;
+    if (!currentTask || isProcessingSkip) return;
+    
+    setIsProcessingSkip(true);
     
     try {
       console.log("Skipping anyway task:", currentTask.title);
@@ -55,17 +58,20 @@ export function useTaskNavigation() {
       // Small delay to ensure UI updates properly before moving to next task
       setTimeout(() => {
         moveToNextTask();
-      }, 50);
+        // Only reset processing state after move is complete
+        setIsProcessingSkip(false);
+      }, 100);
     } catch (error) {
       console.error("Error in handleSkipAnyway:", error);
       // Ensure dialog closes even on error
       setShowPriorityDialog(false);
+      setIsProcessingSkip(false);
     }
   };
 
   // Initial skip handler - decides whether to show dialog or directly handle skip
   const handleSkip = () => {
-    if (!currentTask) return;
+    if (!currentTask || isProcessingSkip) return;
     
     console.log(`Handling skip for task: ${currentTask.title} with priority: ${currentTask.priority}`);
     
@@ -83,29 +89,43 @@ export function useTaskNavigation() {
   
   // Separate handler for low priority tasks to keep code clean
   const handleLowPrioritySkip = async () => {
-    if (!currentTask) return;
+    if (!currentTask || isProcessingSkip) return;
+    
+    setIsProcessingSkip(true);
     
     try {
       await incrementSkipCount(currentTask.id);
       await fetchTasks();
       moveToNextTask();
+      setIsProcessingSkip(false);
     } catch (error) {
       console.error("Error in handleLowPrioritySkip:", error);
+      setIsProcessingSkip(false);
     }
   };
 
   const moveToNextTask = () => {
+    // Double-check that we're in a valid state to move
+    if (isProcessingSkip) {
+      console.log("Already processing a skip, deferring moveToNextTask");
+      return;
+    }
+    
+    // Clear any lingering dialogs
+    resetDialogState();
+    
     if (currentIndex >= sortedOpenTasks.length - 1) {
       setCurrentIndex(0);
     } else {
       setCurrentIndex(currentIndex + 1);
     }
     
-    // After moving to the next task, always reset dialog state
-    resetDialogState();
+    console.log(`Moved to task index: ${currentIndex + 1 >= sortedOpenTasks.length ? 0 : currentIndex + 1}`);
   };
 
   const handleReturnToTop = () => {
+    if (isProcessingSkip) return;
+    
     setCurrentIndex(0);
     resetDialogState();
     toast({
@@ -118,6 +138,7 @@ export function useTaskNavigation() {
     fetchTasks();
     setCurrentIndex(0);
     handleSplitComplete();
+    setIsProcessingSkip(false);
   };
 
   return {
