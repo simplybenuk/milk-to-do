@@ -1,19 +1,29 @@
-import { useState, useEffect, useRef } from 'react';
+
+import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
-import { Task } from '@/types/task';
+import { usePriorityDialog } from './usePriorityDialog';
 
 export function useTaskNavigation() {
-  const { getTasksByPriority, incrementSkipCount, updateTaskPriority, fetchTasks } = useTaskStore();
+  const { getTasksByPriority, incrementSkipCount, fetchTasks } = useTaskStore();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showPriorityDialog, setShowPriorityDialog] = useState(false);
-  const [showSplitDialog, setShowSplitDialog] = useState(false);
   const { toast } = useToast();
+  
+  const {
+    showPriorityDialog,
+    setShowPriorityDialog,
+    showSplitDialog,
+    setShowSplitDialog,
+    taskToSplit,
+    openPriorityDialog,
+    handleDowngradePriority,
+    handleBlocked,
+    handleSplitTask,
+    handleSplitComplete
+  } = usePriorityDialog();
   
   const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
   const currentTask = sortedOpenTasks[currentIndex];
-  
-  const taskToSplitRef = useRef<Task | null>(null);
 
   useEffect(() => {
     if (currentIndex >= sortedOpenTasks.length && sortedOpenTasks.length > 0) {
@@ -27,8 +37,7 @@ export function useTaskNavigation() {
     await incrementSkipCount(currentTask.id);
     
     if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
-      taskToSplitRef.current = currentTask;
-      setShowPriorityDialog(true);
+      openPriorityDialog(currentTask);
     } else {
       moveToNextTask();
     }
@@ -49,47 +58,11 @@ export function useTaskNavigation() {
     });
   };
 
-  const handleDowngradePriority = async () => {
-    if (!currentTask) return;
-    
-    const newPriority = currentTask.priority === 'high' ? 'medium' : 'low';
-    const currentTaskId = currentTask.id;
-    
-    await updateTaskPriority(currentTaskId, newPriority);
-    
-    toast({
-      title: "Priority Updated",
-      description: `Task priority changed to ${newPriority}`,
-    });
-    
-    setShowPriorityDialog(false);
-    
-    const updatedTasks = getTasksByPriority().filter(task => task.status === 'open');
-    
-    if (currentIndex >= updatedTasks.length - 1) {
-      setCurrentIndex(0);
-    } else {
-      setCurrentIndex(currentIndex);
-    }
-  };
-
-  const handleBlocked = () => {
-    toast({
-      description: "Moving to next task without updating priority",
-    });
-    setShowPriorityDialog(false);
-    moveToNextTask();
-  };
-
-  const handleSplitComplete = () => {
+  // Enhance handleSplitComplete to refresh tasks and reset the current index
+  const enhancedHandleSplitComplete = () => {
     fetchTasks();
     setCurrentIndex(0);
-    taskToSplitRef.current = null;
-  };
-
-  const handleSplitTask = () => {
-    setShowPriorityDialog(false);
-    setShowSplitDialog(true);
+    handleSplitComplete();
   };
 
   return {
@@ -105,8 +78,8 @@ export function useTaskNavigation() {
     handleDowngradePriority,
     handleBlocked,
     moveToNextTask,
-    handleSplitComplete,
+    handleSplitComplete: enhancedHandleSplitComplete,
     handleSplitTask,
-    taskToSplit: taskToSplitRef.current
+    taskToSplit
   };
 }
