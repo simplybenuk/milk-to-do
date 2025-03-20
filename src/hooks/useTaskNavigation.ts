@@ -22,9 +22,13 @@ export function useTaskNavigation() {
     handleSplitComplete
   } = usePriorityDialog();
   
+  // Get sorted tasks each time we need them to ensure we're using the latest data
   const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
+  
+  // Use updated sortedOpenTasks to get the current task
   const currentTask = sortedOpenTasks[currentIndex];
 
+  // Make sure we adjust the current index if it's out of bounds
   useEffect(() => {
     if (currentIndex >= sortedOpenTasks.length && sortedOpenTasks.length > 0) {
       setCurrentIndex(0);
@@ -35,6 +39,10 @@ export function useTaskNavigation() {
     if (!currentTask) return;
     
     await incrementSkipCount(currentTask.id);
+    
+    // After incrementing the skip count, we need to refresh the tasks
+    // This ensures we get updated priority scores
+    await fetchTasks();
     
     if (currentTask.priority === 'high' || currentTask.priority === 'medium') {
       openPriorityDialog(currentTask);

@@ -39,6 +39,8 @@ const Index = () => {
 
   const handleComplete = async (taskId: string) => {
     await completeTask(taskId);
+    // After completing a task, we need to refresh the tasks list
+    await fetchTasks();
     toast({
       title: "Task completed",
       description: "Great job! The task has been marked as complete.",
@@ -72,7 +74,10 @@ const Index = () => {
       <PriorityDialog
         open={showPriorityDialog}
         onOpenChange={setShowPriorityDialog}
-        onDowngradePriority={handleDowngradePriority}
+        onDowngradePriority={() => {
+          handleDowngradePriority();
+          moveToNextTask();
+        }}
         onSplitTask={handleSplitTask}
         onBlocked={() => {
           handleBlocked();
