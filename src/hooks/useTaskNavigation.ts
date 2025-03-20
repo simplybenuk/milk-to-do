@@ -18,6 +18,9 @@ export function useTaskNavigation() {
   // Get the current task based on the index
   const currentTask = sortedOpenTasks[currentIndex];
   
+  // Initialize state for skip in progress
+  const [skipInProgress, setSkipInProgress] = useState(false);
+  
   const {
     showPriorityDialog,
     setShowPriorityDialog,
@@ -58,16 +61,17 @@ export function useTaskNavigation() {
   }, [currentTask, resetDialogState, sortedOpenTasks.length, findNextTaskIndex, currentIndex]);
 
   const {
-    skipInProgress,
-    setSkipInProgress,
     handleSkip,
-    handleSkipAnyway
+    handleSkipAnyway,
+    handleLowPrioritySkip
   } = useTaskSkipActions(
     currentTask,
     moveToNextTask,
     openPriorityDialog,
     resetDialogState,
-    setShowPriorityDialog
+    setShowPriorityDialog,
+    skipInProgress,
+    setSkipInProgress
   );
   
   // Adjust current index if it's out of bounds

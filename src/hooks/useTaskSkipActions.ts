@@ -9,10 +9,11 @@ export function useTaskSkipActions(
   moveToNextTask: () => void,
   openPriorityDialog: (task: Task) => void,
   resetDialogState: () => void,
-  setShowPriorityDialog: (show: boolean) => void
+  setShowPriorityDialog: (show: boolean) => void,
+  skipInProgress: boolean,
+  setSkipInProgress: (inProgress: boolean) => void
 ) {
   const { incrementSkipCount, fetchTasks } = useTaskStore();
-  const [skipInProgress, setSkipInProgress] = useState(false);
   const { toast } = useToast();
 
   // Handle low priority task skips (no dialog needed)
@@ -95,8 +96,6 @@ export function useTaskSkipActions(
   }, [currentTask, openPriorityDialog, resetDialogState, skipInProgress]);
 
   return {
-    skipInProgress,
-    setSkipInProgress,
     handleSkip,
     handleSkipAnyway,
     handleLowPrioritySkip
