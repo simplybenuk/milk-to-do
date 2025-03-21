@@ -1,46 +1,73 @@
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { Task } from '@/types/task';
 
-export function useTaskOrder(sortedOpenTasks: Task[], skipInProgress: boolean) {
-  // Store the original task order
-  const originalTaskOrderRef = useRef<string[]>([]);
-  
-  // Update the original task order reference when not in a skip operation
-  useEffect(() => {
-    if (!skipInProgress && sortedOpenTasks.length > 0) {
-      originalTaskOrderRef.current = sortedOpenTasks.map(task => task.id);
-    }
-  }, [sortedOpenTasks, skipInProgress]);
-  
-  // Find the next task index based on original order
+export function useTaskOrder(sortedOpenTasks: Task[]) {
+  // Store the locked order of tasks for the focus session
+  const lockedTaskOrderRef = useRef<string[]>([]);
+  const isOrderLockedRef = useRef<boolean>(false);
+
+  // Lock the task order when focus mode is activated
+  const lockTaskOrder = useCallback(() => {
+    console.log("Locking task order for focus session");
+    lockedTaskOrderRef.current = sortedOpenTasks.map(task => task.id);
+    isOrderLockedRef.current = true;
+  }, [sortedOpenTasks]);
+
+  // Reset the locked order
+  const resetLockedOrder = useCallback(() => {
+    console.log("Resetting locked task order");
+    lockedTaskOrderRef.current = [];
+    isOrderLockedRef.current = false;
+  }, []);
+
+  // Find the next task in the locked order
   const findNextTaskIndex = useCallback((currentTaskId: string, currentIndex: number): number => {
-    // If we don't have an original order yet, just increment the index
-    if (originalTaskOrderRef.current.length === 0) {
-      return (currentIndex + 1) % sortedOpenTasks.length;
+    // If we haven't locked the order or there are no tasks, just return the next index
+    if (!isOrderLockedRef.current || lockedTaskOrderRef.current.length === 0) {
+      return (currentIndex + 1) % Math.max(sortedOpenTasks.length, 1);
     }
     
-    // Find the current task's position in the original order
-    const currentOrderIndex = originalTaskOrderRef.current.indexOf(currentTaskId);
-    if (currentOrderIndex === -1 || currentOrderIndex >= originalTaskOrderRef.current.length - 1) {
-      return 0; // If not found or at the end, go back to the first task
+    // Find the current task's position in the locked order
+    const currentOrderIndex = lockedTaskOrderRef.current.indexOf(currentTaskId);
+    
+    // If not found or at the end, go back to the first task
+    if (currentOrderIndex === -1 || currentOrderIndex >= lockedTaskOrderRef.current.length - 1) {
+      return 0;
     }
     
-    // Get the ID of the next task in the original order
-    const nextTaskId = originalTaskOrderRef.current[currentOrderIndex + 1];
+    // Get the ID of the next task in the locked order
+    const nextTaskId = lockedTaskOrderRef.current[currentOrderIndex + 1];
     
     // Find this task in the current sorted tasks
     const nextTaskIndex = sortedOpenTasks.findIndex(task => task.id === nextTaskId);
-    return nextTaskIndex !== -1 ? nextTaskIndex : 0;
+    
+    // If the task is no longer in the list (e.g., completed or deleted), move to the next available
+    if (nextTaskIndex === -1) {
+      // Find the next available task in the locked order
+      for (let i = currentOrderIndex + 1; i < lockedTaskOrderRef.current.length; i++) {
+        const candidateId = lockedTaskOrderRef.current[i];
+        const candidateIndex = sortedOpenTasks.findIndex(task => task.id === candidateId);
+        if (candidateIndex !== -1) {
+          return candidateIndex;
+        }
+      }
+      // If no next task is found, return to first task
+      return 0;
+    }
+    
+    return nextTaskIndex;
   }, [sortedOpenTasks]);
 
-  // Reset the original order
-  const resetOriginalOrder = useCallback(() => {
-    originalTaskOrderRef.current = sortedOpenTasks.map(task => task.id);
-  }, [sortedOpenTasks]);
+  // Check if we're currently in focus mode with locked order
+  const isOrderLocked = useCallback(() => {
+    return isOrderLockedRef.current;
+  }, []);
 
   return {
+    lockTaskOrder,
+    resetLockedOrder,
     findNextTaskIndex,
-    resetOriginalOrder
+    isOrderLocked
   };
 }

@@ -15,11 +15,11 @@ export function useTaskNavigation() {
   // Get sorted tasks each time to ensure latest data
   const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
   
-  // Get the current task based on the index
-  const currentTask = sortedOpenTasks[currentIndex];
-  
   // Initialize state for skip in progress
   const [skipInProgress, setSkipInProgress] = useState(false);
+  
+  // Get the current task based on the index
+  const currentTask = sortedOpenTasks[currentIndex];
   
   const {
     showPriorityDialog,
@@ -36,24 +36,32 @@ export function useTaskNavigation() {
   } = usePriorityDialog();
 
   const {
+    lockTaskOrder,
+    resetLockedOrder,
     findNextTaskIndex,
-    resetOriginalOrder
-  } = useTaskOrder(sortedOpenTasks, skipInProgress);
+    isOrderLocked
+  } = useTaskOrder(sortedOpenTasks);
   
+  // Lock order on initial render if we have tasks
+  useEffect(() => {
+    if (sortedOpenTasks.length > 0 && !isOrderLocked()) {
+      lockTaskOrder();
+    }
+  }, [sortedOpenTasks.length, lockTaskOrder, isOrderLocked]);
+
   // Move to the next task while ensuring state is clean
   const moveToNextTask = useCallback(() => {
     // Clear any lingering dialogs first
     resetDialogState();
     
-    // Update the index using the original order
     if (sortedOpenTasks.length === 0) {
       return;
     }
     
     if (currentTask) {
       const nextIndex = findNextTaskIndex(currentTask.id, currentIndex);
+      console.log(`Moving from task index ${currentIndex} to ${nextIndex}`);
       setCurrentIndex(nextIndex);
-      console.log(`Moved to task index: ${nextIndex}`);
     } else {
       // Fallback if there's no current task
       setCurrentIndex(prevIndex => (prevIndex + 1) % sortedOpenTasks.length);
@@ -91,7 +99,8 @@ export function useTaskNavigation() {
     resetDialogState,
     setShowPriorityDialog,
     skipInProgress,
-    setSkipInProgress
+    setSkipInProgress,
+    handleLowPrioritySkip
   );
   
   // Adjust current index if it's out of bounds
@@ -108,8 +117,11 @@ export function useTaskNavigation() {
     resetDialogState();
     setCurrentIndex(0);
     
-    // Reset the original order when returning to top
-    resetOriginalOrder();
+    // Reset the locked order when returning to top
+    resetLockedOrder();
+    
+    // Lock the order with the newest priority data
+    lockTaskOrder();
     
     toast({
       description: "Returned to top priority task",
@@ -123,8 +135,11 @@ export function useTaskNavigation() {
       resetDialogState();
       setCurrentIndex(0);
       
-      // Reset the original order after splitting a task
-      resetOriginalOrder();
+      // Reset the locked order after splitting a task
+      resetLockedOrder();
+      
+      // Lock the order with the newest priority data
+      lockTaskOrder();
       
       handleSplitComplete();
     } finally {

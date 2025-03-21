@@ -11,31 +11,11 @@ export function useTaskSkipActions(
   resetDialogState: () => void,
   setShowPriorityDialog: (show: boolean) => void,
   skipInProgress: boolean,
-  setSkipInProgress: (inProgress: boolean) => void
+  setSkipInProgress: (inProgress: boolean) => void,
+  handleLowPrioritySkip: () => Promise<void>
 ) {
   const { incrementSkipCount, fetchTasks } = useTaskStore();
   const { toast } = useToast();
-
-  // Handle low priority task skips (no dialog needed)
-  const handleLowPrioritySkip = async () => {
-    if (!currentTask || skipInProgress) return;
-    
-    try {
-      setSkipInProgress(true);
-      await incrementSkipCount(currentTask.id);
-      await fetchTasks();
-      moveToNextTask();
-    } catch (error) {
-      console.error("Error in handleLowPrioritySkip:", error);
-      toast({
-        title: "Error",
-        description: "Failed to skip task. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setSkipInProgress(false);
-    }
-  };
 
   // "Skip Anyway" action for high/medium priority tasks
   const handleSkipAnyway = async () => {
@@ -97,7 +77,6 @@ export function useTaskSkipActions(
 
   return {
     handleSkip,
-    handleSkipAnyway,
-    handleLowPrioritySkip
+    handleSkipAnyway
   };
 }
