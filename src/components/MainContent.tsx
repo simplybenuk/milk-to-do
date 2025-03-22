@@ -55,10 +55,10 @@ export function MainContent({
         />
       ) : (
         <div className="text-center py-12">
-          <p className="text-milk-500">No tasks yet. Add your first task!</p>
+          <p className="text-milk-500">No tasks available for focus mode.</p>
           {inFocusMode && (
             <p className="text-milk-500 mt-4">
-              Your focus session is ready to start when you add tasks.
+              Add tasks from the All Tasks view to start your focus session.
             </p>
           )}
         </div>

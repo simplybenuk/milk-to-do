@@ -8,6 +8,8 @@ import { useTaskNavigation } from '@/hooks/useTaskNavigation';
 import { MainContent } from '@/components/MainContent';
 import { useToast } from '@/hooks/use-toast';
 import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
+import { Button } from '@/components/ui/button';
+import { Focus } from 'lucide-react';
 
 const Index = () => {
   const { fetchTasks } = useTaskStore();
@@ -20,7 +22,7 @@ const Index = () => {
     setShowExitConfirm, 
     confirmExitFocusMode,
     pendingView
-  } = useAppView('main');
+  } = useAppView('all');
   const { toast } = useToast();
   
   // Initialize focus mode or end it
@@ -44,7 +46,7 @@ const Index = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // Enter focus mode when viewing main screen
+  // Enter focus mode when explicitly switching to main view
   useEffect(() => {
     if (currentView === 'main' && !inFocusMode) {
       setInFocusMode(true);
@@ -58,6 +60,11 @@ const Index = () => {
     fetchTasks();
   };
 
+  // Handler for entering focus mode
+  const handleEnterFocusMode = () => {
+    setCurrentView('main');
+  };
+
   return (
     <div className="min-h-screen bg-milk-50 p-4 sm:p-6 md:p-8">
       <div className="mx-auto max-w-3xl">
@@ -66,6 +73,18 @@ const Index = () => {
           onViewChange={setCurrentView}
           inFocusMode={inFocusMode}
         />
+
+        {currentView === 'all' && !inFocusMode && (
+          <div className="mb-6 flex justify-center">
+            <Button 
+              onClick={handleEnterFocusMode}
+              className="bg-milk-600 hover:bg-milk-700 text-white"
+            >
+              <Focus className="mr-2 h-4 w-4" />
+              Enter Focus Mode
+            </Button>
+          </div>
+        )}
 
         <div className="flex flex-col items-center justify-center min-h-[400px]">
           <MainContent

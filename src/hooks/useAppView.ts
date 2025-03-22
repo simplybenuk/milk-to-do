@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 export type AppView = 'main' | 'all' | 'closed' | 'stats';
 
-export function useAppView(initialView: AppView = 'main') {
+export function useAppView(initialView: AppView = 'all') {
   const [currentView, setCurrentView] = useState<AppView>(initialView);
   const [inFocusMode, setInFocusMode] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);

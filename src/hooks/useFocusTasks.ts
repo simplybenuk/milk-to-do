@@ -13,14 +13,11 @@ export function useFocusTasks(inFocusMode: boolean) {
     // If we're in focus mode, initialize the task list
     if (inFocusMode) {
       const openTasks = getTasksByPriority().filter(task => task.status === 'open');
-      // Only set the tasks if we don't already have them or if the tasks are empty
-      if (focusTaskOrder.length === 0) {
-        console.log('Initializing focus tasks with', openTasks.length, 'tasks');
-        setFocusTaskOrder(openTasks);
-        setCurrentIndex(0);
-      }
+      console.log('Initializing focus tasks with', openTasks.length, 'tasks');
+      setFocusTaskOrder(openTasks);
+      setCurrentIndex(0);
     }
-  }, [inFocusMode, getTasksByPriority, focusTaskOrder.length]);
+  }, [inFocusMode, getTasksByPriority]);
   
   // Reset focus session when leaving focus mode
   useEffect(() => {
