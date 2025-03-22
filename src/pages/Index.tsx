@@ -18,7 +18,8 @@ const Index = () => {
     setInFocusMode, 
     showExitConfirm, 
     setShowExitConfirm, 
-    confirmExitFocusMode 
+    confirmExitFocusMode,
+    pendingView
   } = useAppView('main');
   const { toast } = useToast();
   
@@ -51,8 +52,8 @@ const Index = () => {
   }, [currentView, inFocusMode, setInFocusMode]);
 
   // Handler for confirming exit
-  const handleConfirmExit = (view: string) => {
-    confirmExitFocusMode(view as any);
+  const handleConfirmExit = () => {
+    confirmExitFocusMode();
     // Refresh tasks after exiting focus mode
     fetchTasks();
   };
@@ -83,7 +84,7 @@ const Index = () => {
       <FocusExitConfirmDialog
         open={showExitConfirm}
         onOpenChange={setShowExitConfirm}
-        onConfirm={() => handleConfirmExit(currentView)}
+        onConfirm={handleConfirmExit}
       />
       
       <AddTaskDialog onAddTask={(title, priority, expiryDate) => {

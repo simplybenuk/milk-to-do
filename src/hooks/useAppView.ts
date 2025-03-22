@@ -7,10 +7,12 @@ export function useAppView(initialView: AppView = 'main') {
   const [currentView, setCurrentView] = useState<AppView>(initialView);
   const [inFocusMode, setInFocusMode] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [pendingView, setPendingView] = useState<AppView | null>(null);
   
   // Function to handle view changes with focus mode confirmation
   const handleViewChange = (newView: AppView) => {
     if (inFocusMode && newView !== 'main') {
+      setPendingView(newView);
       setShowExitConfirm(true);
       return;
     }
@@ -22,9 +24,12 @@ export function useAppView(initialView: AppView = 'main') {
   };
   
   // Function to confirm exiting focus mode
-  const confirmExitFocusMode = (newView: AppView) => {
+  const confirmExitFocusMode = () => {
     setInFocusMode(false);
-    setCurrentView(newView);
+    if (pendingView) {
+      setCurrentView(pendingView);
+      setPendingView(null);
+    }
     setShowExitConfirm(false);
   };
   
@@ -35,6 +40,7 @@ export function useAppView(initialView: AppView = 'main') {
     setInFocusMode,
     showExitConfirm,
     setShowExitConfirm,
-    confirmExitFocusMode
+    confirmExitFocusMode,
+    pendingView
   };
 }
