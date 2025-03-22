@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useEffect } from "react";
 
 interface FocusExitConfirmDialogProps {
   open: boolean;
@@ -21,9 +22,19 @@ export function FocusExitConfirmDialog({
   onOpenChange,
   onConfirm,
 }: FocusExitConfirmDialogProps) {
-  // Handle the confirm action explicitly to ensure dialog closes properly
+  // Handle cleanup when dialog closes
+  useEffect(() => {
+    if (!open) {
+      // This helps ensure any lingering state is cleaned up
+      document.body.style.pointerEvents = "";
+    }
+  }, [open]);
+
+  // Handle the confirm action explicitly
   const handleConfirm = () => {
+    // Call the onConfirm handler first
     onConfirm();
+    // Then close the dialog
     onOpenChange(false);
   };
 

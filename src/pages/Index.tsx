@@ -55,16 +55,29 @@ const Index = () => {
 
   // Handler for confirming exit
   const handleConfirmExit = () => {
-    // Pass the confirmation to the hook which will handle the view change
+    // First handle exit confirmation in the hook
     confirmExitFocusMode();
-    // Refresh tasks after exiting focus mode
-    fetchTasks();
+    
+    // After a small delay, refresh tasks to ensure data is up to date
+    setTimeout(() => {
+      fetchTasks();
+      
+      // Reset any stuck UI state
+      document.body.style.pointerEvents = "";
+    }, 150);
   };
 
   // Handler for entering focus mode
   const handleEnterFocusMode = () => {
     setCurrentView('main');
   };
+
+  // Ensure the UI is always clickable when component unmounts
+  useEffect(() => {
+    return () => {
+      document.body.style.pointerEvents = "";
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-milk-50 p-4 sm:p-6 md:p-8">

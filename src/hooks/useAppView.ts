@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export type AppView = 'main' | 'all' | 'closed' | 'stats';
 
@@ -10,7 +10,7 @@ export function useAppView(initialView: AppView = 'all') {
   const [pendingView, setPendingView] = useState<AppView | null>(null);
   
   // Function to handle view changes with focus mode confirmation
-  const handleViewChange = (newView: AppView) => {
+  const handleViewChange = useCallback((newView: AppView) => {
     if (inFocusMode && newView !== 'main') {
       // Store the requested view and show confirmation dialog
       setPendingView(newView);
@@ -23,22 +23,29 @@ export function useAppView(initialView: AppView = 'all') {
     if (newView !== 'main') {
       setInFocusMode(false);
     }
-  };
+  }, [inFocusMode]);
   
   // Function to confirm exiting focus mode
-  const confirmExitFocusMode = () => {
-    // Exit focus mode
+  const confirmExitFocusMode = useCallback(() => {
+    // First exit focus mode
     setInFocusMode(false);
     
-    // Change to the pending view if one exists
+    // Then change to the pending view if one exists
     if (pendingView) {
-      setCurrentView(pendingView);
-      setPendingView(null);
+      setTimeout(() => {
+        setCurrentView(pendingView);
+        setPendingView(null);
+      }, 0);
     }
     
     // Hide the confirmation dialog
     setShowExitConfirm(false);
-  };
+    
+    // Ensure any stuck UI state is reset
+    setTimeout(() => {
+      document.body.style.pointerEvents = "";
+    }, 100);
+  }, [pendingView]);
   
   return {
     currentView,
