@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Trash2, CheckCircle, ArrowUp } from 'lucide-react';
+import { Trash2, CheckCircle, ArrowUp, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TextWithLinks } from './TextWithLinks';
 import { PriorityBadge } from './PriorityBadge';
@@ -48,6 +48,12 @@ export function TaskItem({
     setTimeout(() => {
       onComplete(task.id);
     }, 300);
+  };
+
+  const handleSplitTask = () => {
+    if (onCreateChildTask) {
+      onCreateChildTask(task.id, task.title);
+    }
   };
 
   return (
@@ -122,15 +128,26 @@ export function TaskItem({
         
         <div className="absolute bottom-4 right-4 flex gap-2">
           {showCompleteButton && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-green-500 hover:text-green-700 hover:bg-green-50 shrink-0"
-              onClick={handleComplete}
-              title="Complete task"
-            >
-              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-green-500 hover:text-green-700 hover:bg-green-50 shrink-0"
+                onClick={handleComplete}
+                title="Complete task"
+              >
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-purple-500 hover:text-purple-700 hover:bg-purple-50 shrink-0"
+                onClick={handleSplitTask}
+                title="Split into subtasks"
+              >
+                <Scissors className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            </>
           )}
           <Button
             variant="ghost"

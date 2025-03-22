@@ -4,11 +4,15 @@ import { TaskItem } from './task-item';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { SplitTaskDialog } from './SplitTaskDialog';
 
 export function AllTasksList() {
   const { tasks, deleteTask, completeTask } = useTaskStore();
   const { toast } = useToast();
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
+  const [showSplitDialog, setShowSplitDialog] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [selectedTaskTitle, setSelectedTaskTitle] = useState<string>("");
   
   // Get all open tasks and their closed parents if they exist
   const openTasks = tasks.filter(task => task.status === 'open');
@@ -34,6 +38,12 @@ export function AllTasksList() {
     });
   };
 
+  const handleCreateChildTask = (parentId: string, parentTitle: string) => {
+    setSelectedTaskId(parentId);
+    setSelectedTaskTitle(parentTitle);
+    setShowSplitDialog(true);
+  };
+
   const handleViewParent = (parentId: string) => {
     const parentTask = [...openTasks, ...relevantParents].find(t => t.id === parentId);
     if (parentTask) {
@@ -51,6 +61,12 @@ export function AllTasksList() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleSplitComplete = () => {
+    // Refresh the task list
+    const { fetchTasks } = useTaskStore.getState();
+    fetchTasks();
   };
 
   return (
@@ -75,6 +91,7 @@ export function AllTasksList() {
                 showCompleteButton={false}
                 allTasks={tasks}
                 onViewParent={handleViewParent}
+                onCreateChildTask={handleCreateChildTask}
               />
             </div>
           ))}
@@ -95,11 +112,21 @@ export function AllTasksList() {
                 showCompleteButton={true}
                 allTasks={tasks}
                 onViewParent={handleViewParent}
+                onCreateChildTask={handleCreateChildTask}
               />
             </div>
           ))}
         </>
       )}
+      
+      {/* Split Task Dialog */}
+      <SplitTaskDialog
+        open={showSplitDialog}
+        onOpenChange={setShowSplitDialog}
+        parentTaskId={selectedTaskId}
+        parentTaskTitle={selectedTaskTitle}
+        onSplitComplete={handleSplitComplete}
+      />
     </div>
   );
 }
