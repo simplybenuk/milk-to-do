@@ -2,202 +2,119 @@
 import { useState, useEffect, useCallback } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
-import { usePriorityDialog } from './usePriorityDialog';
-import { useTaskOrder } from './useTaskOrder';
-import { useTaskSkipActions } from './useTaskSkipActions';
 import { Task } from '@/types/task';
 
-export function useTaskNavigation() {
-  const { getTasksByPriority, incrementSkipCount, fetchTasks } = useTaskStore();
+export function useTaskNavigation(inFocusMode: boolean, onFocusEnd: () => void) {
+  const { getTasksByPriority, incrementSkipCount, completeTask, fetchTasks } = useTaskStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { toast } = useToast();
   
-  // Get sorted tasks each time to ensure latest data
-  const sortedOpenTasks = getTasksByPriority().filter(task => task.status === 'open');
+  // State for task order in focus mode
+  const [focusTaskOrder, setFocusTaskOrder] = useState<Task[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  // Initialize state for skip in progress
-  const [skipInProgress, setSkipInProgress] = useState(false);
+  // Get tasks and initialize focus mode session if needed
+  useEffect(() => {
+    // If we're in focus mode but don't have tasks loaded yet
+    if (inFocusMode && focusTaskOrder.length === 0) {
+      const openTasks = getTasksByPriority().filter(task => task.status === 'open');
+      setFocusTaskOrder(openTasks);
+      setCurrentIndex(0);
+    }
+  }, [inFocusMode, focusTaskOrder.length, getTasksByPriority]);
+  
+  // Reset focus session when leaving focus mode
+  useEffect(() => {
+    if (!inFocusMode) {
+      setFocusTaskOrder([]);
+      setCurrentIndex(0);
+    }
+  }, [inFocusMode]);
   
   // Get the current task based on the index
-  const currentTask = sortedOpenTasks[currentIndex];
+  const currentTask = focusTaskOrder[currentIndex];
   
-  const {
-    showPriorityDialog,
-    setShowPriorityDialog,
-    showSplitDialog,
-    setShowSplitDialog,
-    taskToSplit,
-    openPriorityDialog,
-    handleDowngradePriority,
-    handleBlocked,
-    handleSplitTask,
-    handleSplitComplete,
-    resetDialogState
-  } = usePriorityDialog();
-
-  const {
-    lockTaskOrder,
-    resetLockedOrder,
-    findNextTaskIndex,
-    isOrderLocked
-  } = useTaskOrder(sortedOpenTasks);
-  
-  // Lock order on initial render if we have tasks
-  useEffect(() => {
-    if (sortedOpenTasks.length > 0 && !isOrderLocked()) {
-      lockTaskOrder();
-    }
-  }, [sortedOpenTasks.length, lockTaskOrder, isOrderLocked]);
-
-  // Move to the next task while ensuring state is clean
-  const moveToNextTask = useCallback(() => {
-    // Clear any lingering dialogs first
-    resetDialogState();
-    
-    if (sortedOpenTasks.length === 0) {
-      return;
-    }
-    
-    if (currentTask) {
-      const nextIndex = findNextTaskIndex(currentTask.id, currentIndex);
-      console.log(`Moving from task index ${currentIndex} to ${nextIndex}`);
-      setCurrentIndex(nextIndex);
-    } else {
-      // Fallback if there's no current task
-      setCurrentIndex(prevIndex => (prevIndex + 1) % sortedOpenTasks.length);
-    }
-  }, [currentTask, resetDialogState, sortedOpenTasks.length, findNextTaskIndex, currentIndex]);
-
-  // Using useCallback to memoize handleLowPrioritySkip for the dependency array
-  const handleLowPrioritySkip = useCallback(async () => {
-    if (!currentTask || skipInProgress) return;
+  // Handle task completion
+  const handleComplete = useCallback(async (taskId: string) => {
+    if (isProcessing || !inFocusMode) return;
     
     try {
-      setSkipInProgress(true);
-      await incrementSkipCount(currentTask.id);
-      await fetchTasks();
-      moveToNextTask();
+      setIsProcessing(true);
+      await completeTask(taskId);
+      
+      toast({
+        title: "Task completed",
+        description: "Great job! The task has been marked as complete.",
+      });
+      
+      // Move to next task if there is one
+      if (currentIndex < focusTaskOrder.length - 1) {
+        setCurrentIndex(prevIndex => prevIndex + 1);
+      } else {
+        // No more tasks, end focus mode
+        toast({
+          description: "Focus session complete! All tasks have been processed.",
+        });
+        onFocusEnd();
+      }
     } catch (error) {
-      console.error("Error in handleLowPrioritySkip:", error);
+      console.error('Error completing task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete task. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [currentIndex, focusTaskOrder.length, completeTask, toast, isProcessing, inFocusMode, onFocusEnd]);
+  
+  // Handle task skip
+  const handleSkip = useCallback(async () => {
+    if (isProcessing || !inFocusMode || !currentTask) return;
+    
+    try {
+      setIsProcessing(true);
+      await incrementSkipCount(currentTask.id);
+      
+      // Move to next task if there is one
+      if (currentIndex < focusTaskOrder.length - 1) {
+        setCurrentIndex(prevIndex => prevIndex + 1);
+      } else {
+        // No more tasks, end focus mode
+        toast({
+          description: "Focus session complete! All tasks have been processed.",
+        });
+        onFocusEnd();
+      }
+    } catch (error) {
+      console.error('Error skipping task:', error);
       toast({
         title: "Error",
         description: "Failed to skip task. Please try again.",
         variant: "destructive"
       });
     } finally {
-      setSkipInProgress(false);
+      setIsProcessing(false);
     }
-  }, [currentTask, skipInProgress, incrementSkipCount, fetchTasks, moveToNextTask, toast]);
-
-  const {
-    handleSkip,
-    handleSkipAnyway
-  } = useTaskSkipActions(
-    currentTask,
-    moveToNextTask,
-    openPriorityDialog,
-    resetDialogState,
-    setShowPriorityDialog,
-    skipInProgress,
-    setSkipInProgress,
-    handleLowPrioritySkip
-  );
+  }, [currentTask, currentIndex, focusTaskOrder.length, incrementSkipCount, toast, isProcessing, inFocusMode, onFocusEnd]);
   
-  // Adjust current index if it's out of bounds
-  useEffect(() => {
-    if (currentIndex >= sortedOpenTasks.length && sortedOpenTasks.length > 0) {
-      setCurrentIndex(0);
-    }
-  }, [sortedOpenTasks.length, currentIndex]);
-
-  // Handle "Return to top" button
-  const handleReturnToTop = () => {
-    if (skipInProgress) return;
-    
-    resetDialogState();
+  // Handle return to top
+  const handleReturnToTop = useCallback(() => {
+    if (isProcessing) return;
     setCurrentIndex(0);
-    
-    // Reset the locked order when returning to top
-    resetLockedOrder();
-    
-    // Lock the order with the newest priority data
-    lockTaskOrder();
-    
     toast({
       description: "Returned to top priority task",
     });
-  };
-
-  // Enhanced handleSplitComplete to refresh tasks and reset index
-  const enhancedHandleSplitComplete = async () => {
-    try {
-      await fetchTasks();
-      resetDialogState();
-      setCurrentIndex(0);
-      
-      // Reset the locked order after splitting a task
-      resetLockedOrder();
-      
-      // Lock the order with the newest priority data
-      lockTaskOrder();
-      
-      handleSplitComplete();
-    } finally {
-      setSkipInProgress(false);
-    }
-  };
+  }, [isProcessing, toast]);
   
-  // Actions after priority change
-  const handleDowngradePriorityAndMoveNext = async () => {
-    try {
-      setSkipInProgress(true);
-      await handleDowngradePriority();
-      
-      // Use timeout to ensure state updates before moving
-      setTimeout(() => {
-        moveToNextTask();
-        setSkipInProgress(false);
-      }, 200);
-    } catch (error) {
-      console.error("Error in handleDowngradePriorityAndMoveNext:", error);
-      setSkipInProgress(false);
-    }
-  };
-  
-  // Handle "Blocked" action
-  const handleBlockedAndMoveNext = () => {
-    try {
-      setSkipInProgress(true);
-      handleBlocked();
-      
-      setTimeout(() => {
-        moveToNextTask();
-        setSkipInProgress(false);
-      }, 200);
-    } catch (error) {
-      console.error("Error in handleBlockedAndMoveNext:", error);
-      setSkipInProgress(false);
-    }
-  };
-
   return {
     currentTask,
     currentIndex,
-    sortedOpenTasks,
-    showPriorityDialog,
-    setShowPriorityDialog,
-    showSplitDialog,
-    setShowSplitDialog,
+    focusTaskOrder,
+    handleComplete,
     handleSkip,
-    handleSkipAnyway,
     handleReturnToTop,
-    handleDowngradePriority: handleDowngradePriorityAndMoveNext,
-    handleBlocked: handleBlockedAndMoveNext,
-    moveToNextTask,
-    handleSplitComplete: enhancedHandleSplitComplete,
-    handleSplitTask,
-    taskToSplit,
-    resetDialogState,
-    skipInProgress
+    isProcessing
   };
 }

@@ -14,9 +14,10 @@ import {
 interface TaskHeaderProps {
   currentView: 'main' | 'all' | 'closed' | 'stats';
   onViewChange: (view: 'main' | 'all' | 'closed' | 'stats') => void;
+  inFocusMode?: boolean;
 }
 
-export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
+export function TaskHeader({ currentView, onViewChange, inFocusMode = false }: TaskHeaderProps) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -67,7 +68,7 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
         </DropdownMenu>
       </div>
       <div className="inline-flex items-center justify-center rounded-full bg-milk-100 px-3 py-1 text-sm text-milk-800 mb-4">
-        Welcome to Milk
+        {inFocusMode ? "Focus Mode Active" : "Welcome to Milk"}
       </div>
       <h1 className="text-4xl font-bold text-milk-900 mb-2">
         {currentView === 'main' ? 'Your Top Priority' : 
@@ -75,9 +76,15 @@ export function TaskHeader({ currentView, onViewChange }: TaskHeaderProps) {
          currentView === 'closed' ? 'Closed Tasks' : 'Task Overview'}
       </h1>
       <p className="text-milk-600">
-        {currentView === 'main' ? 'Focus on what matters most right now' : 
-         currentView === 'stats' ? 'Track your progress and task completion' : 
-         currentView === 'closed' ? 'Review your completed, expired, and split tasks' : 'Review your tasks'}
+        {currentView === 'main' && inFocusMode 
+          ? 'Complete or skip tasks in your current focus session' 
+          : currentView === 'main' 
+            ? 'Focus on what matters most right now' 
+            : currentView === 'stats' 
+              ? 'Track your progress and task completion' 
+              : currentView === 'closed' 
+                ? 'Review your completed, expired, and split tasks' 
+                : 'Review your tasks'}
       </p>
     </header>
   );

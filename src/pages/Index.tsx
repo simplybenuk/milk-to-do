@@ -2,63 +2,59 @@
 import { useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
-import { PriorityDialog } from '@/components/PriorityDialog';
-import { SplitTaskDialog } from '@/components/SplitTaskDialog';
 import { TaskHeader } from '@/components/TaskHeader';
 import { useAppView } from '@/hooks/useAppView';
 import { useTaskNavigation } from '@/hooks/useTaskNavigation';
 import { MainContent } from '@/components/MainContent';
 import { useToast } from '@/hooks/use-toast';
+import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 
 const Index = () => {
-  const { fetchTasks, completeTask } = useTaskStore();
-  const { currentView, setCurrentView } = useAppView('main');
+  const { fetchTasks } = useTaskStore();
+  const { 
+    currentView, 
+    setCurrentView, 
+    inFocusMode, 
+    setInFocusMode, 
+    showExitConfirm, 
+    setShowExitConfirm, 
+    confirmExitFocusMode 
+  } = useAppView('main');
   const { toast } = useToast();
+  
+  // Initialize focus mode or end it
+  const handleFocusEnd = () => {
+    setInFocusMode(false);
+    fetchTasks(); // Refresh tasks to update priority scores
+  };
   
   const {
     currentTask,
     currentIndex,
-    sortedOpenTasks,
-    showPriorityDialog,
-    setShowPriorityDialog,
-    showSplitDialog,
-    setShowSplitDialog,
+    focusTaskOrder,
+    handleComplete,
     handleSkip,
-    handleSkipAnyway,
     handleReturnToTop,
-    handleDowngradePriority,
-    handleBlocked,
-    handleSplitTask,
-    handleSplitComplete,
-    taskToSplit,
-    skipInProgress
-  } = useTaskNavigation();
+    isProcessing
+  } = useTaskNavigation(inFocusMode, handleFocusEnd);
 
+  // Fetch tasks on initial render
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const handleComplete = async (taskId: string) => {
-    if (skipInProgress) return;
-    
-    await completeTask(taskId);
-    // After completing a task, refresh the tasks list
-    await fetchTasks();
-    toast({
-      title: "Task completed",
-      description: "Great job! The task has been marked as complete.",
-    });
-  };
-
-  // Determine which task to use for the split dialog
-  const taskForSplitDialog = taskToSplit || currentTask;
-
-  // Handle dialog closures explicitly
-  const handlePriorityDialogClose = (open: boolean) => {
-    if (!open && showPriorityDialog) {
-      console.log("Priority dialog closed manually by user");
+  // Enter focus mode when viewing main screen
+  useEffect(() => {
+    if (currentView === 'main' && !inFocusMode) {
+      setInFocusMode(true);
     }
-    setShowPriorityDialog(open);
+  }, [currentView, inFocusMode, setInFocusMode]);
+
+  // Handler for confirming exit
+  const handleConfirmExit = (view: string) => {
+    confirmExitFocusMode(view as any);
+    // Refresh tasks after exiting focus mode
+    fetchTasks();
   };
 
   return (
@@ -67,6 +63,7 @@ const Index = () => {
         <TaskHeader
           currentView={currentView}
           onViewChange={setCurrentView}
+          inFocusMode={inFocusMode}
         />
 
         <div className="flex flex-col items-center justify-center min-h-[400px]">
@@ -77,29 +74,17 @@ const Index = () => {
             onSkip={handleSkip}
             onReturnToTop={handleReturnToTop}
             currentIndex={currentIndex}
-            sortedOpenTasks={sortedOpenTasks}
+            totalTasks={focusTaskOrder.length}
+            inFocusMode={inFocusMode}
           />
         </div>
       </div>
       
-      <PriorityDialog
-        open={showPriorityDialog}
-        onOpenChange={handlePriorityDialogClose}
-        onDowngradePriority={handleDowngradePriority}
-        onSplitTask={handleSplitTask}
-        onBlocked={handleBlocked}
-        onSkipAnyway={handleSkipAnyway}
+      <FocusExitConfirmDialog
+        open={showExitConfirm}
+        onOpenChange={setShowExitConfirm}
+        onConfirm={() => handleConfirmExit(currentView)}
       />
-      
-      {taskForSplitDialog && (
-        <SplitTaskDialog
-          open={showSplitDialog}
-          onOpenChange={setShowSplitDialog}
-          parentTaskId={taskForSplitDialog.id}
-          parentTaskTitle={taskForSplitDialog.title}
-          onSplitComplete={handleSplitComplete}
-        />
-      )}
       
       <AddTaskDialog onAddTask={(title, priority, expiryDate) => {
         const { addTask } = useTaskStore.getState();

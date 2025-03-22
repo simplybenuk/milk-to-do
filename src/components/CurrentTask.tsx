@@ -92,6 +92,7 @@ export function CurrentTask({
           <Button
             onClick={() => onComplete(task.id)}
             className="w-32 bg-green-500 hover:bg-green-600"
+            disabled={task.status === 'closed'}
           >
             <Check className="mr-2 h-4 w-4" />
             Complete

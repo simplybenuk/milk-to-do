@@ -12,7 +12,8 @@ interface MainContentProps {
   onSkip: () => void;
   onReturnToTop: () => void;
   currentIndex: number;
-  sortedOpenTasks: any[];
+  totalTasks: number;
+  inFocusMode: boolean;
 }
 
 export function MainContent({
@@ -22,7 +23,8 @@ export function MainContent({
   onSkip,
   onReturnToTop,
   currentIndex,
-  sortedOpenTasks
+  totalTasks,
+  inFocusMode
 }: MainContentProps) {
   switch (currentView) {
     case 'all':
@@ -42,18 +44,23 @@ export function MainContent({
     case 'stats':
       return <TaskStats />;
     default:
-      return sortedOpenTasks.length > 0 ? (
+      return currentTask ? (
         <CurrentTask
           task={currentTask}
           onComplete={onComplete}
           onSkip={onSkip}
           onReturnToTop={onReturnToTop}
           currentIndex={currentIndex}
-          totalTasks={sortedOpenTasks.length}
+          totalTasks={totalTasks}
         />
       ) : (
         <div className="text-center py-12">
           <p className="text-milk-500">No tasks yet. Add your first task!</p>
+          {inFocusMode && (
+            <p className="text-milk-500 mt-4">
+              Your focus session is ready to start when you add tasks.
+            </p>
+          )}
         </div>
       );
   }
