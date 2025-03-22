@@ -21,6 +21,12 @@ export function FocusExitConfirmDialog({
   onOpenChange,
   onConfirm,
 }: FocusExitConfirmDialogProps) {
+  // Handle the confirm action explicitly to ensure dialog closes properly
+  const handleConfirm = () => {
+    onConfirm();
+    onOpenChange(false);
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -32,7 +38,7 @@ export function FocusExitConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
+          <AlertDialogAction onClick={handleConfirm}>
             Exit Focus Mode
           </AlertDialogAction>
         </AlertDialogFooter>

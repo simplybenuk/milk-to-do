@@ -55,6 +55,7 @@ const Index = () => {
 
   // Handler for confirming exit
   const handleConfirmExit = () => {
+    // Pass the confirmation to the hook which will handle the view change
     confirmExitFocusMode();
     // Refresh tasks after exiting focus mode
     fetchTasks();
