@@ -45,6 +45,13 @@ export function useAppView(initialView: AppView = 'all') {
     }
   }, [pendingView]);
   
+  // Effect to ensure inFocusMode is synced with currentView
+  useEffect(() => {
+    if (currentView !== 'main' && inFocusMode) {
+      setInFocusMode(false);
+    }
+  }, [currentView, inFocusMode]);
+  
   // Global cleanup effect to ensure pointer events are never stuck
   useEffect(() => {
     const cleanup = () => {
