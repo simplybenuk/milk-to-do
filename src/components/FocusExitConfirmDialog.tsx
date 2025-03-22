@@ -22,19 +22,33 @@ export function FocusExitConfirmDialog({
   onOpenChange,
   onConfirm,
 }: FocusExitConfirmDialogProps) {
-  // Handle cleanup when dialog closes
+  // Ensure pointer events are reset whenever the dialog state changes
   useEffect(() => {
-    if (!open) {
-      // This helps ensure any lingering state is cleaned up
+    // Reset pointer events when dialog opens or closes
+    document.body.style.pointerEvents = "";
+    
+    return () => {
+      // Also reset on unmount
       document.body.style.pointerEvents = "";
-    }
+    };
   }, [open]);
 
-  // Handle the confirm action explicitly
+  // Handle the confirm action
   const handleConfirm = () => {
-    // Call the onConfirm handler first
+    // Reset pointer events immediately
+    document.body.style.pointerEvents = "";
+    
+    // First run the confirm callback
     onConfirm();
-    // Then close the dialog
+    
+    // Then close the dialog (this should happen after onConfirm)
+    onOpenChange(false);
+  };
+
+  // Handle cancel action explicitly
+  const handleCancel = () => {
+    // Reset pointer events immediately
+    document.body.style.pointerEvents = "";
     onOpenChange(false);
   };
 
@@ -48,7 +62,7 @@ export function FocusExitConfirmDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={handleConfirm}>
             Exit Focus Mode
           </AlertDialogAction>

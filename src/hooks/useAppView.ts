@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export type AppView = 'main' | 'all' | 'closed' | 'stats';
 
@@ -27,25 +27,33 @@ export function useAppView(initialView: AppView = 'all') {
   
   // Function to confirm exiting focus mode
   const confirmExitFocusMode = useCallback(() => {
-    // First exit focus mode
+    // Reset any pointer-events styles that might be blocking interactions
+    document.body.style.pointerEvents = '';
+    
+    // Exit focus mode first
     setInFocusMode(false);
     
-    // Then change to the pending view if one exists
+    // Then hide the confirmation dialog
+    setShowExitConfirm(false);
+    
+    // Then change to the pending view if one exists (with a delay to ensure proper sequence)
     if (pendingView) {
       setTimeout(() => {
         setCurrentView(pendingView);
         setPendingView(null);
-      }, 0);
+      }, 50);
     }
-    
-    // Hide the confirmation dialog
-    setShowExitConfirm(false);
-    
-    // Ensure any stuck UI state is reset
-    setTimeout(() => {
-      document.body.style.pointerEvents = "";
-    }, 100);
   }, [pendingView]);
+  
+  // Global cleanup effect to ensure pointer events are never stuck
+  useEffect(() => {
+    const cleanup = () => {
+      document.body.style.pointerEvents = '';
+    };
+    
+    // Clean up on component unmount
+    return cleanup;
+  }, []);
   
   return {
     currentView,

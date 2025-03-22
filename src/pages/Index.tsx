@@ -29,6 +29,9 @@ const Index = () => {
   const handleFocusEnd = () => {
     setInFocusMode(false);
     fetchTasks(); // Refresh tasks to update priority scores
+    
+    // Ensure interactivity is restored
+    document.body.style.pointerEvents = "";
   };
   
   const {
@@ -55,16 +58,16 @@ const Index = () => {
 
   // Handler for confirming exit
   const handleConfirmExit = () => {
-    // First handle exit confirmation in the hook
+    // Reset pointer events immediately
+    document.body.style.pointerEvents = "";
+    
+    // Process the exit confirmation
     confirmExitFocusMode();
     
-    // After a small delay, refresh tasks to ensure data is up to date
+    // Refresh tasks with a delay to ensure state updates first
     setTimeout(() => {
       fetchTasks();
-      
-      // Reset any stuck UI state
-      document.body.style.pointerEvents = "";
-    }, 150);
+    }, 100);
   };
 
   // Handler for entering focus mode
@@ -72,9 +75,22 @@ const Index = () => {
     setCurrentView('main');
   };
 
-  // Ensure the UI is always clickable when component unmounts
+  // Global cleanup for pointer events
   useEffect(() => {
+    // Reset on mount
+    document.body.style.pointerEvents = "";
+    
+    // Set up an interval to periodically check and fix pointer-events
+    // This is a failsafe in case other mechanisms fail
+    const intervalId = setInterval(() => {
+      if (document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = '';
+      }
+    }, 2000);
+    
+    // Cleanup on unmount
     return () => {
+      clearInterval(intervalId);
       document.body.style.pointerEvents = "";
     };
   }, []);
