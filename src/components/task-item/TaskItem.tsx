@@ -57,7 +57,9 @@ export function TaskItem({
           "relative flex items-start gap-4 rounded-lg border p-4 sm:p-6 shadow-lg transition-all bg-white w-full max-w-full",
           "hover:shadow-xl animate-fade-in",
           isCompleting && "animate-task-complete",
-          task.status === 'closed' && "opacity-50"
+          task.status === 'closed' && "opacity-50",
+          // Add a soft purple background for parent tasks
+          isParentTask && "bg-[#F1F0FB]"
         )}
       >
         <div className="flex-1 min-w-0 overflow-hidden break-words">
@@ -94,6 +96,13 @@ export function TaskItem({
               <Badge variant="secondary" className="text-xs">
                 Score: {Math.round(task.priority_score)}
               </Badge>
+              
+              {/* Add a parent task badge */}
+              {isParentTask && (
+                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                  Parent
+                </Badge>
+              )}
             </div>
             
             <span className="text-xs sm:text-sm text-milk-500">
