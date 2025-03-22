@@ -10,13 +10,17 @@ export function useFocusTasks(inFocusMode: boolean) {
   
   // Get tasks and initialize focus mode session if needed
   useEffect(() => {
-    // If we're in focus mode but don't have tasks loaded yet
-    if (inFocusMode && focusTaskOrder.length === 0) {
+    // If we're in focus mode, initialize the task list
+    if (inFocusMode) {
       const openTasks = getTasksByPriority().filter(task => task.status === 'open');
-      setFocusTaskOrder(openTasks);
-      setCurrentIndex(0);
+      // Only set the tasks if we don't already have them or if the tasks are empty
+      if (focusTaskOrder.length === 0) {
+        console.log('Initializing focus tasks with', openTasks.length, 'tasks');
+        setFocusTaskOrder(openTasks);
+        setCurrentIndex(0);
+      }
     }
-  }, [inFocusMode, focusTaskOrder.length, getTasksByPriority]);
+  }, [inFocusMode, getTasksByPriority, focusTaskOrder.length]);
   
   // Reset focus session when leaving focus mode
   useEffect(() => {
@@ -27,7 +31,7 @@ export function useFocusTasks(inFocusMode: boolean) {
   }, [inFocusMode]);
   
   // Get the current task based on the index
-  const currentTask = focusTaskOrder[currentIndex];
+  const currentTask = focusTaskOrder.length > 0 ? focusTaskOrder[currentIndex] : undefined;
   
   // Move to the next task
   const moveToNextTask = () => {
