@@ -25,5 +25,17 @@ self.addEventListener('activate', handleActivate);
 self.addEventListener('fetch', handleFetch);
 self.addEventListener('message', handleMessage);
 
+// Handle notification click - must be present to prevent potential errors
+self.addEventListener('notificationclick', event => {
+  console.log('[Service Worker] Notification click event - notifications disabled');
+  event.notification.close();
+});
+
+// Handle push - prevent any notifications from being shown
+self.addEventListener('push', event => {
+  console.log('[Service Worker] Push event received - notifications disabled');
+  // Intentionally not showing any notifications
+});
+
 // Log service worker initialization
-console.log('[Service Worker] Service worker initialized and event listeners registered');
+console.log('[Service Worker] Service worker initialized - notifications disabled');

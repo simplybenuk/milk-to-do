@@ -34,16 +34,15 @@ export function handleInstall(event) {
 }
 
 /**
- * Handles the activate event - claims clients and sets up notifications
+ * Handles the activate event - claims clients
  */
 export function handleActivate(event) {
   console.log('[Cache Manager] Activating Service Worker ...', event);
   // Claim clients right away so the page is controlled by the service worker
   event.waitUntil(
     self.clients.claim().then(() => {
-      console.log('[Cache Manager] Claimed all clients');
-      // We won't automatically request notification schedule here anymore
-      // This prevents unwanted notifications when opening the app
+      console.log('[Cache Manager] Claimed all clients - notifications disabled');
+      // No notification-related code here
     })
   );
 }

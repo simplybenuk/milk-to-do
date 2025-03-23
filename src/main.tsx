@@ -28,7 +28,13 @@ const updateSW = registerSW({
     
     // Force update the service worker to ensure latest version
     registration.update().then(() => {
-      console.log('Service worker updated');
+      console.log('Service worker updated - notifications disabled');
+      
+      // Make sure to clear any existing service worker state
+      navigator.serviceWorker.ready.then(registration => {
+        // No messaging to service worker for notifications
+        console.log('Service worker is ready - no notifications will be shown');
+      });
     }).catch(err => {
       console.error('Error updating service worker:', err);
     });
