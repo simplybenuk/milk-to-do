@@ -34,7 +34,7 @@ const updateSW = registerSW({
       console.error('Error updating service worker:', err);
     });
     
-    // Only restore scheduled notifications if they exist (don't trigger test notifications)
+    // Only restore scheduled notifications if they exist (don't send notifications on startup)
     const notificationDetails = getScheduledNotificationDetails();
     
     if (localStorage.getItem('notificationsEnabled') === 'true' && 
@@ -45,6 +45,7 @@ const updateSW = registerSW({
       // Use a small delay to ensure the service worker is fully activated
       setTimeout(() => {
         if (registration.active) {
+          // Only send the schedule message, not a test notification
           registration.active.postMessage({
             type: 'SCHEDULE_NOTIFICATION',
             payload: notificationDetails

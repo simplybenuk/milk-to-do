@@ -77,7 +77,7 @@ export const sendTaskReminder = () => {
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
     tag: 'task-reminder',
-    // @ts-ignore - vibrate is valid for notifications but not in TypeScript types
+    // Valid for notifications but not in TypeScript types
     vibrate: [200, 100, 200], // Add vibration pattern for mobile
     renotify: true, // Replace existing notification with same tag
   });
@@ -86,6 +86,21 @@ export const sendTaskReminder = () => {
 // Trigger a test notification immediately for debugging purposes
 export const triggerTestNotification = () => {
   console.log('Attempting to trigger a test notification');
+  
+  // First check for service worker - use it if available for consistent behavior
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    try {
+      console.log('Sending test notification through service worker');
+      navigator.serviceWorker.controller.postMessage({
+        type: 'TRIGGER_TEST_NOTIFICATION'
+      });
+      console.log('Test notification request sent to service worker');
+      return true;
+    } catch (swError) {
+      console.error('Error sending test notification via service worker:', swError);
+      // Fall through to direct notification attempt
+    }
+  }
   
   // Check permissions first
   if (!hasNotificationPermission()) {
@@ -98,7 +113,7 @@ export const triggerTestNotification = () => {
     return false;
   }
   
-  // Try direct notification first for immediate feedback
+  // Try direct notification
   try {
     console.log('Creating a direct notification for testing');
     const notification = new Notification('Milk: Test Notification', {
@@ -124,24 +139,7 @@ export const triggerTestNotification = () => {
     return true;
   } catch (error) {
     console.error('Error sending direct test notification:', error);
-    
-    // Fall back to service worker if direct notification fails
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      try {
-        console.log('Falling back to service worker for test notification');
-        navigator.serviceWorker.controller.postMessage({
-          type: 'TRIGGER_TEST_NOTIFICATION'
-        });
-        console.log('Test notification request sent to service worker');
-        return true;
-      } catch (swError) {
-        console.error('Error sending test notification via service worker:', swError);
-        return false;
-      }
-    } else {
-      console.warn('No active service worker found for sending test notification');
-      return false;
-    }
+    return false;
   }
 };
 

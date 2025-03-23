@@ -85,8 +85,12 @@ export function useNotifications() {
     setTimeout(() => {
       const result = triggerTestNotification();
       console.log('Test notification result:', result);
-      setIsSending(false);
-    }, 300);
+      
+      // Adds some delay before changing the sending state to avoid UI flashing
+      setTimeout(() => {
+        setIsSending(false);
+      }, 2000);
+    }, 500);
     
     return true;
   }, [isSupported, isEnabled, permission]);
