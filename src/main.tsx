@@ -34,8 +34,7 @@ const updateSW = registerSW({
       console.error('Error updating service worker:', err);
     });
     
-    // Only restore scheduled notifications if they exist
-    // But don't actually send a notification when restoring
+    // Only restore scheduled notifications if they exist AND notifications are enabled
     const notificationDetails = getScheduledNotificationDetails();
     
     if (localStorage.getItem('notificationsEnabled') === 'true' && 

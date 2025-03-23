@@ -36,7 +36,6 @@ export const sendNotification = (title: string, options?: ExtendedNotificationOp
             // Ensure these fields are set for better compatibility
             silent: options?.silent ?? false,
             requireInteraction: options?.requireInteraction ?? true,
-            // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
             timestamp: Date.now()
           }
         }
@@ -50,7 +49,6 @@ export const sendNotification = (title: string, options?: ExtendedNotificationOp
       ...options,
       silent: options?.silent ?? false,
       requireInteraction: options?.requireInteraction ?? true,
-      // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
       timestamp: Date.now()
     });
     
@@ -77,7 +75,6 @@ export const sendTaskReminder = () => {
     icon: '/milk_logo192.png',
     badge: '/milk_logo192.png',
     tag: 'task-reminder',
-    // Valid for notifications but not in TypeScript types
     vibrate: [200, 100, 200], // Add vibration pattern for mobile
     renotify: true, // Replace existing notification with same tag
   });
@@ -86,6 +83,17 @@ export const sendTaskReminder = () => {
 // Trigger a test notification immediately for debugging purposes
 export const triggerTestNotification = () => {
   console.log('Attempting to trigger a test notification');
+  
+  // Check permissions and settings first
+  if (!hasNotificationPermission()) {
+    console.error('Cannot send test notification: Permission not granted');
+    return false;
+  }
+  
+  if (!areNotificationsEnabled()) {
+    console.error('Cannot send test notification: Notifications not enabled in app settings');
+    return false;
+  }
   
   // First check for service worker - use it if available for consistent behavior
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -104,18 +112,7 @@ export const triggerTestNotification = () => {
     console.log('No service worker controller available for test notification');
   }
   
-  // Check permissions first
-  if (!hasNotificationPermission()) {
-    console.error('Cannot send test notification: Permission not granted');
-    return false;
-  }
-  
-  if (!areNotificationsEnabled()) {
-    console.error('Cannot send test notification: Notifications not enabled in app settings');
-    return false;
-  }
-  
-  // Try direct notification
+  // Try direct notification as a fallback
   try {
     console.log('Creating a direct notification for testing');
     const notification = new Notification('Milk: Test Notification', {
@@ -123,11 +120,9 @@ export const triggerTestNotification = () => {
       icon: '/milk_logo192.png',
       badge: '/milk_logo192.png',
       tag: 'test-notification-direct',
-      // @ts-ignore - vibrate is valid for notifications but not in TypeScript types
-      vibrate: [200, 100, 200], // Add vibration pattern for mobile
-      requireInteraction: true, // Make notification stay until interaction
-      renotify: true, // Replace existing notification with same tag
-      // @ts-ignore - timestamp is valid for notifications but not in TypeScript types
+      vibrate: [200, 100, 200],
+      requireInteraction: true,
+      renotify: true,
       timestamp: Date.now()
     });
     

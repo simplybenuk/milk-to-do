@@ -38,31 +38,28 @@ export const scheduleDailyNotification = (hour: number, minute: number) => {
     
     // If no controller immediately available, wait for it to activate
     console.log('No active service worker, waiting for one to become active');
-    return new Promise<boolean>((resolve) => {
-      navigator.serviceWorker.ready.then((registration) => {
-        console.log('Service worker now ready, attempting to schedule notification');
-        if (registration.active) {
-          // Ensure we send the message to the service worker
-          setTimeout(() => {
-            if (registration.active) {
-              registration.active.postMessage({
-                type: 'SCHEDULE_NOTIFICATION',
-                payload: { hour, minute }
-              });
-              console.log('Schedule message sent to active service worker after delay');
-              resolve(true);
-            } else {
-              resolve(false);
-            }
-          }, 1000);
-        } else {
-          resolve(false);
-        }
-      }).catch(err => {
-        console.error('Error while waiting for service worker to be ready:', err);
-        resolve(false);
-      });
-    }) as unknown as boolean;
+    
+    // Create a promise that resolves when the service worker is ready
+    navigator.serviceWorker.ready.then((registration) => {
+      console.log('Service worker now ready, attempting to schedule notification');
+      if (registration.active) {
+        // Ensure we send the message to the service worker
+        setTimeout(() => {
+          if (registration.active) {
+            registration.active.postMessage({
+              type: 'SCHEDULE_NOTIFICATION',
+              payload: { hour, minute }
+            });
+            console.log('Schedule message sent to active service worker after delay');
+          }
+        }, 1000);
+      }
+    }).catch(err => {
+      console.error('Error while waiting for service worker to be ready:', err);
+    });
+    
+    // Return true since we've done everything we can to schedule it
+    return true;
   }
   
   console.log('Service worker not supported');

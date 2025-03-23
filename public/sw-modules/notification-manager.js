@@ -20,10 +20,10 @@ export function sendTestNotification() {
     data: {
       url: self.location.origin
     },
-    requireInteraction: true,  // This makes the notification stick around until user interacts with it
-    vibrate: [200, 100, 200],  // Add vibration pattern for mobile
-    renotify: true,            // Replace existing notification with same tag
-    timestamp: Date.now()      // Add timestamp for better ordering
+    requireInteraction: true,
+    vibrate: [200, 100, 200],
+    renotify: true,
+    timestamp: Date.now()
   }).then(() => {
     console.log('[Notification Manager] Test notification sent successfully');
     return true;
@@ -71,7 +71,6 @@ export function scheduleNotification(hour, minute) {
   // Start the scheduling process
   scheduleNextNotification();
   
-  // Return success without sending a confirmation notification (which was causing unwanted notifications)
   return true;
 }
 
@@ -120,10 +119,10 @@ export function showNotification(title, options) {
   
   return self.registration.showNotification(title, {
     ...options,
-    requireInteraction: true,
+    requireInteraction: options.requireInteraction ?? true,
     vibrate: options.vibrate || [200, 100, 200],
-    timestamp: Date.now(),
-    renotify: true
+    timestamp: options.timestamp || Date.now(),
+    renotify: options.renotify ?? true
   }).then(() => {
     console.log(`[Notification Manager] Notification "${title}" sent successfully`);
     return true;

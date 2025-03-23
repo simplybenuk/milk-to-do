@@ -54,10 +54,10 @@ export function handleMessage(event) {
   console.log('[Message Handler] Received message:', event.data);
   
   // Try to handle notification-related messages first
-  if (handleNotificationMessages(event.data)) {
+  if (event.data && handleNotificationMessages(event.data)) {
     return;
   }
   
   // Handle other message types here if needed
-  console.log('[Message Handler] Unhandled message type:', event.data.type);
+  console.log('[Message Handler] Unhandled message type:', event.data?.type);
 }
