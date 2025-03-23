@@ -15,7 +15,16 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: 'prompt', // Changed from 'autoUpdate' to 'prompt'
-      includeAssets: ['favicon.ico', 'pwa-192x192.png', 'pwa-512x512.png', 'milk_logo192.png', 'milk_logo512.png'],
+      includeAssets: [
+        'favicon.ico', 
+        'pwa-192x192.png', 
+        'pwa-512x512.png', 
+        'milk_logo192.png', 
+        'milk_logo512.png',
+        'sw-modules/cache-manager.js',
+        'sw-modules/notification-manager.js',
+        'sw-modules/message-handler.js'
+      ],
       manifest: {
         name: 'Milk - The Expiring To-Do App',
         short_name: 'Milk',
