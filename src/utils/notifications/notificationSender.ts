@@ -36,7 +36,8 @@ export const sendNotification = (title: string, options?: ExtendedNotificationOp
             // Ensure these fields are set for better compatibility
             silent: options?.silent ?? false,
             requireInteraction: options?.requireInteraction ?? true,
-            timestamp: Date.now()
+            // Remove timestamp from here as it's not in standard NotificationOptions
+            // We'll add it back in the service worker where it won't cause TypeScript errors
           }
         }
       });
@@ -49,8 +50,8 @@ export const sendNotification = (title: string, options?: ExtendedNotificationOp
       ...options,
       silent: options?.silent ?? false,
       requireInteraction: options?.requireInteraction ?? true,
-      timestamp: Date.now()
-    });
+      // Remove timestamp from direct call as well
+    } as NotificationOptions);
     
     // Handle notification click
     notification.onclick = function() {
@@ -120,11 +121,10 @@ export const triggerTestNotification = () => {
       icon: '/milk_logo192.png',
       badge: '/milk_logo192.png',
       tag: 'test-notification-direct',
-      vibrate: [200, 100, 200],
+      // TypeScript doesn't like vibrate on standard NotificationOptions, so cast it
       requireInteraction: true,
       renotify: true,
-      timestamp: Date.now()
-    });
+    } as ExtendedNotificationOptions);
     
     notification.onclick = function() {
       console.log('Direct notification clicked, focusing window');
@@ -142,3 +142,4 @@ export const triggerTestNotification = () => {
 
 // Import required functions from notification core
 import { isNotificationSupported, areNotificationsEnabled, hasNotificationPermission } from './notificationCore';
+

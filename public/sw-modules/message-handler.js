@@ -40,6 +40,12 @@ export function handleNotificationMessages(data) {
   } else if (data.type === 'SEND_NOTIFICATION') {
     if (data.payload) {
       const { title, options } = data.payload;
+      
+      // Add timestamp here in service worker context where TypeScript won't complain
+      if (options && !options.timestamp) {
+        options.timestamp = Date.now();
+      }
+      
       console.log('[Message Handler] Showing notification:', title, options);
       return showNotification(title, options || {});
     }
