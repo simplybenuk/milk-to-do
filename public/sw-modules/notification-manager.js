@@ -71,15 +71,7 @@ export function scheduleNotification(hour, minute) {
   // Start the scheduling process
   scheduleNextNotification();
   
-  // Send a confirmation notification that scheduling was successful
-  self.registration.showNotification('Milk: Daily Reminder Set', {
-    body: `Your daily reminder has been set for ${hour}:${minute}`,
-    icon: '/milk_logo192.png',
-    badge: '/milk_logo192.png',
-    tag: 'schedule-confirmation',
-    timestamp: Date.now()
-  });
-  
+  // Return success without sending a confirmation notification (which was causing unwanted notifications)
   return true;
 }
 

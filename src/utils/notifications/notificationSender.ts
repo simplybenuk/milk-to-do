@@ -100,6 +100,8 @@ export const triggerTestNotification = () => {
       console.error('Error sending test notification via service worker:', swError);
       // Fall through to direct notification attempt
     }
+  } else {
+    console.log('No service worker controller available for test notification');
   }
   
   // Check permissions first
