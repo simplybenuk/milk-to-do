@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { Google } from 'lucide-react';
+import { Mail } from 'lucide-react'; // Changed from Google to Mail
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -102,7 +102,7 @@ const Auth = () => {
           onClick={handleGoogleSignIn}
           disabled={loading}
         >
-          <Google className="h-4 w-4" />
+          <Mail className="h-4 w-4" /> {/* Changed from Google to Mail */}
           {isSignUp ? 'Sign up with Google' : 'Sign in with Google'}
         </Button>
 
