@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Google } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -58,6 +60,27 @@ const Auth = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-milk-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 bg-white p-6 rounded-lg shadow-lg">
@@ -70,6 +93,24 @@ const Auth = () => {
               ? 'Sign up to start managing your tasks'
               : 'Sign in to your account'}
           </p>
+        </div>
+
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="w-full flex items-center justify-center gap-2"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+        >
+          <Google className="h-4 w-4" />
+          {isSignUp ? 'Sign up with Google' : 'Sign in with Google'}
+        </Button>
+
+        <div className="relative my-6">
+          <Separator />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="bg-white px-2 text-sm text-milk-500">or</span>
+          </div>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-6">
