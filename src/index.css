@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Rubik:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -91,7 +93,11 @@
   }
 
   body {
-    @apply bg-background text-foreground max-w-full overflow-x-hidden;
+    @apply bg-background text-foreground max-w-full overflow-x-hidden font-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-header;
   }
 }
 
@@ -102,5 +108,26 @@
   
   .text-gradient {
     @apply bg-gradient-to-br from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent;
+  }
+
+  /* Task age-based styles */
+  .task-fresh {
+    @apply bg-fresh-bg border-fresh-accent/40 text-fresh-text;
+  }
+  
+  .task-spoiling {
+    @apply bg-spoiling-bg border-spoiling-accent/40 text-spoiling-text;
+  }
+  
+  .task-sour {
+    @apply bg-sour-bg border-sour-accent/40 text-sour-text hover:animate-wobble;
+  }
+  
+  .task-expired {
+    @apply bg-expired-bg border-expired-accent/40 text-expired-text hover:animate-wobble;
+  }
+
+  .stink-cloud {
+    @apply before:content-[''] before:absolute before:-z-10 before:top-0 before:left-0 before:w-full before:h-full before:bg-expired-accent/10 before:rounded-full before:animate-stink-cloud;
   }
 }

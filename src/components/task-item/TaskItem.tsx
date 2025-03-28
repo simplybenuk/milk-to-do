@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { Trash2, CheckCircle, ArrowUp, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TextWithLinks } from './TextWithLinks';
@@ -10,6 +10,7 @@ import { PriorityBadge } from './PriorityBadge';
 import { ChildTasksList } from './ChildTasksList';
 import { DeleteTaskDialog } from './DeleteTaskDialog';
 import { Badge } from '@/components/ui/badge';
+import { TaskAgeIndicator } from './TaskAgeIndicator';
 
 interface TaskItemProps {
   task: Task;
@@ -42,6 +43,17 @@ export function TaskItem({
   const parentId = task.parent_id;
   const isParentTask = task.closed_status === 'parent' && childTasks.length > 0;
 
+  // Calculate age-based classes
+  const ageInDays = differenceInDays(new Date(), new Date(task.created_at));
+  const daysUntilExpiry = differenceInDays(new Date(task.expiry_date), new Date());
+  
+  const getTaskAgeClass = () => {
+    if (daysUntilExpiry < 0) return "task-expired";
+    if (ageInDays >= 21) return "task-sour";
+    if (ageInDays >= 8) return "task-spoiling"; 
+    return "task-fresh";
+  };
+
   const handleComplete = () => {
     setIsCompleting(true);
     // Add slight delay to allow animation to play
@@ -60,10 +72,12 @@ export function TaskItem({
     <>
       <div
         className={cn(
-          "relative flex items-start gap-4 rounded-lg border p-4 sm:p-6 shadow-lg transition-all bg-white w-full max-w-full",
+          "relative flex items-start gap-4 rounded-lg border p-4 sm:p-6 shadow-lg transition-all w-full max-w-full",
           "hover:shadow-xl animate-fade-in",
           isCompleting && "animate-task-complete",
           task.status === 'closed' && "opacity-50",
+          // Add age-based color classes when task is open
+          task.status === 'open' && getTaskAgeClass(),
           // Add a soft purple background for parent tasks
           isParentTask && "bg-[#F1F0FB]"
         )}
@@ -71,11 +85,11 @@ export function TaskItem({
         <div className="flex-1 min-w-0 overflow-hidden break-words">
           {/* Parent task link */}
           {parentId && (
-            <div className="mb-2 text-xs flex items-center text-milk-600">
+            <div className="mb-2 text-xs flex items-center">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-0 h-6 flex items-center gap-1 text-milk-600 hover:text-milk-900"
+                className="p-0 h-6 flex items-center gap-1 hover:text-milk-900"
                 onClick={() => onViewParent && onViewParent(parentId)}
               >
                 <ArrowUp className="h-3 w-3" />
@@ -84,12 +98,20 @@ export function TaskItem({
             </div>
           )}
           
-          <h3 className="text-lg sm:text-xl font-medium text-milk-900 mb-2 sm:mb-4 break-words overflow-hidden">
+          <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words overflow-hidden">
             <TextWithLinks text={task.title} />
           </h3>
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap gap-2 items-center">
               <PriorityBadge priority={task.priority} />
+              
+              {/* Age indicator */}
+              {task.status === 'open' && (
+                <TaskAgeIndicator 
+                  createdAt={new Date(task.created_at)} 
+                  expiryDate={new Date(task.expiry_date)}
+                />
+              )}
               
               {/* Skip count badge */}
               {task.skip_count > 0 && (
@@ -111,7 +133,7 @@ export function TaskItem({
               )}
             </div>
             
-            <span className="text-xs sm:text-sm text-milk-500">
+            <span className="text-xs sm:text-sm">
               Expires: {format(task.expiry_date, "d MMM HH:mm")}
             </span>
 

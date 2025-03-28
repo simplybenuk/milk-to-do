@@ -37,6 +37,27 @@ export default {
           800: "#262626",
           900: "#171717",
         },
+        // Task age-based colors
+        fresh: {
+          bg: "#F2FCE2",  // Soft green
+          accent: "#D3E4FD", // Light blue
+          text: "#2E4057"   // Dark blue-gray
+        },
+        spoiling: {
+          bg: "#FEF7CD",    // Soft yellow
+          accent: "#f8e473", // Deeper yellow
+          text: "#5A4215"    // Brown
+        },
+        sour: {
+          bg: "#FEC6A1",    // Soft orange
+          accent: "#E5A77C", // Deeper orange
+          text: "#5D3A1A"    // Brown
+        },
+        expired: {
+          bg: "#FFDEE2",    // Soft red
+          accent: "#ea384c", // Bright red
+          text: "#6A131F"    // Dark red
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -66,6 +87,10 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      fontFamily: {
+        header: ['Fredoka', 'Rubik', 'sans-serif'],
+        body: ['Inter', 'Nunito', 'sans-serif'],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -93,6 +118,16 @@ export default {
           "0%": { transform: "translateY(100%)" },
           "100%": { transform: "translateY(0)" },
         },
+        "wobble": {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "25%": { transform: "rotate(-1deg)" },
+          "75%": { transform: "rotate(1deg)" },
+        },
+        "stink-cloud": {
+          "0%": { opacity: "0.2", transform: "scale(0.95)" },
+          "50%": { opacity: "0.7", transform: "scale(1.05)" },
+          "100%": { opacity: "0.2", transform: "scale(0.95)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -100,6 +135,8 @@ export default {
         "task-complete": "task-complete 0.5s ease-out forwards",
         "fade-in": "fade-in 0.3s ease-out forwards",
         "slide-up": "slide-up 0.3s ease-out",
+        "wobble": "wobble 2s ease-in-out infinite",
+        "stink-cloud": "stink-cloud 3s ease-in-out infinite",
       },
     },
   },

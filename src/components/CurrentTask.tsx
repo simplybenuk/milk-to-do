@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Check, SkipForward, ArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
+import { cn } from '@/lib/utils';
+import { differenceInDays } from 'date-fns';
 
 interface CurrentTaskProps {
   task: Task;
@@ -46,6 +48,42 @@ export function CurrentTask({
 
   // If viewing a parent, show that instead of current task
   const displayTask = viewingParent || task;
+  
+  // Get button styling based on task age
+  const getButtonStyles = () => {
+    if (!task) return {};
+    
+    const ageInDays = differenceInDays(new Date(), new Date(task.created_at));
+    const daysUntilExpiry = differenceInDays(new Date(task.expiry_date), new Date());
+    
+    if (daysUntilExpiry < 0) {
+      return {
+        complete: "bg-expired-accent hover:bg-expired-accent/90 text-white",
+        skip: "border-expired-accent/50 text-expired-text hover:bg-expired-bg/50"
+      };
+    }
+    
+    if (ageInDays >= 21) {
+      return {
+        complete: "bg-sour-accent hover:bg-sour-accent/90 text-white",
+        skip: "border-sour-accent/50 text-sour-text hover:bg-sour-bg/50"
+      };
+    }
+    
+    if (ageInDays >= 8) {
+      return {
+        complete: "bg-spoiling-accent hover:bg-spoiling-accent/90 text-spoiling-text",
+        skip: "border-spoiling-accent/50 text-spoiling-text hover:bg-spoiling-bg/50"
+      };
+    }
+    
+    return {
+      complete: "bg-green-500 hover:bg-green-600 text-white",
+      skip: "border-fresh-accent/50 text-fresh-text hover:bg-fresh-bg/50"
+    };
+  };
+  
+  const buttonStyles = getButtonStyles();
 
   return (
     <div className="w-full max-w-xl animate-fade-in">
@@ -64,7 +102,7 @@ export function CurrentTask({
       
       {!viewingParent && (
         <div className="flex items-center justify-center gap-2 mb-4 text-sm text-milk-600">
-          <span>Task {currentIndex + 1} of {totalTasks}</span>
+          <span className="font-header">Task {currentIndex + 1} of {totalTasks}</span>
           {showReturnButton && (
             <Button
               onClick={onReturnToTop}
@@ -91,7 +129,7 @@ export function CurrentTask({
         <div className="flex justify-center gap-4 mt-6">
           <Button
             onClick={() => onComplete(task.id)}
-            className="w-32 bg-green-500 hover:bg-green-600"
+            className={cn("w-32", buttonStyles.complete)}
             disabled={task.status === 'closed'}
           >
             <Check className="mr-2 h-4 w-4" />
@@ -100,7 +138,7 @@ export function CurrentTask({
           <Button
             onClick={onSkip}
             variant="outline"
-            className="w-32"
+            className={cn("w-32", buttonStyles.skip)}
           >
             <SkipForward className="mr-2 h-4 w-4" />
             Skip
