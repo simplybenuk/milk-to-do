@@ -129,18 +129,18 @@ export function CurrentTask({
         <div className="flex justify-center gap-4 mt-6">
           <Button
             onClick={() => onComplete(task.id)}
-            className={cn("w-32", buttonStyles.complete)}
+            className={cn("w-36 h-11", buttonStyles.complete)} // Increased button size
             disabled={task.status === 'closed'}
           >
-            <Check className="mr-2 h-4 w-4" />
+            <Check className="mr-2 h-5 w-5" /> {/* Increased icon size */}
             Complete
           </Button>
           <Button
             onClick={onSkip}
             variant="outline"
-            className={cn("w-32", buttonStyles.skip)}
+            className={cn("w-36 h-11", buttonStyles.skip)} // Increased button size
           >
-            <SkipForward className="mr-2 h-4 w-4" />
+            <SkipForward className="mr-2 h-5 w-5" /> {/* Increased icon size */}
             Skip
           </Button>
         </div>

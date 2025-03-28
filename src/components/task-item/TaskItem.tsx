@@ -72,8 +72,8 @@ export function TaskItem({
     <>
       <div
         className={cn(
-          "relative flex items-start gap-4 rounded-lg border p-4 sm:p-6 shadow-lg transition-all w-full max-w-full",
-          "hover:shadow-xl animate-fade-in",
+          "relative flex items-start gap-4 rounded-lg border p-5 sm:p-6 shadow-lg transition-all w-full max-w-full",
+          "hover:shadow-xl animate-fade-in min-h-[140px]", // Increased min-height
           isCompleting && "animate-task-complete",
           task.status === 'closed' && "opacity-50",
           // Add age-based color classes when task is open
@@ -148,37 +148,37 @@ export function TaskItem({
           </div>
         </div>
         
-        <div className="absolute bottom-4 right-4 flex gap-2">
+        <div className="absolute bottom-5 right-5 flex gap-3">
           {showCompleteButton && (
             <>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="text-green-500 hover:text-green-700 hover:bg-green-50 shrink-0"
+                className="text-green-500 hover:text-green-700 hover:bg-green-50 shrink-0 w-10 h-10 rounded-full"
                 onClick={handleComplete}
                 title="Complete task"
               >
-                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                <CheckCircle className="h-5 w-5" />
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="text-purple-500 hover:text-purple-700 hover:bg-purple-50 shrink-0"
+                className="text-purple-500 hover:text-purple-700 hover:bg-purple-50 shrink-0 w-10 h-10 rounded-full"
                 onClick={handleSplitTask}
                 title="Split into subtasks"
               >
-                <Scissors className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Scissors className="h-5 w-5" />
               </Button>
             </>
           )}
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
+            className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 w-10 h-10 rounded-full"
             onClick={() => setShowDeleteDialog(true)}
             title="Delete task"
           >
-            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Trash2 className="h-5 w-5" />
           </Button>
         </div>
       </div>
