@@ -72,8 +72,8 @@ export function TaskItem({
     <>
       <div
         className={cn(
-          "relative flex items-start gap-4 rounded-lg border p-5 sm:p-6 shadow-lg transition-all w-full max-w-full",
-          "hover:shadow-xl animate-fade-in min-h-[140px]", // Increased min-height
+          "relative flex flex-col rounded-lg border p-5 sm:p-6 shadow-lg transition-all w-full max-w-full",
+          "hover:shadow-xl animate-fade-in min-h-[140px]",
           isCompleting && "animate-task-complete",
           task.status === 'closed' && "opacity-50",
           // Add age-based color classes when task is open
@@ -82,7 +82,7 @@ export function TaskItem({
           isParentTask && "bg-[#F1F0FB]"
         )}
       >
-        <div className="flex-1 min-w-0 overflow-hidden break-words">
+        <div className="flex-1 min-w-0 overflow-hidden break-words mb-16 sm:mb-14">
           {/* Parent task link */}
           {parentId && (
             <div className="mb-2 text-xs flex items-center">
@@ -98,7 +98,7 @@ export function TaskItem({
             </div>
           )}
           
-          <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words overflow-hidden">
+          <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words">
             <TextWithLinks text={task.title} />
           </h3>
           <div className="flex flex-col gap-2">
@@ -127,7 +127,7 @@ export function TaskItem({
               
               {/* Add a parent task badge */}
               {isParentTask && (
-                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                <Badge variant="outline" className="text-xs bg-[#F5F4FF] text-teal-700 border-teal-200">
                   Parent
                 </Badge>
               )}
@@ -163,7 +163,7 @@ export function TaskItem({
               <Button
                 variant="outline"
                 size="icon"
-                className="text-purple-500 hover:text-purple-700 hover:bg-purple-50 shrink-0 w-10 h-10 rounded-full"
+                className="text-teal-500 hover:text-teal-700 hover:bg-teal-50 shrink-0 w-10 h-10 rounded-full"
                 onClick={handleSplitTask}
                 title="Split into subtasks"
               >
