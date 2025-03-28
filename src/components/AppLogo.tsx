@@ -3,9 +3,10 @@ import React from 'react';
 
 interface AppLogoProps {
   size?: 'small' | 'medium' | 'large';
+  variant?: 'default' | 'light';
 }
 
-export function AppLogo({ size = 'medium' }: AppLogoProps) {
+export function AppLogo({ size = 'medium', variant = 'default' }: AppLogoProps) {
   // Set size classes based on the size prop
   const containerClasses = {
     small: 'flex items-center gap-1',
@@ -24,6 +25,9 @@ export function AppLogo({ size = 'medium' }: AppLogoProps) {
     medium: { width: 32, height: 42 },
     large: { width: 40, height: 52 }
   };
+
+  // Text color class based on variant
+  const textColorClass = variant === 'light' ? 'text-white' : 'text-gradient';
 
   return (
     <div className={containerClasses[size]}>
@@ -81,7 +85,7 @@ export function AppLogo({ size = 'medium' }: AppLogoProps) {
       </svg>
       
       {/* SourList text */}
-      <span className={`${logoTextClasses[size]} font-header text-gradient`}>SourList</span>
+      <span className={`${logoTextClasses[size]} font-header ${textColorClass}`}>SourList</span>
     </div>
   );
 }

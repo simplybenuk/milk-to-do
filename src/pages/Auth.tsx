@@ -1,195 +1,198 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { Separator } from '@/components/ui/separator';
-import { Mail, LogIn, UserPlus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { AppLogo } from '@/components/AppLogo';
 
-const Auth = () => {
+type View = 'sign-in' | 'sign-up';
+
+export default function Auth() {
+  const [view, setView] = useState<View>('sign-in');
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const isValidPassword = (password: string) => {
+    return password.length >= 6;
+  };
+
+  const handleOAuth = async (provider: 'google' | 'github') => {
     setLoading(true);
+    setError('');
 
     try {
-      if (isSignUp) {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              username,
-            },
-          },
-        });
-
-        if (signUpError) throw signUpError;
-
-        toast({
-          title: "Success!",
-          description: "Please check your email to verify your account.",
-        });
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) throw signInError;
-
-        navigate('/');
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/app`,
+        },
       });
+
+      if (error) throw error;
+    } catch (error: any) {
+      setError(error.message || error.error_description || 'OAuth failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  // Check if user is already logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/app');
+      }
+    });
+  }, [navigate]);
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setLoading(true);
+    setError('');
+    
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
+      if (view === 'sign-in') {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (error) throw error;
+        navigate('/app');
+      } else {
+        if (!isValidEmail(email)) {
+          setError('Please enter a valid email address.');
+          return;
         }
-      });
-      
-      if (error) throw error;
+    
+        if (!isValidPassword(password)) {
+          setError('Password must be at least 6 characters long.');
+          return;
+        }
+    
+        if (password !== confirmPassword) {
+          setError('Passwords do not match.');
+          return;
+        }
+    
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/app`,
+          },
+        });
+    
+        if (error) throw error;
+        navigate('/app');
+      }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      setError(error.message || error.error_description || 'Authentication failed');
+    } finally {
       setLoading(false);
     }
   };
-
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent to-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg animate-fade-in">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gradient">
-            {isSignUp ? 'Create an account' : 'Welcome back'}
-          </h2>
-          <p className="mt-2 text-milk-600">
-            {isSignUp
-              ? 'Sign up to start managing your tasks'
-              : 'Sign in to your account'}
-          </p>
-        </div>
-
-        <Button 
-          type="button" 
-          variant="outline" 
-          className="w-full flex items-center justify-center gap-2 hover:bg-accent/30"
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-        >
-          <Mail className="h-4 w-4" />
-          {isSignUp ? 'Sign up with Google' : 'Sign in with Google'}
-        </Button>
-
-        <div className="relative my-6">
-          <Separator />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="bg-white px-2 text-sm text-milk-500">or</span>
-          </div>
-        </div>
-
-        <form onSubmit={handleAuth} className="space-y-6">
-          {isSignUp && (
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-milk-700">
-                Username
-              </label>
+    <div className="grid h-screen place-items-center bg-milk-50">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">
+            <AppLogo size="medium" />
+          </CardTitle>
+          <CardDescription className="text-center">
+            {view === 'sign-in' ? 'Sign in to your account' : 'Create an account'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="mt-1"
-                placeholder="johndoe"
-                minLength={3}
               />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {view === 'sign-up' && (
+              <div className="grid gap-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <Button disabled={loading} className="w-full mt-4">
+              {loading ? 'Loading...' : view === 'sign-in' ? 'Sign In' : 'Sign Up'}
+            </Button>
+          </form>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" disabled={loading} onClick={() => handleOAuth('google')}>
+              Google
+            </Button>
+            <Button variant="outline" disabled={loading} onClick={() => handleOAuth('github')}>
+              Github
+            </Button>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          {view === 'sign-in' ? (
+            <>
+              Don't have an account?{' '}
+              <Button variant="link" onClick={() => setView('sign-up')}>
+                Sign up
+              </Button>
+            </>
+          ) : (
+            <>
+              Already have an account?{' '}
+              <Button variant="link" onClick={() => setView('sign-in')}>
+                Sign in
+              </Button>
+            </>
           )}
-          
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-milk-700">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-milk-700">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1"
-              placeholder="••••••••"
-              minLength={6}
-            />
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full bg-primary hover:bg-primary/90"
-            disabled={loading}
-          >
-            {loading
-              ? 'Loading...'
-              : isSignUp
-              ? <span className="flex items-center gap-2"><UserPlus className="h-4 w-4" /> Sign Up</span>
-              : <span className="flex items-center gap-2"><LogIn className="h-4 w-4" /> Sign In</span>}
-          </Button>
-        </form>
-
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-primary hover:text-primary/80 transition-colors"
-          >
-            {isSignUp
-              ? 'Already have an account? Sign in'
-              : "Don't have an account? Sign up"}
-          </button>
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
-};
-
-export default Auth;
+}

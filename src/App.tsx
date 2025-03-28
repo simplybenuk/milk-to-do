@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import Landing from "./pages/Landing";
 
 const queryClient = new QueryClient();
 
@@ -44,8 +45,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route
-            path="/"
+            path="/app"
             element={
               <PrivateRoute>
                 <Index />
