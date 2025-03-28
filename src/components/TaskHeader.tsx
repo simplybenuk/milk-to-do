@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { AppLogo } from '@/components/AppLogo';
 
 interface TaskHeaderProps {
   currentView: 'main' | 'all' | 'closed' | 'stats';
@@ -67,8 +68,13 @@ export function TaskHeader({ currentView, onViewChange, inFocusMode = false }: T
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      
+      <div className="mb-6 flex justify-center">
+        <AppLogo size="large" />
+      </div>
+      
       <div className="inline-flex items-center justify-center rounded-full bg-milk-100 px-3 py-1 text-sm text-milk-800 mb-4">
-        {inFocusMode ? "Focus Mode Active" : "Welcome to Milk"}
+        {inFocusMode ? "Focus Mode Active" : "Welcome to SourList"}
       </div>
       <h1 className="text-4xl font-bold text-milk-900 mb-2">
         {currentView === 'main' ? 'Your Top Priority' : 

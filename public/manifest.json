@@ -1,7 +1,7 @@
 
 {
-  "name": "Milk - The Expiring To-Do App",
-  "short_name": "Milk",
+  "name": "SourList - The Expiring To-Do App",
+  "short_name": "SourList",
   "description": "A to-do app with task expiry and prioritization",
   "start_url": "/",
   "display": "standalone",
