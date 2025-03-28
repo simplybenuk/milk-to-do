@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { Mail } from 'lucide-react'; // Changed from Google to Mail
+import { Mail, LogIn, UserPlus } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -82,10 +82,10 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-milk-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 bg-white p-6 rounded-lg shadow-lg">
+    <div className="min-h-screen bg-gradient-to-br from-accent to-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg animate-fade-in">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-milk-900">
+          <h2 className="text-3xl font-bold text-gradient">
             {isSignUp ? 'Create an account' : 'Welcome back'}
           </h2>
           <p className="mt-2 text-milk-600">
@@ -98,11 +98,11 @@ const Auth = () => {
         <Button 
           type="button" 
           variant="outline" 
-          className="w-full flex items-center justify-center gap-2"
+          className="w-full flex items-center justify-center gap-2 hover:bg-accent/30"
           onClick={handleGoogleSignIn}
           disabled={loading}
         >
-          <Mail className="h-4 w-4" /> {/* Changed from Google to Mail */}
+          <Mail className="h-4 w-4" />
           {isSignUp ? 'Sign up with Google' : 'Sign in with Google'}
         </Button>
 
@@ -165,14 +165,14 @@ const Auth = () => {
 
           <Button
             type="submit"
-            className="w-full bg-milk-800 hover:bg-milk-900"
+            className="w-full bg-primary hover:bg-primary/90"
             disabled={loading}
           >
             {loading
               ? 'Loading...'
               : isSignUp
-              ? 'Sign Up'
-              : 'Sign In'}
+              ? <span className="flex items-center gap-2"><UserPlus className="h-4 w-4" /> Sign Up</span>
+              : <span className="flex items-center gap-2"><LogIn className="h-4 w-4" /> Sign In</span>}
           </Button>
         </form>
 
@@ -180,7 +180,7 @@ const Auth = () => {
           <button
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-milk-600 hover:text-milk-800"
+            className="text-sm text-primary hover:text-primary/80 transition-colors"
           >
             {isSignUp
               ? 'Already have an account? Sign in'
