@@ -13,6 +13,7 @@ export function useFocusModeHandlers(
   
   // Handler for entering focus mode
   const handleEnterFocusMode = useCallback(() => {
+    console.log('Entering focus mode');
     // Reset pointer events explicitly before entering focus mode
     document.body.style.pointerEvents = "";
     setCurrentView('main');
@@ -20,6 +21,7 @@ export function useFocusModeHandlers(
 
   // Handler for exiting focus mode
   const handleExitFocusMode = useCallback(() => {
+    console.log('Initiating focus mode exit');
     // Make sure pointer events are enabled when trying to exit
     document.body.style.pointerEvents = "";
     setShowExitConfirm(true);
@@ -27,25 +29,18 @@ export function useFocusModeHandlers(
 
   // Handler for confirming exit
   const handleConfirmExit = useCallback(() => {
-    console.log("Confirming exit from focus mode");
-    
+    console.log('Confirming exit from focus mode');
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
     
-    // Critical fix: Change the view FIRST to 'all' to force exit from focus mode
-    setCurrentView('all');
-    
-    // Then set focus mode to false 
-    setInFocusMode(false);
-    
-    // Process the exit confirmation
+    // Process the exit confirmation first
     confirmExitFocusMode();
     
-    // Refresh tasks after state updates
+    // Refresh tasks after a short delay to ensure state updates are complete
     setTimeout(() => {
       fetchTasks();
-    }, 0);
-  }, [setInFocusMode, setCurrentView, confirmExitFocusMode, fetchTasks]);
+    }, 100);
+  }, [confirmExitFocusMode, fetchTasks]);
 
   return {
     handleEnterFocusMode,

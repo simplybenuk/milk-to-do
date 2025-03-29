@@ -24,37 +24,34 @@ export function FocusExitConfirmDialog({
 }: FocusExitConfirmDialogProps) {
   // Ensure pointer events are reset whenever the dialog state changes
   useEffect(() => {
-    // Reset pointer events when dialog opens or closes
     document.body.style.pointerEvents = "";
     console.log("FocusExitConfirmDialog - Resetting pointer events, dialog state:", open);
     
     return () => {
-      // Also reset on unmount
       document.body.style.pointerEvents = "";
       console.log("FocusExitConfirmDialog - Cleanup pointer events");
     };
   }, [open]);
 
-  // Handle the confirm action - Critical fix: call onConfirm before closing dialog
+  // Handle the confirm action
   const handleConfirm = () => {
+    console.log("FocusExitConfirmDialog - Confirming exit");
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
-    console.log("FocusExitConfirmDialog - Confirming exit, resetting pointer events");
     
-    // Call the onConfirm handler first - ensure it runs before dialog state changes
+    // First process the confirmation
     onConfirm();
     
-    // Then close the dialog after a small delay to ensure state updates propagate
-    setTimeout(() => {
+    // Then close the dialog after a brief delay
+    requestAnimationFrame(() => {
       onOpenChange(false);
-    }, 10);
+    });
   };
 
-  // Handle cancel action explicitly
+  // Handle cancel action
   const handleCancel = () => {
-    // Reset pointer events immediately
+    console.log("FocusExitConfirmDialog - Cancelling exit");
     document.body.style.pointerEvents = "";
-    console.log("FocusExitConfirmDialog - Cancelling exit, resetting pointer events");
     onOpenChange(false);
   };
 

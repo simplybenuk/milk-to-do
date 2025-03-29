@@ -21,38 +21,44 @@ export function useAppView(initialView: AppView = 'all') {
     // If not in focus mode or switching to main, change view directly
     setCurrentView(newView);
     if (newView !== 'main') {
-      setInFocusMode(false); // Ensure focus mode is turned off when not on main view
+      console.log('Exiting focus mode due to view change to:', newView);
+      setInFocusMode(false);
     }
   }, [inFocusMode]);
-  
+
   // Function to confirm exiting focus mode
   const confirmExitFocusMode = useCallback(() => {
-    // Reset any pointer-events styles that might be blocking interactions
-    document.body.style.pointerEvents = '';
+    console.log('Confirming exit from focus mode, pending view:', pendingView);
+    // First disable focus mode
+    setInFocusMode(false);
     
-    // Then change to the pending view if one exists
+    // Then change the view (either to pending or 'all')
     if (pendingView) {
       setCurrentView(pendingView);
       setPendingView(null);
-      setInFocusMode(false); // Ensure focus mode is turned off
+    } else {
+      setCurrentView('all');
     }
+    
+    // Finally close the confirmation dialog
+    setShowExitConfirm(false);
   }, [pendingView]);
   
-  // Effect to ensure inFocusMode is synced with currentView
+  // Effect to ensure focus mode state is synced with current view
   useEffect(() => {
     if (currentView !== 'main' && inFocusMode) {
-      // If we're not on the main view but somehow focus mode is still on, turn it off
+      console.log('Auto-disabling focus mode due to view change');
       setInFocusMode(false);
     }
   }, [currentView, inFocusMode]);
   
-  // Global cleanup effect to ensure pointer events are never stuck
+  // Effect to ensure pointer events are never stuck
   useEffect(() => {
     const cleanup = () => {
       document.body.style.pointerEvents = '';
     };
     
-    // Clean up on component unmount
+    // Clean up on unmount
     return cleanup;
   }, []);
   
