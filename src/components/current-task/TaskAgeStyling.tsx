@@ -3,7 +3,13 @@ import { Task } from '@/types/task';
 import { differenceInDays } from 'date-fns';
 
 export function getButtonStyles(task: Task | null) {
-  if (!task) return {};
+  if (!task) {
+    // Return default button styles when task is null
+    return {
+      complete: "bg-green-500 hover:bg-green-600 text-white",
+      skip: "border-fresh-accent/50 text-fresh-text hover:bg-fresh-bg/50"
+    };
+  }
   
   const ageInDays = differenceInDays(new Date(), new Date(task.created_at));
   const daysUntilExpiry = differenceInDays(new Date(task.expiry_date), new Date());
