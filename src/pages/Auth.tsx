@@ -28,26 +28,6 @@ export default function Auth() {
     return password.length >= 6;
   };
 
-  const handleOAuth = async (provider: 'google' | 'github') => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: window.location.origin + '/app',
-        },
-      });
-
-      if (error) throw error;
-    } catch (error: any) {
-      setError(error.message || error.error_description || 'OAuth failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Check if user is already logged in
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -159,22 +139,6 @@ export default function Auth() {
               {loading ? 'Loading...' : view === 'sign-in' ? 'Sign In' : 'Sign Up'}
             </Button>
           </form>
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" disabled={loading} onClick={() => handleOAuth('google')}>
-              Google
-            </Button>
-            <Button variant="outline" disabled={loading} onClick={() => handleOAuth('github')}>
-              Github
-            </Button>
-          </div>
         </CardContent>
         <CardFooter className="flex justify-center">
           {view === 'sign-in' ? (
