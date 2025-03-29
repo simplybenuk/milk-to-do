@@ -44,10 +44,27 @@ const Index = () => {
     isProcessing
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
 
-  // Fetch tasks on initial render
+  // Add error boundary for fetchTasks
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    console.log('Index component mounted, fetching tasks...');
+    try {
+      fetchTasks().catch(err => {
+        console.error('Error fetching tasks:', err);
+        toast({
+          title: 'Error fetching tasks',
+          description: 'Please try refreshing the page',
+          variant: 'destructive',
+        });
+      });
+    } catch (err) {
+      console.error('Exception in fetchTasks:', err);
+    }
+    
+    console.log('App state:', { 
+      currentView,
+      inFocusMode
+    });
+  }, [fetchTasks, toast, currentView, inFocusMode]);
 
   // Enter focus mode when explicitly switching to main view
   useEffect(() => {
@@ -79,6 +96,7 @@ const Index = () => {
   useEffect(() => {
     // Reset on mount
     document.body.style.pointerEvents = "";
+    console.log('Index component initialized');
     
     // Set up an interval to periodically check and fix pointer-events
     // This is a failsafe in case other mechanisms fail
@@ -92,6 +110,7 @@ const Index = () => {
     return () => {
       clearInterval(intervalId);
       document.body.style.pointerEvents = "";
+      console.log('Index component unmounted');
     };
   }, []);
 

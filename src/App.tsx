@@ -38,7 +38,10 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   
   // Handle auth redirects
   useEffect(() => {
+    console.log('PrivateRoute - Current path:', location.pathname);
+    
     const hasAuthTokens = checkForAuthTokens();
+    console.log('Auth tokens in URL:', hasAuthTokens);
     
     // If we have auth tokens in the URL, navigate to /app
     if (hasAuthTokens && location.pathname === '/') {
@@ -47,22 +50,29 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
     }
     
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Session check result:', !!session);
       setSession(!!session);
       
       // If user is authenticated and still on landing page, redirect to app
       if (session && location.pathname === '/') {
+        console.log('User authenticated, redirecting from landing to app');
         navigate('/app', { replace: true });
       }
+    }).catch(error => {
+      console.error('Error getting session:', error);
+      setSession(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed - Event:', event);
       const isAuthenticated = !!session;
       setSession(isAuthenticated);
       
       // If user just authenticated and on landing or auth page, redirect to app
       if (isAuthenticated && (location.pathname === '/' || location.pathname === '/auth')) {
+        console.log('Auth state change - redirecting to app');
         navigate('/app', { replace: true });
       }
     });
@@ -71,42 +81,48 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }, [location.pathname, navigate]);
 
   if (session === null) {
+    console.log('PrivateRoute - Loading state');
     return null; // Loading state
   }
 
+  console.log('PrivateRoute - Session state:', session);
   return session ? <>{children}</> : <Navigate to="/auth" replace />;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route
-            path="/app"
-            element={
-              <PrivateRoute>
-                <Index />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <PrivateRoute>
-                <Settings />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log('App component rendering');
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route
+              path="/app"
+              element={
+                <PrivateRoute>
+                  <Index />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute>
+                  <Settings />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
