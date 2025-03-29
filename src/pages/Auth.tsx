@@ -55,16 +55,19 @@ export default function Auth() {
       } else {
         if (!isValidEmail(email)) {
           setError('Please enter a valid email address.');
+          setLoading(false);
           return;
         }
     
         if (!isValidPassword(password)) {
           setError('Password must be at least 6 characters long.');
+          setLoading(false);
           return;
         }
     
         if (password !== confirmPassword) {
           setError('Passwords do not match.');
+          setLoading(false);
           return;
         }
     
@@ -77,7 +80,8 @@ export default function Auth() {
         });
     
         if (error) throw error;
-        navigate('/app');
+        // Redirect to email confirmation page instead of /app
+        navigate('/email-confirmation');
       }
     } catch (error: any) {
       setError(error.message || error.error_description || 'Authentication failed');
