@@ -31,8 +31,8 @@ export function FocusModePage({
   currentView
 }: FocusModePageProps) {
   
-  // Render the focus mode button when not in focus mode
-  if (currentView === 'all' && !inFocusMode) {
+  // Only show the focus mode button on the All Tasks view when not in focus mode
+  if (!inFocusMode && currentView === 'all') {
     return (
       <div className="mb-6 flex justify-center">
         <Button 
@@ -46,18 +46,24 @@ export function FocusModePage({
     );
   }
   
-  // Render the focus mode content
-  return (
-    <MainContent
-      currentView={currentView}
-      currentTask={currentTask}
-      onComplete={onComplete}
-      onSkip={onSkip}
-      onReturnToTop={onReturnToTop}
-      currentIndex={currentIndex}
-      totalTasks={totalTasks}
-      inFocusMode={inFocusMode}
-      onExitFocusMode={onExitFocusMode}
-    />
-  );
+  // Only render MainContent for Focus Mode if actually in focus mode
+  if (inFocusMode && currentView === 'main') {
+    return (
+      <MainContent
+        currentView={currentView}
+        currentTask={currentTask}
+        onComplete={onComplete}
+        onSkip={onSkip}
+        onReturnToTop={onReturnToTop}
+        currentIndex={currentIndex}
+        totalTasks={totalTasks}
+        inFocusMode={inFocusMode}
+        onExitFocusMode={onExitFocusMode}
+      />
+    );
+  }
+  
+  // For all other views, don't render anything
+  // This allows the content to be controlled by Index.tsx
+  return null;
 }

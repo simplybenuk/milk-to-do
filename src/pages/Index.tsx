@@ -10,6 +10,10 @@ import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 import { FocusModePage } from '@/components/focus/FocusModePage';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useFocusModeHandlers } from '@/hooks/useFocusModeHandlers';
+import { MainContent } from '@/components/MainContent';
+import { AllTasksList } from '@/components/AllTasksList';
+import { ClosedTasksList } from '@/components/ClosedTasksList';
+import { TaskStats } from '@/components/TaskStats';
 
 const Index = () => {
   const { fetchTasks } = useTaskStore();
@@ -110,6 +114,35 @@ const Index = () => {
     };
   }, []);
 
+  // Render the appropriate content based on the current view
+  const renderContent = () => {
+    if (inFocusMode && currentView === 'main') {
+      // Focus mode content is handled by FocusModePage
+      return null;
+    }
+    
+    switch (currentView) {
+      case 'all':
+        return (
+          <>
+            <h2 className="text-2xl font-bold text-milk-900 mb-6">All Tasks</h2>
+            <AllTasksList />
+          </>
+        );
+      case 'closed':
+        return (
+          <>
+            <h2 className="text-2xl font-bold text-milk-900 mb-6">Closed Tasks</h2>
+            <ClosedTasksList />
+          </>
+        );
+      case 'stats':
+        return <TaskStats />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <PageContainer inFocusMode={inFocusMode}>
       <TaskHeader
@@ -131,6 +164,9 @@ const Index = () => {
         inFocusMode={inFocusMode}
         currentView={currentView}
       />
+      
+      {/* Render regular content based on current view */}
+      {renderContent()}
       
       <FocusExitConfirmDialog
         open={showExitConfirm}
