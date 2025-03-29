@@ -41,10 +41,10 @@ export function FocusExitConfirmDialog({
     document.body.style.pointerEvents = "";
     console.log("FocusExitConfirmDialog - Confirming exit, resetting pointer events");
     
-    // Run the confirm callback first
+    // Call the onConfirm handler first and then close dialog
     onConfirm();
     
-    // Then close the dialog (this should happen after onConfirm)
+    // Close the dialog
     onOpenChange(false);
   };
 

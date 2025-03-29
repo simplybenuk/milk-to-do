@@ -83,19 +83,17 @@ const Index = () => {
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
     
-    // Process the exit confirmation
-    confirmExitFocusMode();
+    // Explicitly set focus mode to false FIRST
+    setInFocusMode(false);
     
     // Set current view to 'all' to force exit from focus mode
     setCurrentView('all');
     
-    // Explicitly set focus mode to false
-    setInFocusMode(false);
+    // Process the exit confirmation
+    confirmExitFocusMode();
     
-    // Refresh tasks with a delay to ensure state updates first
-    setTimeout(() => {
-      fetchTasks();
-    }, 100);
+    // Refresh tasks after state updates
+    fetchTasks();
   };
 
   // Handler for entering focus mode

@@ -30,18 +30,10 @@ export function useAppView(initialView: AppView = 'all') {
     // Reset any pointer-events styles that might be blocking interactions
     document.body.style.pointerEvents = '';
     
-    // Exit focus mode first
-    setInFocusMode(false);
-    
-    // Then hide the confirmation dialog
-    setShowExitConfirm(false);
-    
-    // Then change to the pending view if one exists (with a delay to ensure proper sequence)
+    // Then change to the pending view if one exists
     if (pendingView) {
-      setTimeout(() => {
-        setCurrentView(pendingView);
-        setPendingView(null);
-      }, 50);
+      setCurrentView(pendingView);
+      setPendingView(null);
     }
   }, [pendingView]);
   
