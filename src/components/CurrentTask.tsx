@@ -76,8 +76,8 @@ export function CurrentTask({
   return (
     <div className="w-full max-w-xl animate-fade-in">
       {inFocusMode && (
-        <div className="mb-4 bg-white/95 rounded-lg p-4 text-center shadow-md">
-          <h2 className="text-3xl font-bold text-milk-900 mb-2">Your Top Priority</h2>
+        <div className="mb-4 bg-white rounded-lg p-4 text-center shadow-md">
+          <h2 className="text-3xl font-bold focus-mode-heading mb-1">Your Top Priority</h2>
           <p className="text-milk-600">Complete or skip tasks in your current focus session</p>
         </div>
       )}
@@ -89,7 +89,7 @@ export function CurrentTask({
         onReturnToTop={onReturnToTop}
       />
       
-      <div className={`bg-white rounded-lg shadow-xl ${inFocusMode ? 'ring-4 ring-white/50' : ''}`}>
+      <div className={`bg-white rounded-lg shadow-xl ${inFocusMode ? 'ring-4 ring-primary/20' : ''}`}>
         <TaskItem
           key={displayTask.id}
           task={displayTask}
@@ -101,28 +101,26 @@ export function CurrentTask({
         />
       </div>
       
-      <div className={`mt-6 ${inFocusMode ? 'bg-white/95 p-4 rounded-lg shadow-lg' : ''}`}>
-        <TaskActionButtons
-          task={task}
-          onComplete={onComplete}
-          onSkip={onSkip}
-          buttonStyles={buttonStyles}
-        />
+      <TaskActionButtons
+        task={task}
+        onComplete={onComplete}
+        onSkip={onSkip}
+        buttonStyles={buttonStyles}
+      />
         
-        {/* Exit focus mode button below the action buttons */}
-        {inFocusMode && onExitFocusMode && (
-          <div className="mt-4 flex justify-center">
-            <Button 
-              onClick={onExitFocusMode}
-              variant="outline" 
-              className="border-red-500 text-red-500 hover:bg-red-50 w-full"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Exit Focus Mode
-            </Button>
-          </div>
-        )}
-      </div>
+      {/* Exit focus mode button below the action buttons */}
+      {inFocusMode && onExitFocusMode && (
+        <div className="mt-4 flex justify-center">
+          <Button 
+            onClick={onExitFocusMode}
+            variant="outline" 
+            className="border-red-500 text-red-500 hover:bg-red-50 w-full"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Exit Focus Mode
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

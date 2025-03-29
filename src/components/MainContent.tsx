@@ -31,22 +31,16 @@ export function MainContent({
   inFocusMode,
   onExitFocusMode
 }: MainContentProps) {
-  // Create the focus mode container classes
+  // Create the focus mode container classes - use a darker background instead of an overlay
   const containerClasses = cn(
-    "flex flex-col items-center justify-center min-h-[400px] relative", 
-    inFocusMode && "transition-all duration-500 rounded-lg p-8 animate-fade-in"
-  );
-
-  // Create a darkened overlay when in focus mode
-  const focusOverlayClasses = cn(
-    "fixed inset-0 bg-black transition-opacity duration-500 z-10 pointer-events-none",
-    inFocusMode ? "opacity-80" : "opacity-0"
+    "flex flex-col items-center justify-center min-h-[400px] relative transition-all duration-500", 
+    inFocusMode && "bg-gray-900 py-12 rounded-lg animate-fade-in"
   );
 
   // Card classes to make it pop in focus mode
   const cardClasses = cn(
-    "relative z-20 w-full transition-all duration-500",
-    inFocusMode && "scale-105 shadow-2xl animate-focus-spotlight"
+    "relative w-full transition-all duration-500",
+    inFocusMode && "scale-105 shadow-2xl"
   );
 
   switch (currentView) {
@@ -69,11 +63,7 @@ export function MainContent({
     default:
       return (
         <>
-          {/* Darkened overlay for focus mode - with pointer-events-none so content below is accessible */}
-          <div className={focusOverlayClasses} aria-hidden="true"></div>
-          
           <div className={containerClasses}>
-            {/* Exit focus button moved to CurrentTask component instead of here */}
             <div className={cardClasses}>
               {currentTask ? (
                 <CurrentTask

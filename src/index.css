@@ -133,7 +133,7 @@
   
   /* Focus mode task card styles */
   .focus-card {
-    @apply bg-white shadow-lg rounded-lg border-none ring-4 ring-white/20 z-20 relative;
+    @apply bg-white shadow-lg rounded-lg border-none z-20 relative;
   }
   
   .focus-mode-heading {
