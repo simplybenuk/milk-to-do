@@ -41,7 +41,7 @@ export function FocusExitConfirmDialog({
     document.body.style.pointerEvents = "";
     console.log("FocusExitConfirmDialog - Confirming exit, resetting pointer events");
     
-    // First run the confirm callback
+    // Run the confirm callback first
     onConfirm();
     
     // Then close the dialog (this should happen after onConfirm)
@@ -58,7 +58,7 @@ export function FocusExitConfirmDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="z-50">
         <AlertDialogHeader>
           <AlertDialogTitle>Exit Focus Mode?</AlertDialogTitle>
           <AlertDialogDescription>

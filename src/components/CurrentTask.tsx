@@ -75,18 +75,12 @@ export function CurrentTask({
 
   return (
     <div className="w-full max-w-xl animate-fade-in">
-      {inFocusMode && (
-        <div className="mb-4 bg-white rounded-lg p-4 text-center shadow-md">
-          <h2 className="text-3xl font-bold focus-mode-heading mb-1">Your Top Priority</h2>
-          <p className="text-milk-600">Complete or skip tasks in your current focus session</p>
-        </div>
-      )}
-      
       <TaskNavigation
         currentIndex={currentIndex}
         totalTasks={totalTasks}
         showReturnButton={showReturnButton}
         onReturnToTop={onReturnToTop}
+        inFocusMode={inFocusMode}
       />
       
       <div className={`bg-white rounded-lg shadow-xl ${inFocusMode ? 'ring-4 ring-primary/20' : ''}`}>
