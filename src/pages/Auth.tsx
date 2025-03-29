@@ -89,18 +89,18 @@ export default function Auth() {
   return (
     <div className="grid h-screen place-items-center bg-milk-50">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+        <CardHeader className="space-y-3 pb-6">
           <CardTitle className="text-2xl text-center">
             <AppLogo size="medium" />
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-base">
             {view === 'sign-in' ? 'Sign in to your account' : 'Create an account'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -108,10 +108,11 @@ export default function Auth() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-11"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -119,11 +120,12 @@ export default function Auth() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="h-11"
               />
             </div>
             {view === 'sign-up' && (
-              <div className="grid gap-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password" className="text-sm font-medium">Confirm Password</Label>
                 <Input
                   id="confirm-password"
                   type="password"
@@ -131,31 +133,34 @@ export default function Auth() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  className="h-11"
                 />
               </div>
             )}
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button disabled={loading} className="w-full mt-4">
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+            <Button disabled={loading} className="w-full h-11 mt-2">
               {loading ? 'Loading...' : view === 'sign-in' ? 'Sign In' : 'Sign Up'}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          {view === 'sign-in' ? (
-            <>
-              Don't have an account?{' '}
-              <Button variant="link" onClick={() => setView('sign-up')}>
-                Sign up
-              </Button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <Button variant="link" onClick={() => setView('sign-in')}>
-                Sign in
-              </Button>
-            </>
-          )}
+        <CardFooter className="flex justify-center pt-2 pb-6">
+          <div className="text-sm">
+            {view === 'sign-in' ? (
+              <>
+                Don't have an account?{' '}
+                <Button variant="link" onClick={() => setView('sign-up')} className="p-0 h-auto">
+                  Sign up
+                </Button>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <Button variant="link" onClick={() => setView('sign-in')} className="p-0 h-auto">
+                  Sign in
+                </Button>
+              </>
+            )}
+          </div>
         </CardFooter>
       </Card>
     </div>
