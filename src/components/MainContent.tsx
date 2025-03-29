@@ -39,8 +39,8 @@ export function MainContent({
 
   // Create a darkened overlay when in focus mode
   const focusOverlayClasses = cn(
-    "fixed inset-0 bg-black transition-opacity duration-500 pointer-events-none z-10",
-    inFocusMode ? "opacity-50" : "opacity-0"
+    "fixed inset-0 bg-black transition-opacity duration-500 z-10",
+    inFocusMode ? "opacity-70" : "opacity-0"
   );
 
   // Card classes to make it pop in focus mode
@@ -69,22 +69,11 @@ export function MainContent({
     default:
       return (
         <>
-          {/* Darkened overlay for focus mode */}
+          {/* Darkened overlay for focus mode - removed pointer-events-none so content below is still accessible */}
           <div className={focusOverlayClasses} aria-hidden="true"></div>
           
           <div className={containerClasses}>
-            {inFocusMode && onExitFocusMode && (
-              <Button 
-                onClick={onExitFocusMode}
-                variant="outline" 
-                size="sm"
-                className="self-end mb-4 hover:bg-milk-200 relative z-20"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Exit Focus Mode
-              </Button>
-            )}
-            
+            {/* Exit focus button moved to CurrentTask component instead of here */}
             <div className={cardClasses}>
               {currentTask ? (
                 <CurrentTask
@@ -94,14 +83,29 @@ export function MainContent({
                   onReturnToTop={onReturnToTop}
                   currentIndex={currentIndex}
                   totalTasks={totalTasks}
+                  inFocusMode={inFocusMode}
+                  onExitFocusMode={onExitFocusMode}
                 />
               ) : (
                 <div className="text-center py-12">
                   <p className="text-milk-500">No tasks available for focus mode.</p>
                   {inFocusMode && (
-                    <p className="text-milk-500 mt-4">
-                      Add tasks from the All Tasks view to start your focus session.
-                    </p>
+                    <>
+                      <p className="text-milk-500 mt-4">
+                        Add tasks from the All Tasks view to start your focus session.
+                      </p>
+                      {onExitFocusMode && (
+                        <Button 
+                          onClick={onExitFocusMode}
+                          variant="outline" 
+                          size="sm"
+                          className="mt-6 border-red-500 text-red-500 hover:bg-red-50"
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Exit Focus Mode
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               )}

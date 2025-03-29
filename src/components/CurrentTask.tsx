@@ -10,6 +10,8 @@ import {
   TaskActionButtons,
   getButtonStyles
 } from './current-task';
+import { Button } from './ui/button';
+import { LogOut } from 'lucide-react';
 
 interface CurrentTaskProps {
   task: Task;
@@ -18,6 +20,8 @@ interface CurrentTaskProps {
   onReturnToTop: () => void;
   currentIndex: number;
   totalTasks: number;
+  inFocusMode?: boolean;
+  onExitFocusMode?: () => void;
 }
 
 export function CurrentTask({ 
@@ -26,7 +30,9 @@ export function CurrentTask({
   onSkip, 
   onReturnToTop,
   currentIndex, 
-  totalTasks 
+  totalTasks,
+  inFocusMode,
+  onExitFocusMode
 }: CurrentTaskProps) {
   const showReturnButton = currentIndex > 0;
   const { tasks } = useTaskStore();
@@ -92,6 +98,20 @@ export function CurrentTask({
         onSkip={onSkip}
         buttonStyles={buttonStyles}
       />
+      
+      {/* Exit focus mode button below the action buttons */}
+      {inFocusMode && onExitFocusMode && (
+        <div className="mt-4 flex justify-center">
+          <Button 
+            onClick={onExitFocusMode}
+            variant="outline" 
+            className="border-red-500 text-red-500 hover:bg-red-50 w-full"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Exit Focus Mode
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
