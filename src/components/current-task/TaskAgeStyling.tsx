@@ -16,27 +16,27 @@ export function getButtonStyles(task: Task | null) {
   
   if (daysUntilExpiry < 0) {
     return {
-      complete: "bg-expired-accent hover:bg-expired-accent/90 text-white",
-      skip: "border-expired-accent/50 text-expired-text hover:bg-expired-bg/50"
+      complete: "bg-expired-accent hover:bg-expired-accent/90 text-white font-bold",
+      skip: "border-expired-accent text-expired-text hover:bg-expired-bg font-bold"
     };
   }
   
   if (ageInDays >= 21) {
     return {
-      complete: "bg-sour-accent hover:bg-sour-accent/90 text-white",
-      skip: "border-sour-accent/50 text-sour-text hover:bg-sour-bg/50"
+      complete: "bg-sour-accent hover:bg-sour-accent/90 text-white font-bold",
+      skip: "border-sour-accent text-sour-text hover:bg-sour-bg font-bold"
     };
   }
   
   if (ageInDays >= 8) {
     return {
-      complete: "bg-spoiling-accent hover:bg-spoiling-accent/90 text-spoiling-text",
-      skip: "border-spoiling-accent/50 text-spoiling-text hover:bg-spoiling-bg/50"
+      complete: "bg-spoiling-accent hover:bg-spoiling-accent/90 text-white font-bold",
+      skip: "border-spoiling-accent text-spoiling-text hover:bg-spoiling-bg font-bold"
     };
   }
   
   return {
-    complete: "bg-green-500 hover:bg-green-600 text-white",
-    skip: "border-fresh-accent/50 text-fresh-text hover:bg-fresh-bg/50"
+    complete: "bg-green-600 hover:bg-green-700 text-white font-bold",
+    skip: "border-fresh-accent text-fresh-text hover:bg-fresh-bg font-bold"
   };
 }

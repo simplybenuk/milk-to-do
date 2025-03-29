@@ -34,19 +34,19 @@ export function MainContent({
   // Create the focus mode container classes
   const containerClasses = cn(
     "flex flex-col items-center justify-center min-h-[400px] relative", 
-    inFocusMode && "transition-all duration-500 bg-milk-100/50 rounded-lg shadow-inner p-8 animate-fade-in"
+    inFocusMode && "transition-all duration-500 rounded-lg p-8 animate-fade-in"
   );
 
   // Create a darkened overlay when in focus mode
   const focusOverlayClasses = cn(
     "fixed inset-0 bg-black transition-opacity duration-500 z-10 pointer-events-none",
-    inFocusMode ? "opacity-70" : "opacity-0"
+    inFocusMode ? "opacity-80" : "opacity-0"
   );
 
   // Card classes to make it pop in focus mode
   const cardClasses = cn(
     "relative z-20 w-full transition-all duration-500",
-    inFocusMode && "scale-105 shadow-xl"
+    inFocusMode && "scale-105 shadow-2xl animate-focus-spotlight"
   );
 
   switch (currentView) {
@@ -87,7 +87,7 @@ export function MainContent({
                   onExitFocusMode={onExitFocusMode}
                 />
               ) : (
-                <div className="text-center py-12">
+                <div className="text-center py-12 bg-white rounded-lg shadow-lg">
                   <p className="text-milk-500">No tasks available for focus mode.</p>
                   {inFocusMode && (
                     <>

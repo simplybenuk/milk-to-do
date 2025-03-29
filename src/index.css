@@ -130,4 +130,13 @@
   .stink-cloud {
     @apply before:content-[''] before:absolute before:-z-10 before:top-0 before:left-0 before:w-full before:h-full before:bg-expired-accent/10 before:rounded-full before:animate-stink-cloud;
   }
+  
+  /* Focus mode task card styles */
+  .focus-card {
+    @apply bg-white shadow-lg rounded-lg border-none ring-4 ring-white/20 z-20 relative;
+  }
+  
+  .focus-mode-heading {
+    @apply bg-gradient-to-r from-teal-500 to-blue-500 bg-clip-text text-transparent font-bold;
+  }
 }

@@ -24,7 +24,7 @@ export function TaskActionButtons({
     <div className="flex justify-center gap-3 mt-6">
       <Button
         onClick={() => onComplete(task.id)}
-        className={cn("flex-1 h-11", buttonStyles.complete)}
+        className={cn("flex-1 h-11 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all", buttonStyles.complete)}
         disabled={task.status === 'closed'}
       >
         <Check className="mr-2 h-5 w-5" />
@@ -33,7 +33,7 @@ export function TaskActionButtons({
       <Button
         onClick={onSkip}
         variant="outline"
-        className={cn("flex-1 h-11", buttonStyles.skip)}
+        className={cn("flex-1 h-11 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all", buttonStyles.skip)}
       >
         <SkipForward className="mr-2 h-5 w-5" />
         Skip
