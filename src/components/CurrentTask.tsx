@@ -2,12 +2,11 @@
 import { Task } from '@/types/task';
 import { TaskItem } from './task-item';
 import { Button } from '@/components/ui/button';
-import { Check, SkipForward, ArrowUp, Scissors } from 'lucide-react';
+import { Check, SkipForward, ArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { cn } from '@/lib/utils';
 import { differenceInDays } from 'date-fns';
-import { SplitTaskDialog } from './SplitTaskDialog';
 import { useToast } from '@/hooks/use-toast';
 
 interface CurrentTaskProps {
@@ -28,9 +27,8 @@ export function CurrentTask({
   totalTasks 
 }: CurrentTaskProps) {
   const showReturnButton = currentIndex > 0;
-  const { tasks, deleteTask, addTask } = useTaskStore();
+  const { tasks } = useTaskStore();
   const [viewingParent, setViewingParent] = useState<Task | null>(null);
-  const [showSplitDialog, setShowSplitDialog] = useState(false);
   const { toast } = useToast();
 
   // Add a safety check for task existence
@@ -47,55 +45,6 @@ export function CurrentTask({
     const parentTask = tasks.find(t => t.id === parentId);
     if (parentTask) {
       setViewingParent(parentTask);
-    }
-  };
-
-  // Function to handle task deletion
-  const handleDelete = (taskId: string) => {
-    deleteTask(taskId);
-    toast({
-      title: "Task deleted",
-      description: "The task has been permanently removed.",
-    });
-    
-    // Move to the next task in focus mode
-    if (currentIndex < totalTasks - 1) {
-      onReturnToTop();
-    } else {
-      // If we're at the last task, just reload
-      window.location.reload();
-    }
-  };
-
-  // Function to handle split task dialog
-  const handleSplitTask = () => {
-    setShowSplitDialog(true);
-  };
-
-  // Function to handle split task completion
-  const handleSplitComplete = async (title: string, priority: any) => {
-    if (!task) return;
-    
-    try {
-      // Set expiry date to 30 days from now
-      const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      
-      // Add the child task linked to the parent (but don't mark parent as closed in focus mode)
-      await addTask(title.trim(), priority, expiryDate, task.id);
-      
-      toast({
-        title: "Task Split",
-        description: "A new subtask has been created while keeping the original task.",
-      });
-      
-      setShowSplitDialog(false);
-    } catch (error) {
-      console.error("Error splitting task:", error);
-      toast({
-        title: "Error",
-        description: "Failed to split the task. Please try again.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -173,9 +122,10 @@ export function CurrentTask({
         key={displayTask.id}
         task={displayTask}
         onComplete={() => {}}
-        onDelete={() => handleDelete(displayTask.id)}
+        onDelete={() => {}}
         allTasks={tasks}
         onViewParent={handleViewParent}
+        showDeleteButton={false} // Hide delete button in focus mode
       />
       
       {!viewingParent && (
@@ -189,14 +139,6 @@ export function CurrentTask({
             Complete
           </Button>
           <Button
-            onClick={handleSplitTask}
-            variant="outline"
-            className="h-11 px-4"
-          >
-            <Scissors className="mr-2 h-5 w-5" />
-            Split
-          </Button>
-          <Button
             onClick={onSkip}
             variant="outline"
             className={cn("flex-1 h-11", buttonStyles.skip)}
@@ -206,14 +148,6 @@ export function CurrentTask({
           </Button>
         </div>
       )}
-      
-      <SplitTaskDialog
-        open={showSplitDialog}
-        onOpenChange={setShowSplitDialog}
-        parentTaskId={task?.id || ''}
-        parentTaskTitle={task?.title || ''}
-        onSplitComplete={handleSplitComplete}
-      />
     </div>
   );
 }

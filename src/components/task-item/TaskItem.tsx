@@ -17,6 +17,7 @@ interface TaskItemProps {
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
   showCompleteButton?: boolean;
+  showDeleteButton?: boolean;
   onCreateChildTask?: (parentId: string, parentTitle: string) => void;
   allTasks?: Task[]; // To find and display child tasks
   onViewParent?: (parentId: string) => void; // New prop for handling parent view
@@ -27,6 +28,7 @@ export function TaskItem({
   onComplete, 
   onDelete, 
   showCompleteButton = false,
+  showDeleteButton = true, // Default to showing delete button
   onCreateChildTask,
   allTasks = [],
   onViewParent
@@ -171,15 +173,17 @@ export function TaskItem({
               </Button>
             </>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 w-10 h-10 rounded-full"
-            onClick={() => setShowDeleteDialog(true)}
-            title="Delete task"
-          >
-            <Trash2 className="h-5 w-5" />
-          </Button>
+          {showDeleteButton && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 w-10 h-10 rounded-full"
+              onClick={() => setShowDeleteDialog(true)}
+              title="Delete task"
+            >
+              <Trash2 className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
 
