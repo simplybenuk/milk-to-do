@@ -26,10 +26,12 @@ export function FocusExitConfirmDialog({
   useEffect(() => {
     // Reset pointer events when dialog opens or closes
     document.body.style.pointerEvents = "";
+    console.log("FocusExitConfirmDialog - Resetting pointer events, dialog state:", open);
     
     return () => {
       // Also reset on unmount
       document.body.style.pointerEvents = "";
+      console.log("FocusExitConfirmDialog - Cleanup pointer events");
     };
   }, [open]);
 
@@ -37,6 +39,7 @@ export function FocusExitConfirmDialog({
   const handleConfirm = () => {
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
+    console.log("FocusExitConfirmDialog - Confirming exit, resetting pointer events");
     
     // First run the confirm callback
     onConfirm();
@@ -49,6 +52,7 @@ export function FocusExitConfirmDialog({
   const handleCancel = () => {
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
+    console.log("FocusExitConfirmDialog - Cancelling exit, resetting pointer events");
     onOpenChange(false);
   };
 

@@ -39,7 +39,7 @@ export function MainContent({
 
   // Create a darkened overlay when in focus mode
   const focusOverlayClasses = cn(
-    "fixed inset-0 bg-black transition-opacity duration-500 z-10",
+    "fixed inset-0 bg-black transition-opacity duration-500 z-10 pointer-events-none",
     inFocusMode ? "opacity-70" : "opacity-0"
   );
 
@@ -69,7 +69,7 @@ export function MainContent({
     default:
       return (
         <>
-          {/* Darkened overlay for focus mode - removed pointer-events-none so content below is still accessible */}
+          {/* Darkened overlay for focus mode - with pointer-events-none so content below is accessible */}
           <div className={focusOverlayClasses} aria-hidden="true"></div>
           
           <div className={containerClasses}>

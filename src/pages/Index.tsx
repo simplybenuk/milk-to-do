@@ -30,7 +30,7 @@ const Index = () => {
     setInFocusMode(false);
     fetchTasks(); // Refresh tasks to update priority scores
     
-    // Ensure interactivity is restored
+    // Ensure interactivity is restored immediately
     document.body.style.pointerEvents = "";
   };
   
@@ -70,6 +70,8 @@ const Index = () => {
   useEffect(() => {
     if (currentView === 'main' && !inFocusMode) {
       setInFocusMode(true);
+      // Make sure pointer events are enabled when entering focus mode
+      document.body.style.pointerEvents = "";
     }
   }, [currentView, inFocusMode, setInFocusMode]);
 
@@ -89,11 +91,15 @@ const Index = () => {
 
   // Handler for entering focus mode
   const handleEnterFocusMode = () => {
+    // Reset pointer events explicitly before entering focus mode
+    document.body.style.pointerEvents = "";
     setCurrentView('main');
   };
 
   // Handler for exiting focus mode
   const handleExitFocusMode = () => {
+    // Make sure pointer events are enabled when trying to exit
+    document.body.style.pointerEvents = "";
     setShowExitConfirm(true);
   };
 
@@ -108,6 +114,7 @@ const Index = () => {
     const intervalId = setInterval(() => {
       if (document.body.style.pointerEvents === 'none') {
         document.body.style.pointerEvents = '';
+        console.log('Restored pointer-events via interval check');
       }
     }, 2000);
     
