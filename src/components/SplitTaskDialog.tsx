@@ -4,15 +4,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
 import { Scissors } from 'lucide-react';
-import useTaskStore from '@/stores/useTaskStore';
-import { useToast } from '@/hooks/use-toast';
 
 interface SplitTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parentTaskId: string;
   parentTaskTitle: string;
-  onSplitComplete: () => void;
+  onSplitComplete: (title: string, priority: Priority) => void;
 }
 
 export function SplitTaskDialog({
@@ -26,8 +24,6 @@ export function SplitTaskDialog({
   const [priority, setPriority] = useState<Priority>("medium");
   const [localParentId, setLocalParentId] = useState(parentTaskId);
   const [localParentTitle, setLocalParentTitle] = useState(parentTaskTitle);
-  const { addTask, completeTask } = useTaskStore();
-  const { toast } = useToast();
 
   // Update local state when props change to ensure we have the latest values
   useEffect(() => {
@@ -42,38 +38,12 @@ export function SplitTaskDialog({
     e.preventDefault();
     if (!title.trim()) return;
     
-    try {
-      // Use the local state variables which are synchronized with props when dialog opens
-      console.log("Creating child task for parent:", localParentId, localParentTitle);
-      
-      // Set expiry date to 30 days from now (same as normal tasks)
-      const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      
-      // Add the child task linked to the parent
-      await addTask(title.trim(), priority, expiryDate, localParentId);
-      
-      // Mark the parent task as closed with reason 'parent'
-      await completeTask(localParentId, 'parent');
-      
-      // Show success message
-      toast({
-        title: "Task Split Successfully",
-        description: "The original task has been split into smaller tasks."
-      });
-      
-      // Reset form and close dialog
-      setTitle("");
-      setPriority("medium");
-      onOpenChange(false);
-      onSplitComplete();
-    } catch (error) {
-      console.error("Error splitting task:", error);
-      toast({
-        title: "Error",
-        description: "Failed to split the task. Please try again.",
-        variant: "destructive"
-      });
-    }
+    // Pass the new task details to the parent component
+    onSplitComplete(title.trim(), priority);
+    
+    // Reset form
+    setTitle("");
+    setPriority("medium");
   };
 
   return (
