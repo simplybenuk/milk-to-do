@@ -38,7 +38,7 @@ export function TaskActionButtons({
         onClick={onSkip}
         variant="outline"
         className={cn(
-          "flex-1 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all", 
+          "flex-1 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all bg-white", 
           "font-semibold",
           buttonStyles.skip
         )}

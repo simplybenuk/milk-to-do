@@ -31,12 +31,6 @@ export function MainContent({
   inFocusMode,
   onExitFocusMode
 }: MainContentProps) {
-  // Create the focus mode container classes - use a darker background instead of an overlay
-  const containerClasses = cn(
-    "flex flex-col items-center justify-center min-h-[400px] relative transition-all duration-500", 
-    inFocusMode && "bg-gray-900 py-12 rounded-lg animate-fade-in"
-  );
-
   // Card classes to make it pop in focus mode
   const cardClasses = cn(
     "relative w-full transition-all duration-500",
@@ -63,7 +57,7 @@ export function MainContent({
     default:
       return (
         <>
-          <div className={containerClasses}>
+          <div className="min-h-[400px] flex items-center justify-center">
             <div className={cardClasses}>
               {currentTask ? (
                 <CurrentTask

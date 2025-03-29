@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Focus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const Index = () => {
   const { fetchTasks } = useTaskStore();
@@ -126,9 +127,21 @@ const Index = () => {
     };
   }, []);
 
+  // Create dynamic page classes based on focus mode state
+  const pageClasses = cn(
+    "min-h-screen p-4 sm:p-6 md:p-8 transition-colors duration-500 ease-in-out",
+    inFocusMode ? "bg-gray-900" : "bg-milk-50"
+  );
+
+  // Create dynamic text color classes based on focus mode
+  const textClasses = cn(
+    "mx-auto max-w-3xl transition-colors duration-500",
+    inFocusMode && "text-white"
+  );
+
   return (
-    <div className="min-h-screen bg-milk-50 p-4 sm:p-6 md:p-8">
-      <div className="mx-auto max-w-3xl">
+    <div className={pageClasses}>
+      <div className={textClasses}>
         <TaskHeader
           currentView={currentView}
           onViewChange={setCurrentView}
