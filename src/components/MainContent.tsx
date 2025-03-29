@@ -4,6 +4,9 @@ import { ClosedTasksList } from '@/components/ClosedTasksList';
 import { TaskStats } from '@/components/TaskStats';
 import { CurrentTask } from '@/components/CurrentTask';
 import { AppView } from '@/hooks/useAppView';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MainContentProps {
   currentView: AppView;
@@ -14,6 +17,7 @@ interface MainContentProps {
   currentIndex: number;
   totalTasks: number;
   inFocusMode: boolean;
+  onExitFocusMode?: () => void;
 }
 
 export function MainContent({
@@ -24,8 +28,15 @@ export function MainContent({
   onReturnToTop,
   currentIndex,
   totalTasks,
-  inFocusMode
+  inFocusMode,
+  onExitFocusMode
 }: MainContentProps) {
+  // Create the focus mode container classes
+  const containerClasses = cn(
+    "flex flex-col items-center justify-center min-h-[400px]", 
+    inFocusMode && "transition-all duration-500 bg-milk-100/50 rounded-lg shadow-inner p-8 animate-fade-in"
+  );
+
   switch (currentView) {
     case 'all':
       return (
@@ -44,22 +55,38 @@ export function MainContent({
     case 'stats':
       return <TaskStats />;
     default:
-      return currentTask ? (
-        <CurrentTask
-          task={currentTask}
-          onComplete={onComplete}
-          onSkip={onSkip}
-          onReturnToTop={onReturnToTop}
-          currentIndex={currentIndex}
-          totalTasks={totalTasks}
-        />
-      ) : (
-        <div className="text-center py-12">
-          <p className="text-milk-500">No tasks available for focus mode.</p>
-          {inFocusMode && (
-            <p className="text-milk-500 mt-4">
-              Add tasks from the All Tasks view to start your focus session.
-            </p>
+      return (
+        <div className={containerClasses}>
+          {inFocusMode && onExitFocusMode && (
+            <Button 
+              onClick={onExitFocusMode}
+              variant="outline" 
+              size="sm"
+              className="self-end mb-4 hover:bg-milk-200"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Exit Focus Mode
+            </Button>
+          )}
+          
+          {currentTask ? (
+            <CurrentTask
+              task={currentTask}
+              onComplete={onComplete}
+              onSkip={onSkip}
+              onReturnToTop={onReturnToTop}
+              currentIndex={currentIndex}
+              totalTasks={totalTasks}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-milk-500">No tasks available for focus mode.</p>
+              {inFocusMode && (
+                <p className="text-milk-500 mt-4">
+                  Add tasks from the All Tasks view to start your focus session.
+                </p>
+              )}
+            </div>
           )}
         </div>
       );

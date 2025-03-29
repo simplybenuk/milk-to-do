@@ -92,6 +92,11 @@ const Index = () => {
     setCurrentView('main');
   };
 
+  // Handler for exiting focus mode
+  const handleExitFocusMode = () => {
+    setShowExitConfirm(true);
+  };
+
   // Global cleanup for pointer events
   useEffect(() => {
     // Reset on mount
@@ -127,7 +132,7 @@ const Index = () => {
           <div className="mb-6 flex justify-center">
             <Button 
               onClick={handleEnterFocusMode}
-              className="bg-milk-600 hover:bg-milk-700 text-white"
+              className="bg-milk-600 hover:bg-milk-700 text-white animate-fade-in"
             >
               <Focus className="mr-2 h-4 w-4" />
               Enter Focus Mode
@@ -135,18 +140,17 @@ const Index = () => {
           </div>
         )}
 
-        <div className="flex flex-col items-center justify-center min-h-[400px]">
-          <MainContent
-            currentView={currentView}
-            currentTask={currentTask}
-            onComplete={handleComplete}
-            onSkip={handleSkip}
-            onReturnToTop={handleReturnToTop}
-            currentIndex={currentIndex}
-            totalTasks={focusTaskOrder.length}
-            inFocusMode={inFocusMode}
-          />
-        </div>
+        <MainContent
+          currentView={currentView}
+          currentTask={currentTask}
+          onComplete={handleComplete}
+          onSkip={handleSkip}
+          onReturnToTop={handleReturnToTop}
+          currentIndex={currentIndex}
+          totalTasks={focusTaskOrder.length}
+          inFocusMode={inFocusMode}
+          onExitFocusMode={handleExitFocusMode}
+        />
       </div>
       
       <FocusExitConfirmDialog
@@ -155,10 +159,13 @@ const Index = () => {
         onConfirm={handleConfirmExit}
       />
       
-      <AddTaskDialog onAddTask={(title, priority, expiryDate) => {
-        const { addTask } = useTaskStore.getState();
-        addTask(title, priority, expiryDate);
-      }} />
+      {/* Only show the AddTaskDialog when not in focus mode */}
+      {!inFocusMode && (
+        <AddTaskDialog onAddTask={(title, priority, expiryDate) => {
+          const { addTask } = useTaskStore.getState();
+          addTask(title, priority, expiryDate);
+        }} />
+      )}
     </div>
   );
 }

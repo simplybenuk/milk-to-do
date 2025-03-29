@@ -128,6 +128,14 @@ export default {
           "50%": { opacity: "0.7", transform: "scale(1.05)" },
           "100%": { opacity: "0.2", transform: "scale(0.95)" },
         },
+        "focus-mode-in": {
+          "0%": { backgroundColor: "transparent", boxShadow: "none" },
+          "100%": { backgroundColor: "rgba(249, 250, 251, 0.5)", boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)" },
+        },
+        "pulse-gentle": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -137,6 +145,8 @@ export default {
         "slide-up": "slide-up 0.3s ease-out",
         "wobble": "wobble 2s ease-in-out infinite",
         "stink-cloud": "stink-cloud 3s ease-in-out infinite",
+        "focus-mode-in": "focus-mode-in 0.5s ease-out forwards",
+        "pulse-gentle": "pulse-gentle 2s ease-in-out infinite",
       },
     },
   },
