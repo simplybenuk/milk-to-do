@@ -5,12 +5,11 @@ import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { TaskHeader } from '@/components/TaskHeader';
 import { useAppView } from '@/hooks/useAppView';
 import { useTaskNavigation } from '@/hooks/useTaskNavigation';
-import { MainContent } from '@/components/MainContent';
 import { useToast } from '@/hooks/use-toast';
 import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
-import { Button } from '@/components/ui/button';
-import { Focus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { FocusModePage } from '@/components/focus/FocusModePage';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { useFocusModeHandlers } from '@/hooks/useFocusModeHandlers';
 
 const Index = () => {
   const { fetchTasks } = useTaskStore();
@@ -21,10 +20,21 @@ const Index = () => {
     setInFocusMode, 
     showExitConfirm, 
     setShowExitConfirm, 
-    confirmExitFocusMode,
-    pendingView
+    confirmExitFocusMode
   } = useAppView('all');
   const { toast } = useToast();
+  
+  // Initialize focus mode handlers
+  const { 
+    handleEnterFocusMode, 
+    handleExitFocusMode, 
+    handleConfirmExit 
+  } = useFocusModeHandlers(
+    setCurrentView, 
+    setInFocusMode, 
+    setShowExitConfirm,
+    confirmExitFocusMode
+  );
   
   // Initialize focus mode or end it
   const handleFocusEnd = () => {
@@ -35,6 +45,7 @@ const Index = () => {
     document.body.style.pointerEvents = "";
   };
   
+  // Set up task navigation
   const {
     currentTask,
     currentIndex,
@@ -45,7 +56,7 @@ const Index = () => {
     isProcessing
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
 
-  // Add error boundary for fetchTasks
+  // Initial data fetching
   useEffect(() => {
     console.log('Index component mounted, fetching tasks...');
     try {
@@ -76,40 +87,6 @@ const Index = () => {
     }
   }, [currentView, inFocusMode, setInFocusMode]);
 
-  // Handler for confirming exit
-  const handleConfirmExit = () => {
-    console.log("Confirming exit from focus mode");
-    
-    // Reset pointer events immediately
-    document.body.style.pointerEvents = "";
-    
-    // Explicitly set focus mode to false FIRST
-    setInFocusMode(false);
-    
-    // Set current view to 'all' to force exit from focus mode
-    setCurrentView('all');
-    
-    // Process the exit confirmation
-    confirmExitFocusMode();
-    
-    // Refresh tasks after state updates
-    fetchTasks();
-  };
-
-  // Handler for entering focus mode
-  const handleEnterFocusMode = () => {
-    // Reset pointer events explicitly before entering focus mode
-    document.body.style.pointerEvents = "";
-    setCurrentView('main');
-  };
-
-  // Handler for exiting focus mode
-  const handleExitFocusMode = () => {
-    // Make sure pointer events are enabled when trying to exit
-    document.body.style.pointerEvents = "";
-    setShowExitConfirm(true);
-  };
-
   // Global cleanup for pointer events
   useEffect(() => {
     // Reset on mount
@@ -133,51 +110,27 @@ const Index = () => {
     };
   }, []);
 
-  // Create dynamic page classes based on focus mode state
-  const pageClasses = cn(
-    "min-h-screen p-4 sm:p-6 md:p-8 transition-colors duration-500 ease-in-out",
-    inFocusMode ? "bg-gray-900" : "bg-milk-50"
-  );
-
-  // Create dynamic text color classes based on focus mode
-  const textClasses = cn(
-    "mx-auto max-w-3xl transition-colors duration-500",
-    inFocusMode && "text-white"
-  );
-
   return (
-    <div className={pageClasses}>
-      <div className={textClasses}>
-        <TaskHeader
-          currentView={currentView}
-          onViewChange={setCurrentView}
-          inFocusMode={inFocusMode}
-        />
+    <PageContainer inFocusMode={inFocusMode}>
+      <TaskHeader
+        currentView={currentView}
+        onViewChange={setCurrentView}
+        inFocusMode={inFocusMode}
+      />
 
-        {currentView === 'all' && !inFocusMode && (
-          <div className="mb-6 flex justify-center">
-            <Button 
-              onClick={handleEnterFocusMode}
-              className="bg-milk-600 hover:bg-milk-700 text-white animate-fade-in"
-            >
-              <Focus className="mr-2 h-4 w-4" />
-              Enter Focus Mode
-            </Button>
-          </div>
-        )}
-
-        <MainContent
-          currentView={currentView}
-          currentTask={currentTask}
-          onComplete={handleComplete}
-          onSkip={handleSkip}
-          onReturnToTop={handleReturnToTop}
-          currentIndex={currentIndex}
-          totalTasks={focusTaskOrder.length}
-          inFocusMode={inFocusMode}
-          onExitFocusMode={handleExitFocusMode}
-        />
-      </div>
+      <FocusModePage
+        currentTask={currentTask}
+        currentIndex={currentIndex}
+        totalTasks={focusTaskOrder.length}
+        isProcessing={isProcessing}
+        onComplete={handleComplete}
+        onSkip={handleSkip}
+        onReturnToTop={handleReturnToTop}
+        onExitFocusMode={handleExitFocusMode}
+        onEnterFocusMode={handleEnterFocusMode}
+        inFocusMode={inFocusMode}
+        currentView={currentView}
+      />
       
       <FocusExitConfirmDialog
         open={showExitConfirm}
@@ -192,7 +145,7 @@ const Index = () => {
           addTask(title, priority, expiryDate);
         }} />
       )}
-    </div>
+    </PageContainer>
   );
 }
 
