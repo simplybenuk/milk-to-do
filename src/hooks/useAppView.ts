@@ -21,7 +21,7 @@ export function useAppView(initialView: AppView = 'all') {
     // If not in focus mode or switching to main, change view directly
     setCurrentView(newView);
     if (newView !== 'main') {
-      setInFocusMode(false);
+      setInFocusMode(false); // Ensure focus mode is turned off when not on main view
     }
   }, [inFocusMode]);
   
@@ -34,12 +34,14 @@ export function useAppView(initialView: AppView = 'all') {
     if (pendingView) {
       setCurrentView(pendingView);
       setPendingView(null);
+      setInFocusMode(false); // Ensure focus mode is turned off
     }
   }, [pendingView]);
   
   // Effect to ensure inFocusMode is synced with currentView
   useEffect(() => {
     if (currentView !== 'main' && inFocusMode) {
+      // If we're not on the main view but somehow focus mode is still on, turn it off
       setInFocusMode(false);
     }
   }, [currentView, inFocusMode]);

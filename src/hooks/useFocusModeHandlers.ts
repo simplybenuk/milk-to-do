@@ -32,17 +32,19 @@ export function useFocusModeHandlers(
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
     
-    // Explicitly set focus mode to false FIRST
-    setInFocusMode(false);
-    
-    // Set current view to 'all' to force exit from focus mode
+    // Critical fix: Change the view FIRST to 'all' to force exit from focus mode
     setCurrentView('all');
+    
+    // Then set focus mode to false 
+    setInFocusMode(false);
     
     // Process the exit confirmation
     confirmExitFocusMode();
     
     // Refresh tasks after state updates
-    fetchTasks();
+    setTimeout(() => {
+      fetchTasks();
+    }, 0);
   }, [setInFocusMode, setCurrentView, confirmExitFocusMode, fetchTasks]);
 
   return {

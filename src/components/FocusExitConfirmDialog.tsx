@@ -35,17 +35,19 @@ export function FocusExitConfirmDialog({
     };
   }, [open]);
 
-  // Handle the confirm action
+  // Handle the confirm action - Critical fix: call onConfirm before closing dialog
   const handleConfirm = () => {
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
     console.log("FocusExitConfirmDialog - Confirming exit, resetting pointer events");
     
-    // Call the onConfirm handler first and then close dialog
+    // Call the onConfirm handler first - ensure it runs before dialog state changes
     onConfirm();
     
-    // Close the dialog
-    onOpenChange(false);
+    // Then close the dialog after a small delay to ensure state updates propagate
+    setTimeout(() => {
+      onOpenChange(false);
+    }, 10);
   };
 
   // Handle cancel action explicitly
