@@ -136,6 +136,10 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.8" },
         },
+        "focus-spotlight": {
+          "0%": { boxShadow: "0 0 0 rgba(255, 255, 255, 0)" },
+          "100%": { boxShadow: "0 0 30px rgba(255, 255, 255, 0.3)" }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -147,6 +151,7 @@ export default {
         "stink-cloud": "stink-cloud 3s ease-in-out infinite",
         "focus-mode-in": "focus-mode-in 0.5s ease-out forwards",
         "pulse-gentle": "pulse-gentle 2s ease-in-out infinite",
+        "focus-spotlight": "focus-spotlight 1.5s ease-in-out alternate infinite",
       },
     },
   },
