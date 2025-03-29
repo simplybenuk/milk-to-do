@@ -45,9 +45,11 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
     console.log('Auth tokens in URL:', hasAuthTokens);
     
     // If we have auth tokens in the URL, navigate to /app
-    if (hasAuthTokens && location.pathname === '/') {
+    // This handles both OAuth redirects and email confirmation redirects
+    if (hasAuthTokens) {
       console.log("Auth tokens detected in URL, redirecting to /app");
       navigate('/app', { replace: true });
+      return;
     }
     
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -71,10 +73,16 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
       const isAuthenticated = !!session;
       setSession(isAuthenticated);
       
-      // If user just authenticated and on landing or auth page, redirect to app
-      if (isAuthenticated && (location.pathname === '/' || location.pathname === '/auth')) {
-        console.log('Auth state change - redirecting to app');
-        navigate('/app', { replace: true });
+      // Handle different auth events
+      if (isAuthenticated) {
+        // If user just confirmed their email or authenticated in any way
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          console.log('Auth event detected, redirecting to app');
+          navigate('/app', { replace: true });
+        }
+      } else if (event === 'SIGNED_OUT') {
+        // Redirect to landing page on sign out
+        navigate('/', { replace: true });
       }
     });
 
