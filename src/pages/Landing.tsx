@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -168,17 +167,16 @@ const Landing = () => {
               <div>
                 <h3 className="font-bold mb-2">Product</h3>
                 <ul className="text-milk-300 text-sm">
-                  <li className="mb-1">Features</li>
-                  <li className="mb-1">Pricing</li>
-                  <li>FAQ</li>
+                  <li className="mb-1"><Link to="/features" className="hover:text-white transition-colors">Features</Link></li>
+                  <li className="mb-1"><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+                  <li><Link to="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
                 </ul>
               </div>
               <div>
                 <h3 className="font-bold mb-2">Company</h3>
                 <ul className="text-milk-300 text-sm">
-                  <li className="mb-1">About</li>
-                  <li className="mb-1">Blog</li>
-                  <li>Contact</li>
+                  <li className="mb-1"><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
+                  <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
                 </ul>
               </div>
             </div>

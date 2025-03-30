@@ -12,6 +12,11 @@ import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Landing from "./pages/Landing";
 import EmailConfirmation from "./pages/EmailConfirmation";
+import Features from "./pages/Features";
+import FAQ from "./pages/FAQ";
+import Pricing from "./pages/Pricing";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -127,6 +132,12 @@ const App = () => {
             />
             <Route path="/auth" element={<Auth />} />
             <Route path="/email-confirmation" element={<EmailConfirmation />} />
+            {/* New public routes */}
+            <Route path="/features" element={<Features />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
