@@ -5,6 +5,7 @@ export interface TaskStore {
   tasks: Task[];
   isLoading: boolean;
   error: string | null;
+  userSubscription: UserSubscription;
   fetchTasks: () => Promise<void>;
   addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string) => Promise<void>;
   editTask: (id: string, title: string, priority: Priority) => Promise<void>;
@@ -14,10 +15,17 @@ export interface TaskStore {
   incrementSkipCount: (id: string) => Promise<void>;
   getTasksByPriority: () => Task[];
   getTaskStats: () => TaskStats;
+  setUserSubscription: (subscription: UserSubscription) => void;
+  hasProAccess: () => boolean;
 }
 
 export interface TaskStats {
   completedLastWeek: Task[];
   completedLastMonth: Task[];
   expired: Task[];
+}
+
+export interface UserSubscription {
+  tier: 'free' | 'pro';
+  expiresAt?: Date | null;
 }

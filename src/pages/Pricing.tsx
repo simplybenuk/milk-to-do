@@ -5,8 +5,12 @@ import { Button } from '@/components/ui/button';
 import { AppLogo } from '@/components/AppLogo';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
+import useTaskStore from '@/stores/useTaskStore';
 
 const Pricing = () => {
+  const { hasProAccess, userSubscription } = useTaskStore();
+  const isProUser = hasProAccess();
+  
   return (
     <div className="min-h-screen bg-fresh-bg flex flex-col">
       {/* Navigation */}
@@ -35,6 +39,11 @@ const Pricing = () => {
           <p className="text-xl mb-8 max-w-2xl mx-auto text-milk-600">
             Choose the plan that works best for you and your tasks.
           </p>
+          {isProUser && (
+            <div className="inline-block px-4 py-2 bg-emerald-100 text-emerald-800 rounded-md">
+              You're currently on the Pro plan
+            </div>
+          )}
         </div>
       </section>
 
@@ -72,7 +81,12 @@ const Pricing = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full">Start for Free</Button>
+                <Button 
+                  className="w-full"
+                  disabled={!isProUser}
+                >
+                  {isProUser ? "Downgrade to Free" : "Current Plan"}
+                </Button>
               </CardFooter>
             </Card>
 
@@ -118,7 +132,12 @@ const Pricing = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full bg-emerald-500 hover:bg-emerald-600">Upgrade to Pro</Button>
+                <Button 
+                  className="w-full bg-emerald-500 hover:bg-emerald-600"
+                  disabled={isProUser}
+                >
+                  {isProUser ? "Current Plan" : "Upgrade to Pro"}
+                </Button>
               </CardFooter>
             </Card>
           </div>

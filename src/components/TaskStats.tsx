@@ -11,10 +11,13 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { Link } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 
 export function TaskStats() {
-  const { tasks, fetchTasks } = useTaskStore();
+  const { tasks, fetchTasks, hasProAccess } = useTaskStore();
   const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
+  const isProUser = hasProAccess();
   
   const stats = useMemo(() => useTaskStore.getState().getTaskStats(), [tasks]);
 
@@ -22,6 +25,38 @@ export function TaskStats() {
     fetchTasks();
   }, [fetchTasks]);
 
+  // If user doesn't have pro access, show upgrade prompt
+  if (!isProUser) {
+    return (
+      <div className="space-y-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Task Analytics</CardTitle>
+            <CardDescription>
+              Upgrade to Pro to access detailed task statistics and analytics
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+            <div className="mb-6 rounded-full bg-milk-100 p-3">
+              <Lock className="h-8 w-8 text-milk-500" />
+            </div>
+            <h3 className="mb-2 text-xl font-medium">Pro Feature</h3>
+            <p className="mb-6 text-milk-500">
+              Analytics help you track your productivity and task completion patterns over time.
+              Upgrade to Pro to unlock this feature.
+            </p>
+            <Link to="/pricing">
+              <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                Upgrade to Pro
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // For pro users, show the actual stats
   const toggleTimeRange = () => {
     setTimeRange(prev => prev === 'week' ? 'month' : 'week');
   };
