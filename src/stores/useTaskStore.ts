@@ -9,9 +9,10 @@ import {
   deleteTaskFromDB,
   updateTaskPriorityInDB,
   incrementSkipCountInDB,
+  updateTaskInDB,
 } from './actions/taskActions';
 import { calculateTaskStats, sortTasksByPriority } from './utils/taskUtils';
-import { ClosedStatusReason } from '@/types/task';
+import { ClosedStatusReason, Priority } from '@/types/task';
 
 const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
@@ -42,6 +43,24 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     } catch (error) {
       console.error('Error adding task:', error);
       set({ error: 'Failed to add task' });
+    }
+  },
+
+  editTask: async (id, title, priority) => {
+    try {
+      await updateTaskInDB(id, { title, priority });
+      set(state => ({
+        tasks: state.tasks.map(task =>
+          task.id === id
+            ? { ...task, title, priority }
+            : task
+        ),
+      }));
+      // Fetch tasks to get updated priority score calculation
+      await get().fetchTasks();
+    } catch (error) {
+      console.error('Error editing task:', error);
+      set({ error: 'Failed to edit task' });
     }
   },
 

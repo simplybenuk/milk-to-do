@@ -7,6 +7,7 @@ export interface TaskStore {
   error: string | null;
   fetchTasks: () => Promise<void>;
   addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string) => Promise<void>;
+  editTask: (id: string, title: string, priority: Priority) => Promise<void>;
   completeTask: (id: string, reason?: ClosedStatusReason) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   updateTaskPriority: (id: string, priority: Priority) => Promise<void>;

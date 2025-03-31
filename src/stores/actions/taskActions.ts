@@ -64,6 +64,18 @@ export const addTaskToDB = async (
   return convertDatabaseDatesToDateObjects(data);
 };
 
+export const updateTaskInDB = async (
+  id: string,
+  updates: { title?: string; priority?: Priority }
+): Promise<void> => {
+  const { error } = await supabase
+    .from('tasks')
+    .update(updates)
+    .eq('id', id);
+
+  if (error) throw error;
+};
+
 export const completeTaskInDB = async (id: string, reason: ClosedStatusReason = 'complete'): Promise<void> => {
   const { error } = await supabase
     .from('tasks')

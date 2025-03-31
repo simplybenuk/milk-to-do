@@ -5,14 +5,17 @@ import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { SplitTaskDialog } from './SplitTaskDialog';
+import { EditTaskDialog } from './EditTaskDialog';
 
 export function AllTasksList() {
-  const { tasks, deleteTask, completeTask } = useTaskStore();
+  const { tasks, deleteTask, completeTask, editTask } = useTaskStore();
   const { toast } = useToast();
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
   const [showSplitDialog, setShowSplitDialog] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [selectedTaskTitle, setSelectedTaskTitle] = useState<string>("");
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   
   // Get all open tasks and their closed parents if they exist
   const openTasks = tasks.filter(task => task.status === 'open');
@@ -61,6 +64,15 @@ export function AllTasksList() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleEditTask = (task: Task) => {
+    setTaskToEdit(task);
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = async (id: string, title: string, priority: Priority) => {
+    await editTask(id, title, priority);
   };
 
   const handleSplitComplete = () => {
@@ -113,6 +125,7 @@ export function AllTasksList() {
                 allTasks={tasks}
                 onViewParent={handleViewParent}
                 onCreateChildTask={handleCreateChildTask}
+                onEdit={handleEditTask}
               />
             </div>
           ))}
@@ -126,6 +139,14 @@ export function AllTasksList() {
         parentTaskId={selectedTaskId}
         parentTaskTitle={selectedTaskTitle}
         onSplitComplete={handleSplitComplete}
+      />
+
+      {/* Edit Task Dialog */}
+      <EditTaskDialog
+        task={taskToEdit}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onEdit={handleSaveEdit}
       />
     </div>
   );

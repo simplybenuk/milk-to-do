@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays } from 'date-fns';
-import { Trash2, CheckCircle, ArrowUp, Scissors } from 'lucide-react';
+import { Trash2, CheckCircle, ArrowUp, Scissors, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TextWithLinks } from './TextWithLinks';
 import { PriorityBadge } from './PriorityBadge';
@@ -21,6 +21,7 @@ interface TaskItemProps {
   onCreateChildTask?: (parentId: string, parentTitle: string) => void;
   allTasks?: Task[]; // To find and display child tasks
   onViewParent?: (parentId: string) => void; // New prop for handling parent view
+  onEdit?: (task: Task) => void; // New prop for handling edit
 }
 
 export function TaskItem({ 
@@ -31,7 +32,8 @@ export function TaskItem({
   showDeleteButton = true, // Default to showing delete button
   onCreateChildTask,
   allTasks = [],
-  onViewParent
+  onViewParent,
+  onEdit
 }: TaskItemProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -153,6 +155,17 @@ export function TaskItem({
         <div className="absolute bottom-5 right-5 flex gap-3">
           {showCompleteButton && (
             <>
+              {onEdit && task.status === 'open' && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 shrink-0 w-10 h-10 rounded-full"
+                  onClick={() => onEdit(task)}
+                  title="Edit task"
+                >
+                  <Edit className="h-5 w-5" />
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="icon"
