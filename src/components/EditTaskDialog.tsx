@@ -2,15 +2,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Task, Priority } from '@/types/task';
-import { Label } from './ui/label';
+import { Textarea } from './ui/textarea';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -28,6 +25,7 @@ interface EditTaskDialogProps {
 
 export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDialogProps) {
   const { toast } = useToast();
+  const [selectedPriority, setSelectedPriority] = useState<Priority>('medium');
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -37,13 +35,14 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
     },
   });
 
-  // Reset form when task changes
+  // Reset form and selected priority when task changes
   useEffect(() => {
     if (task) {
       form.reset({
         title: task.title,
         priority: task.priority,
       });
+      setSelectedPriority(task.priority);
     }
   }, [task, form]);
 
@@ -51,7 +50,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
     if (!task) return;
     
     try {
-      await onEdit(task.id, values.title, values.priority as Priority);
+      await onEdit(task.id, values.title, selectedPriority);
       onOpenChange(false);
       toast({
         title: 'Task updated',
@@ -69,64 +68,45 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="animate-slide-up sm:max-w-[425px] pb-6">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
             Make changes to your task here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Task</FormLabel>
-                  <FormControl>
-                    <Input {...field} autoFocus />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Priority</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      className="flex space-x-2"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="high" id="high" />
-                        <Label htmlFor="high" className="text-red-500">High</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="medium" id="medium" />
-                        <Label htmlFor="medium" className="text-yellow-500">Medium</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="low" id="low" />
-                        <Label htmlFor="low" className="text-green-500">Low</Label>
-                      </div>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+          <Textarea
+            placeholder="What needs to be done?"
+            value={form.watch('title')}
+            onChange={(e) => form.setValue('title', e.target.value)}
+            className="min-h-[100px] resize-none"
+          />
+          <div className="flex gap-2">
+            {(["low", "medium", "high"] as Priority[]).map((p) => (
+              <Button
+                key={p}
+                type="button"
+                variant={selectedPriority === p ? "default" : "outline"}
+                onClick={() => {
+                  setSelectedPriority(p);
+                  form.setValue('priority', p);
+                }}
+                className="flex-1 capitalize"
+              >
+                {p}
               </Button>
-              <Button type="submit">Save Changes</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            ))}
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              Save Changes
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
