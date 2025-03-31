@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { TaskStore } from './types/taskStore.types';
+import { TaskStore, UserSubscription } from './types/taskStore.types';
 import { supabase } from '@/integrations/supabase/client';
 import {
   fetchTasksFromDB,
@@ -18,6 +18,11 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
   isLoading: false,
   error: null,
+  // Initialize userSubscription with default free tier
+  userSubscription: {
+    tier: 'free',
+    expiresAt: null,
+  },
 
   fetchTasks: async () => {
     set({ isLoading: true, error: null });
@@ -142,6 +147,29 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   getTaskStats: () => {
     return calculateTaskStats(get().tasks);
   },
+  
+  // Add the new methods required by the TaskStore interface
+  setUserSubscription: (subscription: UserSubscription) => {
+    set({ userSubscription: subscription });
+  },
+  
+  // Check if user has pro access
+  hasProAccess: () => {
+    const { userSubscription } = get();
+    
+    // If the user is on the pro tier
+    if (userSubscription.tier === 'pro') {
+      // If there's an expiry date, check if it's in the future
+      if (userSubscription.expiresAt) {
+        return new Date(userSubscription.expiresAt) > new Date();
+      }
+      // If no expiry date, they have indefinite pro access
+      return true;
+    }
+    
+    // Default to no pro access
+    return false;
+  }
 }));
 
 export default useTaskStore;
