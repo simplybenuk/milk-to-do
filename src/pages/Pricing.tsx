@@ -41,29 +41,33 @@ const Pricing = () => {
       {/* Pricing Cards */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Plan */}
             <Card className="border-2 border-milk-200">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">Free</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$0</span>
-                  <span className="text-milk-500 ml-2">/ month</span>
+                  <span className="text-4xl font-bold">£0</span>
+                  <span className="text-milk-500 ml-2">/ forever</span>
                 </div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Up to 50 tasks</span>
+                    <span>Unlimited tasks</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Basic prioritization</span>
+                    <span>Basic task management</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-emerald-500 mr-2" />
                     <span>Task expiry tracking</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="h-5 w-5 text-emerald-500 mr-2" />
+                    <span>Task prioritization</span>
                   </li>
                 </ul>
               </CardContent>
@@ -79,67 +83,42 @@ const Pricing = () => {
               </div>
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">Pro</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold">$5</span>
-                  <span className="text-milk-500 ml-2">/ month</span>
+                <div className="mt-4 flex flex-col space-y-2">
+                  <div>
+                    <span className="text-4xl font-bold">£2</span>
+                    <span className="text-milk-500 ml-2">/ month</span>
+                  </div>
+                  <div className="text-sm text-milk-500">
+                    or <span className="font-semibold text-emerald-600">£20</span> / year (save £4)
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Unlimited tasks</span>
+                    <span>Everything in Free</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Advanced prioritization</span>
+                    <span>Edit tasks</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Custom task expiry dates</span>
+                    <span>Split tasks into smaller steps</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Analytics and insights</span>
+                    <span>Advanced analytics and insights</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="h-5 w-5 text-emerald-500 mr-2" />
+                    <span>Task performance metrics</span>
                   </li>
                 </ul>
               </CardContent>
               <CardFooter>
                 <Button className="w-full bg-emerald-500 hover:bg-emerald-600">Upgrade to Pro</Button>
-              </CardFooter>
-            </Card>
-
-            {/* Team Plan */}
-            <Card className="border-2 border-milk-200">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold">Team</CardTitle>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold">$12</span>
-                  <span className="text-milk-500 ml-2">/ month</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Everything in Pro</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Team collaboration</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Task assignment</span>
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-5 w-5 text-emerald-500 mr-2" />
-                    <span>Team analytics</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full">Contact Sales</Button>
               </CardFooter>
             </Card>
           </div>
