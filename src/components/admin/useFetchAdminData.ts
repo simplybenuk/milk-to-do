@@ -30,11 +30,11 @@ export const useFetchAdminData = () => {
       if (profilesError) throw new Error(profilesError.message);
 
       // Get task counts for all users
-      // Fix the groupBy issue by using the correct syntax
+      // Using the correct syntax for grouping in Supabase
       const { data: taskCounts, error: tasksError } = await supabase
         .from('tasks')
         .select('owner_id, count(*)')
-        .groupBy('owner_id');
+        .group('owner_id');
       if (tasksError) throw new Error(tasksError.message);
 
       // Get all admin users
