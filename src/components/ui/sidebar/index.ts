@@ -3,6 +3,7 @@ import { SheetContent } from "./SheetContent";
 import { SheetHeader, SheetFooter } from "./SheetComponents";
 import { SheetTitle, SheetDescription } from "./SheetText";
 import { Sheet, SheetTrigger, SheetClose, SheetPortal, SheetOverlay } from "./SheetPrimitive";
+import { Sidebar } from "./Sidebar";
 
 export {
   Sheet,
@@ -14,5 +15,6 @@ export {
   SheetOverlay,
   SheetPortal,
   SheetTitle,
-  SheetTrigger
+  SheetTrigger,
+  Sidebar
 };
