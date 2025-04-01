@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
-export const useAdminCheck = (userId: string | null) => {
+export const useAdminCheck = (userId: string | null | undefined) => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,19 +26,23 @@ export const useAdminCheck = (userId: string | null) => {
           setError(error.message);
           setIsAdmin(false);
         } else {
-          const hasAdminAccess = !!data;
-          console.log('useAdminCheck - Admin status result:', hasAdminAccess);
-          setIsAdmin(hasAdminAccess);
+          // The is_admin function returns a boolean
+          console.log('useAdminCheck - Admin status result:', data);
+          setIsAdmin(!!data);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('useAdminCheck - Exception in admin check:', error);
-        setError('An unexpected error occurred');
+        setError(error?.message || 'An unexpected error occurred');
         setIsAdmin(false);
       } finally {
         setIsLoading(false);
       }
     };
 
+    // Reset states when userId changes
+    setIsLoading(true);
+    setError(null);
+    
     checkAdminStatus();
   }, [userId]);
 

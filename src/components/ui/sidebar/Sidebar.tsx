@@ -39,6 +39,8 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
     if (onClose) onClose();
   };
 
+  console.log('Sidebar - User is admin:', isAdmin);
+
   return (
     <SheetContent side="left" className="p-0 flex flex-col w-[300px]">
       <div className="p-6">
