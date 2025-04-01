@@ -34,26 +34,34 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
       if (!userId) return;
       
       try {
-        console.log('Direct admin check - userId:', userId);
+        console.log('Direct admin check in Sidebar - userId:', userId);
         const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
         
         if (error) {
-          console.error('Direct admin check error:', error);
+          console.error('Direct admin check error in Sidebar:', error);
           return;
         }
         
         const hasAdminAccess = !!data;
-        console.log('Direct admin check result:', hasAdminAccess);
+        console.log('Direct admin check result in Sidebar:', hasAdminAccess);
+        
+        if (hasAdminAccess) {
+          toast({
+            title: 'Admin Access Confirmed',
+            description: 'Your admin privileges have been verified',
+          });
+        }
+        
         setIsAdminLocal(hasAdminAccess);
       } catch (error) {
-        console.error('Exception in direct admin check:', error);
+        console.error('Exception in direct admin check in Sidebar:', error);
       }
     };
     
     checkAdminDirectly();
   }, [userId]);
 
-  // React Query for admin status
+  // React Query for admin status with correct v5 parameter names
   const { data: isAdmin, isLoading, error } = useQuery({
     queryKey: ['isAdmin', userId],
     queryFn: async () => {
