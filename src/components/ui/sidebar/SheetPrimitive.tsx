@@ -1,18 +1,18 @@
 
-import * as SheetPrimitive from "@radix-ui/react-dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const Sheet = SheetPrimitive.Root;
-const SheetTrigger = SheetPrimitive.Trigger;
-const SheetClose = SheetPrimitive.Close;
-const SheetPortal = SheetPrimitive.Portal;
+const Sheet = DialogPrimitive.Root;
+const SheetTrigger = DialogPrimitive.Trigger;
+const SheetClose = DialogPrimitive.Close;
+const SheetPortal = DialogPrimitive.Portal;
 
 const SheetOverlay = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <SheetPrimitive.Overlay
+  <DialogPrimitive.Overlay
     className={cn(
       "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
@@ -21,6 +21,6 @@ const SheetOverlay = React.forwardRef<
     ref={ref}
   />
 ));
-SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
+SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 export { Sheet, SheetTrigger, SheetClose, SheetPortal, SheetOverlay };
