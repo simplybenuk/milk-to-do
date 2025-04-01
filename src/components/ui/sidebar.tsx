@@ -31,7 +31,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   }, [userId, isAdmin, isLoading]);
 
   const isActiveRoute = (path: string) => {
-    return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
   const handleLogout = async () => {
@@ -57,7 +57,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-milk-700 transition-all hover:text-milk-900",
-                isActive ? "bg-milk-100" : "hover:bg-milk-100/50"
+                isActive || isActiveRoute('/app') ? "bg-milk-100" : "hover:bg-milk-100/50"
               )
             }
           >
@@ -71,7 +71,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-milk-700 transition-all hover:text-milk-900",
-                isActive || isActiveRoute('/app/done') ? "bg-milk-100" : "hover:bg-milk-100/50"
+                isActive || isActiveRoute('/app/all-tasks') || isActiveRoute('/app/done') ? "bg-milk-100" : "hover:bg-milk-100/50"
               )
             }
           >
@@ -87,7 +87,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-milk-700 font-semibold text-emerald-600 transition-all hover:text-emerald-800",
-                  isActive ? "bg-emerald-50" : "hover:bg-emerald-50/50"
+                  isActive || isActiveRoute('/admin') ? "bg-emerald-50" : "hover:bg-emerald-50/50"
                 )
               }
             >
@@ -106,7 +106,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-milk-700 transition-all hover:text-milk-900",
-                isActive ? "bg-milk-100" : "hover:bg-milk-100/50"
+                isActive || isActiveRoute('/settings') ? "bg-milk-100" : "hover:bg-milk-100/50"
               )
             }
           >

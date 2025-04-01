@@ -18,14 +18,14 @@ const Admin = () => {
   
   // Reset pointer events on mount/unmount
   useEffect(() => {
-    console.log('Admin page - Component mounted');
+    console.log('Admin page - Component mounted with userId:', userId);
     document.body.style.pointerEvents = "";
     
     return () => {
       console.log('Admin page - Component unmounted, resetting pointer events');
       document.body.style.pointerEvents = "";
     };
-  }, []);
+  }, [userId]);
   
   useEffect(() => {
     console.log('Admin page - Status update:', { 
@@ -34,47 +34,7 @@ const Admin = () => {
       isLoading, 
       error 
     });
-    
-    // If we don't have a userId but we're not loading, try to get it directly
-    if (!userId && !isLoading) {
-      console.log('Admin page - No userId but not loading, checking Supabase directly');
-      
-      // Direct Supabase check as a fallback
-      supabase.auth.getUser().then(({ data }) => {
-        if (data?.user) {
-          console.log('Admin page - Found user via direct check:', data.user.id);
-          
-          // Direct admin check
-          supabase.rpc('is_admin', { user_id: data.user.id })
-            .then(response => {
-              console.log('Admin page - Direct admin check result:', response);
-              if (response.data === true) {
-                toast({
-                  title: "Admin status confirmed",
-                  description: "Please refresh the page to access admin features",
-                });
-                setTimeout(() => window.location.reload(), 1500);
-              }
-            })
-            .then(
-              undefined,
-              (error) => console.error('Admin page - Error checking admin status:', error)
-            );
-        } else {
-          console.log('Admin page - No user found in direct check');
-          toast({
-            title: "Authentication Required",
-            description: "Please sign in to continue",
-            variant: "destructive"
-          });
-          navigate('/auth');
-        }
-      }).then(
-        undefined,
-        (error) => console.error('Admin page - Error getting user:', error)
-      );
-    }
-  }, [userId, navigate, isAdmin, isLoading, error]);
+  }, [userId, isAdmin, isLoading, error]);
   
   // If still loading, show loading state
   if (isLoading) {
@@ -121,42 +81,47 @@ const Admin = () => {
               disabled={manualCheckInProgress}
               onClick={() => {
                 setManualCheckInProgress(true);
-                console.log('Performing manual admin check...');
+                console.log('Performing manual admin check with userId:', userId);
                 
-                if (userId) {
-                  supabase.rpc('is_admin', { user_id: userId })
-                    .then(response => {
-                      console.log('Manual admin check result:', response);
-                      setManualCheckInProgress(false);
-                      
-                      if (response.data === true) {
-                        toast({
-                          title: "Admin status confirmed",
-                          description: "Please refresh to access the admin area",
-                        });
-                        // Force reload to refresh admin status
-                        setTimeout(() => window.location.reload(), 1500);
-                      } else {
-                        toast({
-                          title: "Not an admin",
-                          description: "Your account does not have admin privileges",
-                          variant: "destructive"
-                        });
-                      }
-                    })
-                    .then(
-                      undefined, 
-                      (err) => {
-                        console.error('Error in manual admin check:', err);
-                        setManualCheckInProgress(false);
-                        toast({
-                          title: "Error checking admin status",
-                          description: err.message || "Please try again",
-                          variant: "destructive"
-                        });
-                      }
-                    );
+                if (!userId) {
+                  toast({
+                    title: "User ID not found",
+                    description: "Please try again after reloading the page",
+                    variant: "destructive"
+                  });
+                  setManualCheckInProgress(false);
+                  return;
                 }
+                
+                supabase.rpc('is_admin', { user_id: userId })
+                  .then(response => {
+                    console.log('Manual admin check result:', response);
+                    setManualCheckInProgress(false);
+                    
+                    if (response.data === true) {
+                      toast({
+                        title: "Admin status confirmed",
+                        description: "Please refresh to access the admin area",
+                      });
+                      // Force reload to refresh admin status
+                      setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                      toast({
+                        title: "Not an admin",
+                        description: "Your account does not have admin privileges",
+                        variant: "destructive"
+                      });
+                    }
+                  })
+                  .catch((err) => {
+                    console.error('Error in manual admin check:', err);
+                    setManualCheckInProgress(false);
+                    toast({
+                      title: "Error checking admin status",
+                      description: err.message || "Please try again",
+                      variant: "destructive"
+                    });
+                  });
               }}
             >
               {manualCheckInProgress ? (
