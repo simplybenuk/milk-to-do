@@ -31,6 +31,7 @@ export const useAdminCheck = (userId: string | null | undefined) => {
           }
         } catch (err) {
           console.error('useAdminCheck - Error getting session:', err);
+          setError(err instanceof Error ? err.message : 'Unknown error occurred');
           setIsLoading(false);
           setIsAdmin(false);
         }

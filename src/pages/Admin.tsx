@@ -33,8 +33,8 @@ const Admin = () => {
             user_id: data.user.id 
           }).then(response => {
             console.log('Admin page - Direct is_admin check:', response);
-          }).catch(err => {
-            console.error('Admin page - Error in direct admin check:', err);
+          }).catch(error => {
+            console.error('Admin page - Error in direct admin check:', error);
           });
         } else {
           console.log('Admin page - No user found in Supabase session');
@@ -45,6 +45,8 @@ const Admin = () => {
           });
           navigate('/auth');
         }
+      }).catch(error => {
+        console.error('Admin page - Error getting user:', error);
       });
     }
   }, [userId, navigate, isAdmin, isLoading, error]);
