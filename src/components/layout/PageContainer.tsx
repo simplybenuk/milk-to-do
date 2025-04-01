@@ -3,11 +3,11 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface PageContainerProps {
-  inFocusMode: boolean;
+  inFocusMode?: boolean;
   children: React.ReactNode;
 }
 
-export function PageContainer({ inFocusMode, children }: PageContainerProps) {
+export function PageContainer({ inFocusMode = false, children }: PageContainerProps) {
   // Create dynamic page classes based on focus mode state
   const pageClasses = cn(
     "min-h-screen p-4 sm:p-6 md:p-8 transition-colors duration-500 ease-in-out",

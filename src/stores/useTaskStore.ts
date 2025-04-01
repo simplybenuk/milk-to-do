@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { TaskStore, UserSubscription } from './types/taskStore.types';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +17,8 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
   isLoading: false,
   error: null,
+  userId: undefined,
+
   // Initialize userSubscription with default free tier
   userSubscription: {
     tier: 'free',
@@ -30,6 +31,9 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
+      // Set the userId in the store
+      set({ userId: user.id });
+      
       const tasks = await fetchTasksFromDB(user.id);
       set({ tasks, isLoading: false });
     } catch (error) {
@@ -148,12 +152,10 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     return calculateTaskStats(get().tasks);
   },
   
-  // Add the new methods required by the TaskStore interface
   setUserSubscription: (subscription: UserSubscription) => {
     set({ userSubscription: subscription });
   },
   
-  // Check if user has pro access
   hasProAccess: () => {
     const { userSubscription } = get();
     
@@ -169,6 +171,24 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     
     // Default to no pro access
     return false;
+  },
+
+  logout: async () => {
+    try {
+      await supabase.auth.signOut();
+      set({ 
+        tasks: [],
+        userId: undefined,
+        userSubscription: {
+          tier: 'free',
+          expiresAt: null,
+        }
+      });
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Error logging out:', error);
+      return Promise.reject(error);
+    }
   }
 }));
 

@@ -32,6 +32,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
     queryFn: async () => {
       if (!userId) return false;
       
+      // Call the is_admin RPC function correctly
       const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
       
       if (error) {

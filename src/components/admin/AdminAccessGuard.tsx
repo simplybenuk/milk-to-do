@@ -19,6 +19,7 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       try {
+        // Call the is_admin RPC function correctly
         const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
         
         if (error) {

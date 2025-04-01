@@ -48,7 +48,7 @@ const Admin = () => {
       const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
       if (usersError) throw new Error(usersError.message);
 
-      // Get all profiles
+      // Get all profiles with subscription status
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, subscription_status, subscription_updated_at');
@@ -58,7 +58,7 @@ const Admin = () => {
       const { data: taskCounts, error: tasksError } = await supabase
         .from('tasks')
         .select('owner_id, count')
-        .group('owner_id');
+        .groupBy('owner_id');
       if (tasksError) throw new Error(tasksError.message);
 
       // Get all admin users
