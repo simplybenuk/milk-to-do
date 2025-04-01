@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import useTaskStore from '@/stores/useTaskStore';
+import { toast } from '@/hooks/use-toast';
 
 export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -19,13 +20,21 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       try {
+        console.log('Checking admin access for userId:', userId);
+        
         // Call the is_admin RPC function correctly
         const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
         
         if (error) {
           console.error('Error checking admin status:', error);
+          toast({
+            title: 'Error checking admin status',
+            description: error.message,
+            variant: 'destructive',
+          });
           setIsAdmin(false);
         } else {
+          console.log('Admin status result:', !!data);
           setIsAdmin(!!data);
         }
       } catch (error) {
@@ -51,8 +60,10 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   if (!isAdmin) {
+    console.log('Admin access denied, redirecting to /app');
     return <Navigate to="/app" replace />;
   }
 
+  console.log('Admin access granted, rendering admin content');
   return <>{children}</>;
 };

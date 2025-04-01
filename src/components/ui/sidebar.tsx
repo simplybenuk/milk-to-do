@@ -17,6 +17,7 @@ import { SheetContent } from '@/components/ui/sheet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import useTaskStore from '@/stores/useTaskStore';
+import { toast } from '@/hooks/use-toast';
 
 interface SidebarProps {
   onClose?: () => void;
@@ -27,7 +28,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const userId = useTaskStore((state) => state.userId);
   const onLogout = useTaskStore((state) => state.logout);
 
-  const { data: isAdmin } = useQuery({
+  const { data: isAdmin, isLoading: isAdminLoading } = useQuery({
     queryKey: ['isAdmin', userId],
     queryFn: async () => {
       if (!userId) return false;
@@ -37,12 +38,21 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
       
       if (error) {
         console.error('Error checking admin status:', error);
+        toast({
+          title: 'Error checking admin status',
+          description: error.message,
+          variant: 'destructive',
+        });
         return false;
       }
       
+      console.log('Admin check result:', !!data);
       return !!data;
     },
     enabled: !!userId,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
     initialData: false
   });
 
@@ -58,6 +68,8 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const handleLinkClick = () => {
     if (onClose) onClose();
   };
+
+  console.log('Sidebar render - userId:', userId, 'isAdmin:', isAdmin);
 
   return (
     <SheetContent side="left" className="p-0 flex flex-col w-[300px]">
