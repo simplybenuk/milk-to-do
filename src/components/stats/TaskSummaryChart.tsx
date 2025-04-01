@@ -5,12 +5,24 @@ import { Task } from "@/types/task";
 import { TaskStats as TaskStatsType } from "@/stores/types/taskStore.types";
 import { TaskStatsCard } from "./TaskStatsCard";
 import { StatsMetricCards } from "./StatsMetricCards";
+import { 
+  ChartTooltip, 
+  ChartTooltipContent 
+} from "@/components/ui/chart";
 
 interface TaskSummaryChartProps {
+  /** List of all tasks to analyze */
   tasks: Task[];
+  /** Pre-calculated task statistics */
   stats: TaskStatsType;
 }
 
+/**
+ * Chart displaying task completion summary for different time periods
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export function TaskSummaryChart({ tasks, stats }: TaskSummaryChartProps) {
   const summaryChartData = useMemo(() => {
     const lastWeekDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -72,7 +84,7 @@ export function TaskSummaryChart({ tasks, stats }: TaskSummaryChartProps) {
           <BarChart data={summaryChartData}>
             <XAxis dataKey="name" />
             <YAxis allowDecimals={false} />
-            <Tooltip />
+            <Tooltip content={<ChartTooltipContent />} />
             <Bar dataKey="new" fill="#3b82f6" name="New" />
             <Bar dataKey="completed" fill="#22c55e" name="Completed" />
             <Bar dataKey="expired" fill="#ef4444" name="Expired" />

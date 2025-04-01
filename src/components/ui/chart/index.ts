@@ -1,4 +1,9 @@
 
+/**
+ * Chart components for data visualization with customizable styling and behaviors
+ * @module chart
+ */
+
 import { ChartContainer } from "./ChartContainer"
 import { ChartTooltip, ChartTooltipContent } from "./ChartTooltip"
 import { ChartLegend, ChartLegendContent } from "./ChartLegend"

@@ -6,14 +6,25 @@ import { cn } from "@/lib/utils"
 import { useChart } from "./ChartContext"
 import { getPayloadConfigFromPayload } from "./utils"
 
+/** 
+ * Export the original Legend component from Recharts 
+ */
 export const ChartLegend = RechartsPrimitive.Legend
 
+/**
+ * Custom implementation of chart legend with better styling and icon support
+ * 
+ * @param props - Component props including payload and styling options
+ * @returns React component
+ */
 export const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
     Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-      hideIcon?: boolean
-      nameKey?: string
+      /** Hide the icon for legend items */
+      hideIcon?: boolean;
+      /** Key to use for matching items to config */
+      nameKey?: string;
     }
 >(
   (
@@ -56,7 +67,7 @@ export const ChartLegendContent = React.forwardRef<
                   }}
                 />
               )}
-              {itemConfig?.label}
+              {itemConfig?.label || item.value}
             </div>
           )
         })}

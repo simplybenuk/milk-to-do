@@ -6,10 +6,17 @@ import { cn } from "@/lib/utils"
 import { useChart } from "./ChartContext"
 import { getPayloadConfigFromPayload } from "./utils"
 
-// Main export for the Tooltip component
+/** 
+ * Export the original Tooltip component from Recharts 
+ */
 export const ChartTooltip = RechartsPrimitive.Tooltip
 
-// Component for the tooltip label
+/**
+ * Component for rendering the tooltip label section
+ * 
+ * @param props - Props for the tooltip label
+ * @returns React component or null if hidden
+ */
 const TooltipLabel = ({ 
   label, 
   labelFormatter, 
@@ -19,13 +26,20 @@ const TooltipLabel = ({
   config,
   labelKey
 }: {
-  label: React.ReactNode
-  labelFormatter?: (value: any, payload: any[]) => React.ReactNode
-  payload?: any[]
-  hideLabel?: boolean
-  labelClassName?: string
-  config: any
-  labelKey?: string
+  /** The label text or node */
+  label: React.ReactNode;
+  /** Custom formatter for the label */
+  labelFormatter?: (value: any, payload: any[]) => React.ReactNode;
+  /** Tooltip payload data */
+  payload?: any[];
+  /** Whether to hide the label */
+  hideLabel?: boolean;
+  /** Additional CSS class for the label */
+  labelClassName?: string;
+  /** Chart configuration */
+  config: any;
+  /** Key to use for label lookup */
+  labelKey?: string;
 }) => {
   if (hideLabel || !payload?.length) {
     return null
@@ -54,7 +68,12 @@ const TooltipLabel = ({
   return <div className={cn("font-medium", labelClassName)}>{value}</div>
 }
 
-// Component for rendering individual tooltip items
+/**
+ * Component for rendering individual tooltip items
+ * 
+ * @param props - Props for the tooltip item
+ * @returns React component
+ */
 const TooltipItem = ({
   item,
   index,
@@ -65,14 +84,22 @@ const TooltipItem = ({
   nestLabel,
   color
 }: {
-  item: any
-  index: number
-  formatter?: (value: any, name: string, item: any, index: number, payload: any) => React.ReactNode
-  itemConfig: any
-  hideIndicator: boolean
-  indicator: "line" | "dot" | "dashed"
-  nestLabel: boolean
-  color?: string
+  /** The tooltip item data */
+  item: any;
+  /** Item index in the tooltip */
+  index: number;
+  /** Custom formatter function */
+  formatter?: (value: any, name: string, item: any, index: number, payload: any) => React.ReactNode;
+  /** Configuration for this item */
+  itemConfig: any;
+  /** Whether to hide the color indicator */
+  hideIndicator: boolean;
+  /** Type of indicator to display */
+  indicator: "line" | "dot" | "dashed";
+  /** Whether to nest the label inside the item */
+  nestLabel: boolean;
+  /** Optional override color */
+  color?: string;
 }) => {
   const indicatorColor = color || item.payload.fill || item.color
 
@@ -118,7 +145,7 @@ const TooltipItem = ({
             )}
           >
             <div className="grid gap-1.5">
-              {itemConfig?.label || item.name && (
+              {(itemConfig?.label || item.name) && (
                 <span className="text-muted-foreground">
                   {itemConfig?.label || item.name}
                 </span>
@@ -136,16 +163,26 @@ const TooltipItem = ({
   )
 }
 
-// Main tooltip content component
+/**
+ * Custom tooltip content component with better styling and configuration options
+ * 
+ * @param props - Component props including tooltip data and styling options
+ * @returns React component or null if not active
+ */
 export const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
     React.ComponentProps<"div"> & {
-      hideLabel?: boolean
-      hideIndicator?: boolean
-      indicator?: "line" | "dot" | "dashed"
-      nameKey?: string
-      labelKey?: string
+      /** Whether to hide the tooltip label */
+      hideLabel?: boolean;
+      /** Whether to hide color indicators */
+      hideIndicator?: boolean;
+      /** Type of indicator to show */
+      indicator?: "line" | "dot" | "dashed";
+      /** Key to use for name lookup */
+      nameKey?: string;
+      /** Key to use for label lookup */
+      labelKey?: string;
     }
 >(
   (

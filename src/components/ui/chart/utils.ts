@@ -1,41 +1,18 @@
 
-import { ChartConfig } from "./ChartContext"
+import { ChartConfig } from "./ChartContext";
 
-// Helper to extract item config from a payload.
+/**
+ * Retrieves the configuration for a specific chart element from the payload
+ * 
+ * @param {ChartConfig} config - The chart configuration object
+ * @param {any} payload - The chart data payload
+ * @param {string} key - The data key to lookup in the configuration
+ * @returns {any} The configuration for the specific element or undefined if not found
+ */
 export function getPayloadConfigFromPayload(
   config: ChartConfig,
-  payload: unknown,
+  payload: any,
   key: string
-) {
-  if (typeof payload !== "object" || payload === null) {
-    return undefined
-  }
-
-  const payloadPayload =
-    "payload" in payload &&
-    typeof payload.payload === "object" &&
-    payload.payload !== null
-      ? payload.payload
-      : undefined
-
-  let configLabelKey: string = key
-
-  if (
-    key in payload &&
-    typeof payload[key as keyof typeof payload] === "string"
-  ) {
-    configLabelKey = payload[key as keyof typeof payload] as string
-  } else if (
-    payloadPayload &&
-    key in payloadPayload &&
-    typeof payloadPayload[key as keyof typeof payloadPayload] === "string"
-  ) {
-    configLabelKey = payloadPayload[
-      key as keyof typeof payloadPayload
-    ] as string
-  }
-
-  return configLabelKey in config
-    ? config[configLabelKey]
-    : config[key as keyof typeof config]
+): ChartConfig[string] | undefined {
+  return config?.[key] || config?.[payload?.dataKey] || config?.[payload?.name];
 }

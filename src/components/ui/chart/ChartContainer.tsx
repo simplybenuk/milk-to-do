@@ -7,13 +7,23 @@ import { ChartContext } from "./ChartContext"
 import { ChartStyle } from "./ChartStyle"
 import type { ChartConfig } from "./ChartContext"
 
+/**
+ * Container component for charts with responsive sizing and styling
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export const ChartContainer = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    config: ChartConfig
+    /** Chart configuration */
+    config: ChartConfig;
+    /** Chart content */
     children: React.ComponentProps<
       typeof RechartsPrimitive.ResponsiveContainer
-    >["children"]
+    >["children"];
+    /** Optional unique ID for the chart */
+    id?: string;
   }
 >(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId()

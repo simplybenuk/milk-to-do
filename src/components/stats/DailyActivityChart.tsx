@@ -5,11 +5,22 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recha
 import { Button } from "@/components/ui/button";
 import { Task } from "@/types/task";
 import { TaskStatsCard } from "./TaskStatsCard";
+import { 
+  ChartTooltip, 
+  ChartTooltipContent 
+} from "@/components/ui/chart";
 
 interface DailyActivityChartProps {
+  /** List of all tasks to analyze */
   tasks: Task[];
 }
 
+/**
+ * Chart displaying daily task activity (new, completed, expired)
+ * 
+ * @param props - Component props
+ * @returns React component
+ */
 export function DailyActivityChart({ tasks }: DailyActivityChartProps) {
   const [timeRange, setTimeRange] = useState<"week" | "month">("week");
 
@@ -86,7 +97,7 @@ export function DailyActivityChart({ tasks }: DailyActivityChartProps) {
           <BarChart data={dailyChartData}>
             <XAxis dataKey="date" />
             <YAxis allowDecimals={false} />
-            <Tooltip />
+            <Tooltip content={<ChartTooltipContent />} />
             <Bar dataKey="new" fill="#3b82f6" name="New" />
             <Bar dataKey="completed" fill="#22c55e" name="Completed" />
             <Bar dataKey="expired" fill="#ef4444" name="Expired" />
