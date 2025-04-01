@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 import Landing from "./pages/Landing";
 import EmailConfirmation from "./pages/EmailConfirmation";
 import Features from "./pages/Features";
@@ -130,9 +131,17 @@ const App = () => {
                 </PrivateRoute>
               }
             />
+            <Route
+              path="/admin"
+              element={
+                <PrivateRoute>
+                  <Admin />
+                </PrivateRoute>
+              }
+            />
             <Route path="/auth" element={<Auth />} />
             <Route path="/email-confirmation" element={<EmailConfirmation />} />
-            {/* New public routes */}
+            {/* Public routes */}
             <Route path="/features" element={<Features />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/pricing" element={<Pricing />} />
