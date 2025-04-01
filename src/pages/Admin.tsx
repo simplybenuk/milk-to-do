@@ -16,57 +16,67 @@ const Admin = () => {
   const { isAdmin, isLoading, error } = useAdminCheck(userId);
   const [manualCheckInProgress, setManualCheckInProgress] = useState(false);
   
-  // Reset pointer events when component mounts/unmounts
+  // Reset pointer events on mount/unmount
   useEffect(() => {
-    console.log('Admin page - Resetting pointer events on mount');
+    console.log('Admin page - Component mounted');
     document.body.style.pointerEvents = "";
     
     return () => {
-      console.log('Admin page - Resetting pointer events on unmount');
+      console.log('Admin page - Component unmounted, resetting pointer events');
       document.body.style.pointerEvents = "";
     };
   }, []);
   
   useEffect(() => {
-    console.log('Admin page - Current userId:', userId);
-    console.log('Admin page - isAdmin:', isAdmin);
-    console.log('Admin page - isLoading:', isLoading);
-    console.log('Admin page - error:', error);
+    console.log('Admin page - Status update:', { 
+      userId, 
+      isAdmin, 
+      isLoading, 
+      error 
+    });
     
-    // Ensure we have a userId
+    // If we don't have a userId but we're not loading, try to get it directly
     if (!userId && !isLoading) {
-      // Check if we can get the user from Supabase
+      console.log('Admin page - No userId but not loading, checking Supabase directly');
+      
+      // Direct Supabase check as a fallback
       supabase.auth.getUser().then(({ data }) => {
         if (data?.user) {
-          console.log('Admin page - Retrieved user ID from Supabase:', data.user.id);
+          console.log('Admin page - Found user via direct check:', data.user.id);
           
-          // Check if this user is actually an admin
-          supabase.rpc('is_admin', { 
-            user_id: data.user.id 
-          }).then(response => {
-            console.log('Admin page - Direct is_admin check:', response);
-            if (response.data === true) {
-              console.log('Admin page - User is admin, refreshing page');
-              window.location.reload();
-            }
-          }).then(undefined, (error) => {
-            console.error('Admin page - Error in direct admin check:', error);
-          });
+          // Direct admin check
+          supabase.rpc('is_admin', { user_id: data.user.id })
+            .then(response => {
+              console.log('Admin page - Direct admin check result:', response);
+              if (response.data === true) {
+                toast({
+                  title: "Admin status confirmed",
+                  description: "Please refresh the page to access admin features",
+                });
+                setTimeout(() => window.location.reload(), 1500);
+              }
+            })
+            .then(
+              undefined,
+              (error) => console.error('Admin page - Error checking admin status:', error)
+            );
         } else {
-          console.log('Admin page - No user found in Supabase session');
+          console.log('Admin page - No user found in direct check');
           toast({
-            title: "Authentication Error",
-            description: "Please sign in again to access this page",
+            title: "Authentication Required",
+            description: "Please sign in to continue",
             variant: "destructive"
           });
           navigate('/auth');
         }
-      }).then(undefined, (error) => {
-        console.error('Admin page - Error getting user:', error);
-      });
+      }).then(
+        undefined,
+        (error) => console.error('Admin page - Error getting user:', error)
+      );
     }
   }, [userId, navigate, isAdmin, isLoading, error]);
   
+  // If still loading, show loading state
   if (isLoading) {
     return (
       <PageContainer>
@@ -79,8 +89,8 @@ const Admin = () => {
     );
   }
   
+  // If there's an error, show error state
   if (error) {
-    console.error('Admin access check error:', error);
     return (
       <PageContainer>
         <div className="flex flex-col items-center justify-center h-[70vh]">
@@ -96,6 +106,7 @@ const Admin = () => {
     );
   }
   
+  // If not admin, show access denied
   if (!isAdmin) {
     return (
       <PageContainer>
@@ -133,15 +144,18 @@ const Admin = () => {
                         });
                       }
                     })
-                    .then(undefined, (err) => {
-                      console.error('Error in manual admin check:', err);
-                      setManualCheckInProgress(false);
-                      toast({
-                        title: "Error checking admin status",
-                        description: err.message || "Please try again",
-                        variant: "destructive"
-                      });
-                    });
+                    .then(
+                      undefined, 
+                      (err) => {
+                        console.error('Error in manual admin check:', err);
+                        setManualCheckInProgress(false);
+                        toast({
+                          title: "Error checking admin status",
+                          description: err.message || "Please try again",
+                          variant: "destructive"
+                        });
+                      }
+                    );
                 }
               }}
             >
@@ -158,6 +172,7 @@ const Admin = () => {
     );
   }
 
+  // If admin, show admin dashboard
   return (
     <PageContainer>
       <div className="p-4 sm:p-6">

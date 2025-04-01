@@ -24,14 +24,11 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const location = useLocation();
   const userId = useTaskStore((state) => state.userId);
   const onLogout = useTaskStore((state) => state.logout);
-  const { isAdmin, isLoading, error } = useAdminCheck(userId);
+  const { isAdmin, isLoading } = useAdminCheck(userId);
   
   useEffect(() => {
-    console.log('Sidebar - userId:', userId);
-    console.log('Sidebar - isAdmin:', isAdmin);
-    console.log('Sidebar - isLoading:', isLoading);
-    console.log('Sidebar - Admin check error:', error);
-  }, [userId, isAdmin, isLoading, error]);
+    console.log('Sidebar - Admin check status:', { userId, isAdmin, isLoading });
+  }, [userId, isAdmin, isLoading]);
 
   const isActiveRoute = (path: string) => {
     return location.pathname === path;
@@ -82,7 +79,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
             <span>All Tasks</span>
           </NavLink>
 
-          {/* Only show admin link if user is admin */}
+          {/* Only show admin link if user is admin - and not during loading */}
           {isAdmin && !isLoading && (
             <NavLink 
               to="/admin" 

@@ -10,49 +10,46 @@ export const useAdminCheck = (userId: string | null | undefined) => {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      console.log('useAdminCheck - Starting check with userId:', userId);
+      console.log('useAdminCheck - Starting admin check with userId:', userId);
       
-      if (!userId) {
-        console.log('useAdminCheck - No userId available, trying to get from session');
-        
-        try {
+      try {
+        // If no userId provided, try to get it from session
+        if (!userId) {
+          console.log('useAdminCheck - No userId provided, checking session');
           const { data: { session } } = await supabase.auth.getSession();
           
           if (session?.user) {
-            const sessionUserId = session.user.id;
-            console.log('useAdminCheck - Retrieved userId from session:', sessionUserId);
-            
-            // Call checkAdminWithUserId with the session user ID
-            await checkAdminWithUserId(sessionUserId);
+            console.log('useAdminCheck - Found user in session:', session.user.id);
+            await checkAdminWithUserId(session.user.id);
           } else {
-            console.log('useAdminCheck - No user in session');
-            setIsLoading(false);
+            console.log('useAdminCheck - No session available');
             setIsAdmin(false);
+            setIsLoading(false);
           }
-        } catch (err) {
-          console.error('useAdminCheck - Error getting session:', err);
-          setError(err instanceof Error ? err.message : 'Unknown error occurred');
-          setIsLoading(false);
-          setIsAdmin(false);
+        } else {
+          // We have a userId, use it directly
+          await checkAdminWithUserId(userId);
         }
-      } else {
-        // Use the provided userId
-        await checkAdminWithUserId(userId);
+      } catch (err) {
+        console.error('useAdminCheck - Error in checkAdminStatus:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        setIsAdmin(false);
+        setIsLoading(false);
       }
     };
     
     const checkAdminWithUserId = async (userIdToCheck: string) => {
       try {
-        console.log('useAdminCheck - Checking admin status for userId:', userIdToCheck);
+        console.log('useAdminCheck - Performing direct admin check for:', userIdToCheck);
         
         const { data, error } = await supabase.rpc('is_admin', { 
           user_id: userIdToCheck 
         });
         
-        console.log('useAdminCheck - Raw response:', { data, error });
+        console.log('useAdminCheck - Admin check raw response:', { data, error });
         
         if (error) {
-          console.error('useAdminCheck - Error checking admin status:', error);
+          console.error('useAdminCheck - Error in admin check:', error);
           setError(error.message);
           setIsAdmin(false);
         } else {
@@ -72,12 +69,15 @@ export const useAdminCheck = (userId: string | null | undefined) => {
     setIsLoading(true);
     setError(null);
     
-    checkAdminStatus().then(undefined, (err) => {
-      console.error('useAdminCheck - Unhandled promise rejection:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      setIsLoading(false);
-      setIsAdmin(false);
-    });
+    checkAdminStatus().then(
+      undefined, 
+      (err) => {
+        console.error('useAdminCheck - Unhandled promise rejection:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        setIsLoading(false);
+        setIsAdmin(false);
+      }
+    );
   }, [userId]);
 
   return { isAdmin, isLoading, error };
