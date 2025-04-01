@@ -14,19 +14,22 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const checkAdminAccess = async () => {
       if (!userId) {
+        console.log('AdminAccessGuard - No userId, denying access');
         setIsAdmin(false);
         setIsLoading(false);
         return;
       }
 
       try {
-        console.log('Checking admin access for userId:', userId);
+        console.log('AdminAccessGuard - Checking admin access for userId:', userId);
         
-        // Call the is_admin RPC function correctly
-        const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
+        // Make sure we're passing the parameter correctly
+        const { data, error } = await supabase.rpc('is_admin', { 
+          user_id: userId 
+        });
         
         if (error) {
-          console.error('Error checking admin status:', error);
+          console.error('AdminAccessGuard - Error checking admin status:', error);
           toast({
             title: 'Error checking admin status',
             description: error.message,
@@ -34,18 +37,24 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
           });
           setIsAdmin(false);
         } else {
-          console.log('Admin status result:', !!data);
-          setIsAdmin(!!data);
+          const hasAdminAccess = !!data;
+          console.log('AdminAccessGuard - Admin status result:', hasAdminAccess);
+          setIsAdmin(hasAdminAccess);
         }
       } catch (error) {
-        console.error('Error in admin check:', error);
+        console.error('AdminAccessGuard - Error in admin check:', error);
         setIsAdmin(false);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkAdminAccess();
+    // Add a small delay to ensure userId is properly loaded
+    const timer = setTimeout(() => {
+      checkAdminAccess();
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [userId]);
 
   if (isLoading) {
@@ -60,10 +69,10 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   if (!isAdmin) {
-    console.log('Admin access denied, redirecting to /app');
+    console.log('AdminAccessGuard - Access denied, redirecting to /app');
     return <Navigate to="/app" replace />;
   }
 
-  console.log('Admin access granted, rendering admin content');
+  console.log('AdminAccessGuard - Access granted, rendering admin content');
   return <>{children}</>;
 };

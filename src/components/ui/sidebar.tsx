@@ -6,7 +6,6 @@ import {
   Home,
   Settings,
   ListChecks,
-  Users,
   Shield,
   LogOut
 } from 'lucide-react';
@@ -28,32 +27,46 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const userId = useTaskStore((state) => state.userId);
   const onLogout = useTaskStore((state) => state.logout);
 
-  const { data: isAdmin, isLoading: isAdminLoading } = useQuery({
+  // Configure a more aggressive query to check admin status
+  const { data: isAdmin } = useQuery({
     queryKey: ['isAdmin', userId],
     queryFn: async () => {
       if (!userId) return false;
       
-      // Call the is_admin RPC function correctly
-      const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
-      
-      if (error) {
-        console.error('Error checking admin status:', error);
-        toast({
-          title: 'Error checking admin status',
-          description: error.message,
-          variant: 'destructive',
+      try {
+        console.log('Checking admin status for user:', userId);
+        
+        // Call the is_admin RPC function
+        const { data, error } = await supabase.rpc('is_admin', { 
+          user_id: userId 
         });
+        
+        if (error) {
+          console.error('Sidebar - Error checking admin status:', error);
+          toast({
+            title: 'Error checking admin status',
+            description: error.message,
+            variant: 'destructive',
+          });
+          return false;
+        }
+        
+        const hasAdminAccess = !!data;
+        console.log('Sidebar - Admin check result:', hasAdminAccess);
+        return hasAdminAccess;
+      } catch (error) {
+        console.error('Sidebar - Exception in admin check:', error);
         return false;
       }
-      
-      console.log('Admin check result:', !!data);
-      return !!data;
     },
     enabled: !!userId,
+    retry: 2,
+    retryDelay: 1000,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    initialData: false
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    cacheTime: 60000, // Keep in cache for 1 minute
   });
 
   const isActiveRoute = (path: string) => {
@@ -107,7 +120,8 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
             <span>All Tasks</span>
           </NavLink>
 
-          {isAdmin && (
+          {/* Always show the admin link if isAdmin is true */}
+          {isAdmin === true && (
             <NavLink 
               to="/admin" 
               onClick={handleLinkClick}
