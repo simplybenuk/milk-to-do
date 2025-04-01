@@ -30,12 +30,18 @@ export const useFetchAdminData = () => {
       if (profilesError) throw new Error(profilesError.message);
 
       // Get task counts for all users
-      // Using the correct syntax for grouping in Supabase
-      const { data: taskCounts, error: tasksError } = await supabase
+      // Get all tasks and count them in-memory to avoid the groupBy issue
+      const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
-        .select('owner_id, count(*)')
-        .group('owner_id');
+        .select('owner_id');
       if (tasksError) throw new Error(tasksError.message);
+
+      // Count tasks by owner_id manually
+      const taskCountMap = new Map();
+      tasks?.forEach(task => {
+        const count = taskCountMap.get(task.owner_id) || 0;
+        taskCountMap.set(task.owner_id, count + 1);
+      });
 
       // Get all admin users
       const { data: admins, error: adminsError } = await supabase
@@ -50,10 +56,6 @@ export const useFetchAdminData = () => {
       // Map profiles by user ID for easy lookup
       const profileMap = new Map();
       profiles?.forEach(profile => profileMap.set(profile.id, profile));
-
-      // Map task counts by owner ID for easy lookup
-      const taskCountMap = new Map();
-      taskCounts?.forEach(taskCount => taskCountMap.set(taskCount.owner_id, taskCount.count));
 
       // Combine data into a single array of users with details
       const usersWithDetails = users.users.map(user => ({
