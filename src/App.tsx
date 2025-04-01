@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,7 +18,6 @@ import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 
-// Create a new QueryClient with more aggressive config
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -29,15 +27,12 @@ const queryClient = new QueryClient({
   },
 });
 
-// Check for auth tokens in URL (for OAuth redirects like Google login)
 const checkForAuthTokens = () => {
-  // Only run in browser environment
   if (typeof window === 'undefined') return false;
   
   const hash = window.location.hash;
   const query = new URLSearchParams(window.location.search);
   
-  // Check if we have auth tokens in the URL (after OAuth redirect)
   return !!(
     hash.includes('access_token=') || 
     hash.includes('refresh_token=') ||
@@ -51,15 +46,12 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Handle auth redirects
   useEffect(() => {
     console.log('PrivateRoute - Current path:', location.pathname);
     
     const hasAuthTokens = checkForAuthTokens();
     console.log('Auth tokens in URL:', hasAuthTokens);
     
-    // If we have auth tokens in the URL, navigate to /app
-    // This handles both OAuth redirects and email confirmation redirects
     if (hasAuthTokens) {
       console.log("Auth tokens detected in URL, redirecting to /app");
       navigate('/app', { replace: true });
@@ -71,7 +63,6 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
       console.log('Session user ID:', session?.user?.id);
       setSession(!!session);
       
-      // If user is authenticated and still on landing page, redirect to app
       if (session && location.pathname === '/') {
         console.log('User authenticated, redirecting from landing to app');
         navigate('/app', { replace: true });
@@ -92,15 +83,12 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
       const isAuthenticated = !!session;
       setSession(isAuthenticated);
       
-      // Handle different auth events
       if (isAuthenticated) {
-        // If user just confirmed their email or authenticated in any way
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
           console.log('Auth event detected, redirecting to app');
           navigate('/app', { replace: true });
         }
       } else if (event === 'SIGNED_OUT') {
-        // Redirect to landing page on sign out
         navigate('/', { replace: true });
       }
     });
@@ -110,7 +98,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (session === null) {
     console.log('PrivateRoute - Loading state');
-    return null; // Loading state
+    return null;
   }
 
   console.log('PrivateRoute - Session state:', session);
@@ -127,7 +115,6 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public Routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/email-confirmation" element={<EmailConfirmation />} />
@@ -137,7 +124,6 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             
-            {/* Protected Routes */}
             <Route
               path="/app/*"
               element={
