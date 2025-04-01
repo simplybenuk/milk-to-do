@@ -137,7 +137,7 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             
-            {/* Protected Routes */}
+            {/* Protected Routes - Make sure admin and settings are NOT duplicated */}
             <Route
               path="/app/*"
               element={

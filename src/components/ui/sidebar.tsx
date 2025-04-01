@@ -12,7 +12,7 @@ import {
 import { AppLogo } from '@/components/AppLogo';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SheetContent } from '@/components/ui/sheet';
+import { SheetContent } from '@/components/ui/sheet'; // Using the main sheet component
 import useTaskStore from '@/stores/useTaskStore';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 
@@ -27,9 +27,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const { isAdmin, isLoading } = useAdminCheck(userId);
   
   useEffect(() => {
-    console.log('Sidebar - userId:', userId);
-    console.log('Sidebar - isAdmin:', isAdmin);
-    console.log('Sidebar - isLoading:', isLoading);
+    console.log('Sidebar - Admin check status:', { userId, isAdmin, isLoading });
   }, [userId, isAdmin, isLoading]);
 
   const isActiveRoute = (path: string) => {
@@ -81,8 +79,8 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
             <span>All Tasks</span>
           </NavLink>
 
-          {/* Only show admin link if user is admin */}
-          {isAdmin && (
+          {/* Only show admin link if user is admin - and not during loading */}
+          {isAdmin && !isLoading && (
             <NavLink 
               to="/admin" 
               onClick={handleLinkClick}
