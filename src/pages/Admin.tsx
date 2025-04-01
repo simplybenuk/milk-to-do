@@ -54,11 +54,11 @@ const Admin = () => {
         .select('id, subscription_status, subscription_updated_at');
       if (profilesError) throw new Error(profilesError.message);
 
-      // Get task counts for all users
+      // Get task counts for all users - fixed groupBy syntax
       const { data: taskCounts, error: tasksError } = await supabase
         .from('tasks')
-        .select('owner_id, count')
-        .groupBy('owner_id');
+        .select('owner_id, count(*)', { count: 'exact' })
+        .group('owner_id');
       if (tasksError) throw new Error(tasksError.message);
 
       // Get all admin users
