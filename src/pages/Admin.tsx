@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Admin = () => {
   const userId = useTaskStore((state) => state.userId);
