@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export type UserWithDetails = {
   id: string;
@@ -22,6 +23,30 @@ export const useFetchAdminData = () => {
       console.log('useFetchAdminData - Starting to fetch admin data');
       
       try {
+        // First confirm that the current user is actually an admin
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          throw new Error('User not authenticated');
+        }
+        
+        console.log('useFetchAdminData - Current user ID:', user.id);
+        
+        // Verify admin status
+        const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin', { 
+          user_id: user.id 
+        });
+        
+        if (adminError) {
+          throw new Error(`Admin check failed: ${adminError.message}`);
+        }
+        
+        if (!isAdmin) {
+          throw new Error('Current user is not an admin');
+        }
+        
+        console.log('useFetchAdminData - Current user is confirmed admin');
+        
         // Get all users
         console.log('useFetchAdminData - Fetching users...');
         const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
@@ -103,6 +128,11 @@ export const useFetchAdminData = () => {
         return usersWithDetails as UserWithDetails[];
       } catch (error) {
         console.error('useFetchAdminData - Unexpected error:', error);
+        toast({
+          title: 'Admin data error',
+          description: error instanceof Error ? error.message : 'Failed to load admin data',
+          variant: 'destructive'
+        });
         throw error;
       }
     },

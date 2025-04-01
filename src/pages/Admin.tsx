@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import useTaskStore from '@/stores/useTaskStore';
@@ -14,6 +14,18 @@ const Admin = () => {
   const userId = useTaskStore((state) => state.userId);
   const navigate = useNavigate();
   const { isAdmin, isLoading, error } = useAdminCheck(userId);
+  const [manualCheckInProgress, setManualCheckInProgress] = useState(false);
+  
+  // Reset pointer events when component mounts/unmounts
+  useEffect(() => {
+    console.log('Admin page - Resetting pointer events on mount');
+    document.body.style.pointerEvents = "";
+    
+    return () => {
+      console.log('Admin page - Resetting pointer events on unmount');
+      document.body.style.pointerEvents = "";
+    };
+  }, []);
   
   useEffect(() => {
     console.log('Admin page - Current userId:', userId);
@@ -22,19 +34,22 @@ const Admin = () => {
     console.log('Admin page - error:', error);
     
     // Ensure we have a userId
-    if (!userId) {
+    if (!userId && !isLoading) {
       // Check if we can get the user from Supabase
       supabase.auth.getUser().then(({ data }) => {
         if (data?.user) {
           console.log('Admin page - Retrieved user ID from Supabase:', data.user.id);
           
           // Check if this user is actually an admin
-          // Using .then().catch() pattern for proper promise handling
           supabase.rpc('is_admin', { 
             user_id: data.user.id 
           }).then(response => {
             console.log('Admin page - Direct is_admin check:', response);
-          }).then(undefined, (error) => { // Using .then(undefined, errorHandler) instead of .catch
+            if (response.data === true) {
+              console.log('Admin page - User is admin, refreshing page');
+              window.location.reload();
+            }
+          }).then(undefined, (error) => {
             console.error('Admin page - Error in direct admin check:', error);
           });
         } else {
@@ -46,7 +61,7 @@ const Admin = () => {
           });
           navigate('/auth');
         }
-      }).then(undefined, (error) => { // Using .then(undefined, errorHandler) instead of .catch
+      }).then(undefined, (error) => {
         console.error('Admin page - Error getting user:', error);
       });
     }
@@ -92,29 +107,50 @@ const Admin = () => {
             <Button onClick={() => navigate('/app')}>Return to Application</Button>
             <Button 
               variant="outline" 
+              disabled={manualCheckInProgress}
               onClick={() => {
+                setManualCheckInProgress(true);
                 console.log('Performing manual admin check...');
                 
                 if (userId) {
-                  // Using .then().then(undefined, errorHandler) pattern for proper promise handling
                   supabase.rpc('is_admin', { user_id: userId })
                     .then(response => {
                       console.log('Manual admin check result:', response);
+                      setManualCheckInProgress(false);
                       
                       if (response.data === true) {
                         toast({
                           title: "Admin status confirmed",
                           description: "Please refresh to access the admin area",
                         });
+                        // Force reload to refresh admin status
+                        setTimeout(() => window.location.reload(), 1500);
+                      } else {
+                        toast({
+                          title: "Not an admin",
+                          description: "Your account does not have admin privileges",
+                          variant: "destructive"
+                        });
                       }
                     })
-                    .then(undefined, (err) => { // Using .then(undefined, errorHandler) instead of .catch
+                    .then(undefined, (err) => {
                       console.error('Error in manual admin check:', err);
+                      setManualCheckInProgress(false);
+                      toast({
+                        title: "Error checking admin status",
+                        description: err.message || "Please try again",
+                        variant: "destructive"
+                      });
                     });
                 }
               }}
             >
-              Check Admin Status
+              {manualCheckInProgress ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Checking...
+                </>
+              ) : 'Check Admin Status'}
             </Button>
           </div>
         </div>

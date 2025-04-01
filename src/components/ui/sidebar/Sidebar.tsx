@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -25,6 +25,13 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const userId = useTaskStore((state) => state.userId);
   const onLogout = useTaskStore((state) => state.logout);
   const { isAdmin, isLoading, error } = useAdminCheck(userId);
+  
+  useEffect(() => {
+    console.log('Sidebar - userId:', userId);
+    console.log('Sidebar - isAdmin:', isAdmin);
+    console.log('Sidebar - isLoading:', isLoading);
+    console.log('Sidebar - Admin check error:', error);
+  }, [userId, isAdmin, isLoading, error]);
 
   const isActiveRoute = (path: string) => {
     return location.pathname === path;
@@ -38,11 +45,6 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const handleLinkClick = () => {
     if (onClose) onClose();
   };
-
-  console.log('Sidebar - User ID:', userId);
-  console.log('Sidebar - isAdmin loading:', isLoading);
-  console.log('Sidebar - Admin check error:', error);
-  console.log('Sidebar - User is admin:', isAdmin);
 
   return (
     <SheetContent side="left" className="p-0 flex flex-col w-[300px]">
@@ -81,7 +83,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
           </NavLink>
 
           {/* Only show admin link if user is admin */}
-          {isAdmin && (
+          {isAdmin && !isLoading && (
             <NavLink 
               to="/admin" 
               onClick={handleLinkClick}
