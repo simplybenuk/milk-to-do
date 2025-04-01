@@ -29,11 +29,12 @@ const Admin = () => {
           console.log('Admin page - Retrieved user ID from Supabase:', data.user.id);
           
           // Check if this user is actually an admin
+          // Using .then().catch() pattern for proper promise handling
           supabase.rpc('is_admin', { 
             user_id: data.user.id 
           }).then(response => {
             console.log('Admin page - Direct is_admin check:', response);
-          }).catch(error => {
+          }).then(undefined, (error) => { // Using .then(undefined, errorHandler) instead of .catch
             console.error('Admin page - Error in direct admin check:', error);
           });
         } else {
@@ -45,7 +46,7 @@ const Admin = () => {
           });
           navigate('/auth');
         }
-      }).catch(error => {
+      }).then(undefined, (error) => { // Using .then(undefined, errorHandler) instead of .catch
         console.error('Admin page - Error getting user:', error);
       });
     }
@@ -95,6 +96,7 @@ const Admin = () => {
                 console.log('Performing manual admin check...');
                 
                 if (userId) {
+                  // Using .then().then(undefined, errorHandler) pattern for proper promise handling
                   supabase.rpc('is_admin', { user_id: userId })
                     .then(response => {
                       console.log('Manual admin check result:', response);
@@ -106,7 +108,7 @@ const Admin = () => {
                         });
                       }
                     })
-                    .catch(err => {
+                    .then(undefined, (err) => { // Using .then(undefined, errorHandler) instead of .catch
                       console.error('Error in manual admin check:', err);
                     });
                 }

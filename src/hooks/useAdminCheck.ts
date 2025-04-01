@@ -72,7 +72,12 @@ export const useAdminCheck = (userId: string | null | undefined) => {
     setIsLoading(true);
     setError(null);
     
-    checkAdminStatus();
+    checkAdminStatus().catch(err => {
+      console.error('useAdminCheck - Unhandled promise rejection:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      setIsLoading(false);
+      setIsAdmin(false);
+    });
   }, [userId]);
 
   return { isAdmin, isLoading, error };
