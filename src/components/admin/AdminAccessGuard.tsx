@@ -10,11 +10,16 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const userId = useTaskStore((state) => state.userId);
-
+  
   useEffect(() => {
     const checkAdminAccess = async () => {
       if (!userId) {
         console.log('AdminAccessGuard - No userId, denying access');
+        toast({
+          title: 'Access Denied',
+          description: 'You need to log in first',
+          variant: 'destructive',
+        });
         setIsAdmin(false);
         setIsLoading(false);
         return;
@@ -23,7 +28,7 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         console.log('AdminAccessGuard - Checking admin access for userId:', userId);
         
-        // Make sure we're passing the parameter correctly
+        // Make a direct call to check admin status
         const { data, error } = await supabase.rpc('is_admin', { 
           user_id: userId 
         });
@@ -39,6 +44,20 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
         } else {
           const hasAdminAccess = !!data;
           console.log('AdminAccessGuard - Admin status result:', hasAdminAccess);
+          
+          if (hasAdminAccess) {
+            toast({
+              title: 'Admin Access',
+              description: 'You have admin access',
+            });
+          } else {
+            toast({
+              title: 'Access Denied',
+              description: 'You do not have admin privileges',
+              variant: 'destructive',
+            });
+          }
+          
           setIsAdmin(hasAdminAccess);
         }
       } catch (error) {
@@ -49,12 +68,22 @@ export const AdminAccessGuard: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
 
-    // Add a small delay to ensure userId is properly loaded
-    const timer = setTimeout(() => {
+    if (userId) {
       checkAdminAccess();
-    }, 100);
-    
-    return () => clearTimeout(timer);
+    } else {
+      // Set a timer to check again if userId is available after a short delay
+      const timer = setTimeout(() => {
+        if (userId) {
+          checkAdminAccess();
+        } else {
+          console.log('AdminAccessGuard - userId still not available after delay');
+          setIsAdmin(false);
+          setIsLoading(false);
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
   }, [userId]);
 
   if (isLoading) {

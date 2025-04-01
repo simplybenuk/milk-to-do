@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -26,15 +26,41 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const location = useLocation();
   const userId = useTaskStore((state) => state.userId);
   const onLogout = useTaskStore((state) => state.logout);
+  const [isAdminLocal, setIsAdminLocal] = useState<boolean>(false);
 
-  // Configure a more aggressive query to check admin status
-  const { data: isAdmin } = useQuery({
+  // Direct check for admin status outside of React Query for debugging
+  useEffect(() => {
+    const checkAdminDirectly = async () => {
+      if (!userId) return;
+      
+      try {
+        console.log('Direct admin check - userId:', userId);
+        const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
+        
+        if (error) {
+          console.error('Direct admin check error:', error);
+          return;
+        }
+        
+        const hasAdminAccess = !!data;
+        console.log('Direct admin check result:', hasAdminAccess);
+        setIsAdminLocal(hasAdminAccess);
+      } catch (error) {
+        console.error('Exception in direct admin check:', error);
+      }
+    };
+    
+    checkAdminDirectly();
+  }, [userId]);
+
+  // React Query for admin status
+  const { data: isAdmin, isLoading, error } = useQuery({
     queryKey: ['isAdmin', userId],
     queryFn: async () => {
       if (!userId) return false;
       
       try {
-        console.log('Checking admin status for user:', userId);
+        console.log('Sidebar useQuery - Checking admin status for user:', userId);
         
         // Call the is_admin RPC function
         const { data, error } = await supabase.rpc('is_admin', { 
@@ -42,7 +68,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
         });
         
         if (error) {
-          console.error('Sidebar - Error checking admin status:', error);
+          console.error('Sidebar useQuery - Error checking admin status:', error);
           toast({
             title: 'Error checking admin status',
             description: error.message,
@@ -52,22 +78,32 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
         }
         
         const hasAdminAccess = !!data;
-        console.log('Sidebar - Admin check result:', hasAdminAccess);
+        console.log('Sidebar useQuery - Admin check result:', hasAdminAccess);
         return hasAdminAccess;
       } catch (error) {
-        console.error('Sidebar - Exception in admin check:', error);
+        console.error('Sidebar useQuery - Exception in admin check:', error);
         return false;
       }
     },
     enabled: !!userId,
-    retry: 2,
+    retry: 3,
     retryDelay: 1000,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    gcTime: 60000, // Keep in cache for 1 minute (renamed from cacheTime)
+    staleTime: 10000, // Consider data fresh for 10 seconds
+    gcTime: 30000, // Keep in cache for 30 seconds (renamed from cacheTime)
   });
+
+  useEffect(() => {
+    if (isAdmin === true) {
+      console.log('Admin status confirmed via React Query, user should see admin link');
+    }
+    
+    if (isAdminLocal === true) {
+      console.log('Admin status confirmed via direct check, user should see admin link');
+    }
+  }, [isAdmin, isAdminLocal]);
 
   const isActiveRoute = (path: string) => {
     return location.pathname === path;
@@ -82,7 +118,10 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
     if (onClose) onClose();
   };
 
-  console.log('Sidebar render - userId:', userId, 'isAdmin:', isAdmin);
+  console.log('Sidebar render - userId:', userId, 'React Query isAdmin:', isAdmin, 'Direct isAdmin:', isAdminLocal);
+
+  // Show admin link if either check confirms admin status
+  const showAdminLink = isAdmin === true || isAdminLocal === true;
 
   return (
     <SheetContent side="left" className="p-0 flex flex-col w-[300px]">
@@ -120,15 +159,15 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
             <span>All Tasks</span>
           </NavLink>
 
-          {/* Always show the admin link if isAdmin is true */}
-          {isAdmin === true && (
+          {/* Always show the admin link if either check confirms admin status */}
+          {showAdminLink && (
             <NavLink 
               to="/admin" 
               onClick={handleLinkClick}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-milk-700 transition-all hover:text-milk-900",
-                  isActive ? "bg-milk-100" : "hover:bg-milk-100/50"
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-milk-700 font-semibold text-emerald-600 transition-all hover:text-emerald-800",
+                  isActive ? "bg-emerald-50" : "hover:bg-emerald-50/50"
                 )
               }
             >

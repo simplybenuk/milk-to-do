@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +19,15 @@ import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 
-const queryClient = new QueryClient();
+// Create a new QueryClient with more aggressive config
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 10000,
+    },
+  },
+});
 
 // Check for auth tokens in URL (for OAuth redirects like Google login)
 const checkForAuthTokens = () => {
@@ -115,7 +124,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route
-              path="/app"
+              path="/app/*"
               element={
                 <PrivateRoute>
                   <Index />
