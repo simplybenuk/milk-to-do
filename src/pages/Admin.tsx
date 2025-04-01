@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { AdminAccessGuard } from '@/components/admin/AdminAccessGuard';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import useTaskStore from '@/stores/useTaskStore';
 import { toast } from '@/hooks/use-toast';
@@ -13,75 +12,64 @@ import { Loader2 } from 'lucide-react';
 const Admin = () => {
   const userId = useTaskStore((state) => state.userId);
   const navigate = useNavigate();
-  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   
-  // Perform direct admin check on page load for debugging
+  // Simple, direct admin check
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (!userId) {
         console.log('Admin page - No userId available');
-        toast({
-          title: 'Admin Access Error',
-          description: 'User ID not available. Please log in and try again.',
-          variant: 'destructive',
-        });
-        setIsCheckingAdmin(false);
+        setIsLoading(false);
         return;
       }
       
       try {
-        console.log('Admin page - Checking admin status directly for userId:', userId);
+        console.log('Admin page - Checking admin status for userId:', userId);
         const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
         
         if (error) {
           console.error('Admin page - Error checking admin status:', error);
           toast({
-            title: 'Error in Admin Check',
+            title: 'Error checking admin access',
             description: error.message,
             variant: 'destructive',
           });
           setIsAdmin(false);
-          setIsCheckingAdmin(false);
-          return;
+        } else {
+          const hasAccess = !!data;
+          setIsAdmin(hasAccess);
+          
+          if (hasAccess) {
+            toast({
+              title: 'Admin Access',
+              description: 'Welcome to the admin dashboard',
+            });
+          }
         }
-        
-        console.log('Admin page - Direct admin check result:', data);
-        setIsAdmin(!!data);
-        
-        toast({
-          title: 'Admin Status Check',
-          description: data ? 'You have admin privileges' : 'You do not have admin privileges',
-          variant: data ? 'default' : 'destructive',
-        });
       } catch (error) {
         console.error('Admin page - Exception in admin check:', error);
         setIsAdmin(false);
       } finally {
-        setIsCheckingAdmin(false);
+        setIsLoading(false);
       }
     };
     
     checkAdminStatus();
-    
-    toast({
-      title: 'Admin Page Loading',
-      description: 'User ID: ' + (userId || 'Not logged in'),
-    });
   }, [userId]);
 
-  if (isCheckingAdmin) {
+  if (isLoading) {
     return (
       <PageContainer>
         <div className="flex flex-col items-center justify-center h-[70vh]">
           <Loader2 className="h-8 w-8 animate-spin mb-4" />
-          <p className="text-lg mb-4">Checking admin privileges...</p>
+          <p className="text-lg mb-4">Loading admin dashboard...</p>
         </div>
       </PageContainer>
     );
   }
   
-  if (isAdmin === false) {
+  if (!isAdmin) {
     return (
       <PageContainer>
         <div className="flex flex-col items-center justify-center h-[70vh]">
@@ -94,14 +82,12 @@ const Admin = () => {
   }
 
   return (
-    <AdminAccessGuard>
-      <PageContainer>
-        <div className="p-4 sm:p-6">
-          <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
-          <AdminDashboard userId={userId} />
-        </div>
-      </PageContainer>
-    </AdminAccessGuard>
+    <PageContainer>
+      <div className="p-4 sm:p-6">
+        <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+        <AdminDashboard userId={userId} />
+      </div>
+    </PageContainer>
   );
 };
 
