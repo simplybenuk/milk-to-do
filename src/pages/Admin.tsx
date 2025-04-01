@@ -93,13 +93,15 @@ const Admin = () => {
                   return;
                 }
                 
-                // Fix: Use async/await pattern or proper Promise handling
-                supabase.rpc('is_admin', { user_id: userId })
-                  .then(response => {
-                    console.log('Manual admin check result:', response);
-                    setManualCheckInProgress(false);
+                // Fix: Use proper Promise handling with type safety
+                const checkAdmin = async () => {
+                  try {
+                    const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
+                    console.log('Manual admin check result:', { data, error });
                     
-                    if (response.data === true) {
+                    if (error) throw error;
+                    
+                    if (data === true) {
                       toast({
                         title: "Admin status confirmed",
                         description: "Please refresh to access the admin area",
@@ -113,16 +115,19 @@ const Admin = () => {
                         variant: "destructive"
                       });
                     }
-                  })
-                  .catch(err => {
+                  } catch (err) {
                     console.error('Error in manual admin check:', err);
-                    setManualCheckInProgress(false);
                     toast({
                       title: "Error checking admin status",
-                      description: err.message || "Please try again",
+                      description: err instanceof Error ? err.message : "Please try again",
                       variant: "destructive"
                     });
-                  });
+                  } finally {
+                    setManualCheckInProgress(false);
+                  }
+                };
+                
+                checkAdmin();
               }}
             >
               {manualCheckInProgress ? (
