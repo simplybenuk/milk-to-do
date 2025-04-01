@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -24,7 +24,13 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const location = useLocation();
   const userId = useTaskStore((state) => state.userId);
   const onLogout = useTaskStore((state) => state.logout);
-  const { isAdmin } = useAdminCheck(userId);
+  const { isAdmin, isLoading } = useAdminCheck(userId);
+  
+  useEffect(() => {
+    console.log('Sidebar - userId:', userId);
+    console.log('Sidebar - isAdmin:', isAdmin);
+    console.log('Sidebar - isLoading:', isLoading);
+  }, [userId, isAdmin, isLoading]);
 
   const isActiveRoute = (path: string) => {
     return location.pathname === path;
