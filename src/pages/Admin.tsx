@@ -93,6 +93,7 @@ const Admin = () => {
                   return;
                 }
                 
+                // Fix: Use async/await pattern or proper Promise handling
                 supabase.rpc('is_admin', { user_id: userId })
                   .then(response => {
                     console.log('Manual admin check result:', response);
@@ -113,7 +114,7 @@ const Admin = () => {
                       });
                     }
                   })
-                  .catch((err) => {
+                  .catch(err => {
                     console.error('Error in manual admin check:', err);
                     setManualCheckInProgress(false);
                     toast({
