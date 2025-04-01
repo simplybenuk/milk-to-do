@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -75,10 +76,13 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
         console.log('User authenticated, redirecting from landing to app');
         navigate('/app', { replace: true });
       }
-    }).catch(error => {
-      console.error('Error getting session:', error);
-      setSession(false);
-    });
+    }).then(
+      undefined,
+      error => {
+        console.error('Error getting session:', error);
+        setSession(false);
+      }
+    );
 
     const {
       data: { subscription },
@@ -123,7 +127,17 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/email-confirmation" element={<EmailConfirmation />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            
+            {/* Protected Routes */}
             <Route
               path="/app/*"
               element={
@@ -148,13 +162,6 @@ const App = () => {
                 </PrivateRoute>
               }
             />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/email-confirmation" element={<EmailConfirmation />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
