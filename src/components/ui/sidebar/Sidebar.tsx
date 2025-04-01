@@ -24,7 +24,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   const location = useLocation();
   const userId = useTaskStore((state) => state.userId);
   const onLogout = useTaskStore((state) => state.logout);
-  const { isAdmin } = useAdminCheck(userId);
+  const { isAdmin, isLoading, error } = useAdminCheck(userId);
 
   const isActiveRoute = (path: string) => {
     return location.pathname === path;
@@ -39,6 +39,9 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
     if (onClose) onClose();
   };
 
+  console.log('Sidebar - User ID:', userId);
+  console.log('Sidebar - isAdmin loading:', isLoading);
+  console.log('Sidebar - Admin check error:', error);
   console.log('Sidebar - User is admin:', isAdmin);
 
   return (

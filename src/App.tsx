@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -68,6 +67,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
     
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Session check result:', !!session);
+      console.log('Session user ID:', session?.user?.id);
       setSession(!!session);
       
       // If user is authenticated and still on landing page, redirect to app
@@ -84,6 +84,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed - Event:', event);
+      console.log('Auth state changed - User ID:', session?.user?.id);
       const isAuthenticated = !!session;
       setSession(isAuthenticated);
       
