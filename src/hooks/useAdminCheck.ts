@@ -22,7 +22,9 @@ export const useAdminCheck = (userId: string | null | undefined) => {
         console.log('useAdminCheck - Type of userId:', typeof userId);
         
         // Add explicit type casting to ensure UUID format is correct
-        const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
+        const { data, error } = await supabase.rpc('is_admin', { 
+          user_id: userId 
+        });
         
         console.log('useAdminCheck - Raw response:', { data, error });
         
@@ -30,6 +32,11 @@ export const useAdminCheck = (userId: string | null | undefined) => {
           console.error('useAdminCheck - Error checking admin status:', error);
           setError(error.message);
           setIsAdmin(false);
+          
+          // Add more debug info for specific errors
+          if (error.message.includes('invalid input syntax for type uuid')) {
+            console.error('useAdminCheck - UUID format error. Make sure userId is a valid UUID');
+          }
         } else {
           // The is_admin function returns a boolean
           console.log('useAdminCheck - Admin status result:', data);

@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { TaskStore, UserSubscription } from './types/taskStore.types';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,11 +14,22 @@ import {
 import { calculateTaskStats, sortTasksByPriority } from './utils/taskUtils';
 import { ClosedStatusReason, Priority } from '@/types/task';
 
+// Initialize with current user session if available
+let initialUserId: string | undefined = undefined;
+try {
+  const session = JSON.parse(localStorage.getItem('sb-vtkjlrftizocaqhbsyts-auth-token') || '{}');
+  initialUserId = session?.user?.id;
+  console.log('Initial userId from session:', initialUserId);
+} catch (error) {
+  console.error('Failed to parse session from localStorage:', error);
+}
+
 const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
   isLoading: false,
   error: null,
-  userId: undefined,
+  // Initialize with the user ID from local storage if available
+  userId: initialUserId,
 
   // Initialize userSubscription with default free tier
   userSubscription: {
@@ -33,6 +45,7 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
       // Set the userId in the store
       set({ userId: user.id });
+      console.log('TaskStore: userId set to', user.id);
       
       const tasks = await fetchTasksFromDB(user.id);
       set({ tasks, isLoading: false });
@@ -191,5 +204,21 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     }
   }
 }));
+
+// Initialize user ID on app load
+const initializeUserId = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      useTaskStore.setState({ userId: session.user.id });
+      console.log('TaskStore: initialized userId from session:', session.user.id);
+    }
+  } catch (error) {
+    console.error('Error initializing userId:', error);
+  }
+};
+
+// Run this immediately
+initializeUserId();
 
 export default useTaskStore;
