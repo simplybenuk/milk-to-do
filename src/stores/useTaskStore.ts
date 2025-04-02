@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { TaskStore, UserSubscription } from './types/taskStore.types';
+import { TaskStore } from './types/taskStore.types';
 import { supabase } from '@/integrations/supabase/client';
 import {
   fetchTasksFromDB,
@@ -14,28 +14,10 @@ import {
 import { calculateTaskStats, sortTasksByPriority } from './utils/taskUtils';
 import { ClosedStatusReason, Priority } from '@/types/task';
 
-// Initialize with current user session if available
-let initialUserId: string | undefined = undefined;
-try {
-  const session = JSON.parse(localStorage.getItem('sb-vtkjlrftizocaqhbsyts-auth-token') || '{}');
-  initialUserId = session?.user?.id;
-  console.log('Initial userId from session:', initialUserId);
-} catch (error) {
-  console.error('Failed to parse session from localStorage:', error);
-}
-
 const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
   isLoading: false,
   error: null,
-  // Initialize with the user ID from local storage if available
-  userId: initialUserId,
-
-  // Initialize userSubscription with default free tier
-  userSubscription: {
-    tier: 'free',
-    expiresAt: null,
-  },
 
   fetchTasks: async () => {
     set({ isLoading: true, error: null });
@@ -43,10 +25,6 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
-      // Set the userId in the store
-      set({ userId: user.id });
-      console.log('TaskStore: userId set to', user.id);
-      
       const tasks = await fetchTasksFromDB(user.id);
       set({ tasks, isLoading: false });
     } catch (error) {
@@ -164,61 +142,6 @@ const useTaskStore = create<TaskStore>((set, get) => ({
   getTaskStats: () => {
     return calculateTaskStats(get().tasks);
   },
-  
-  setUserSubscription: (subscription: UserSubscription) => {
-    set({ userSubscription: subscription });
-  },
-  
-  hasProAccess: () => {
-    const { userSubscription } = get();
-    
-    // If the user is on the pro tier
-    if (userSubscription.tier === 'pro') {
-      // If there's an expiry date, check if it's in the future
-      if (userSubscription.expiresAt) {
-        return new Date(userSubscription.expiresAt) > new Date();
-      }
-      // If no expiry date, they have indefinite pro access
-      return true;
-    }
-    
-    // Default to no pro access
-    return false;
-  },
-
-  logout: async () => {
-    try {
-      await supabase.auth.signOut();
-      set({ 
-        tasks: [],
-        userId: undefined,
-        userSubscription: {
-          tier: 'free',
-          expiresAt: null,
-        }
-      });
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error logging out:', error);
-      return Promise.reject(error);
-    }
-  }
 }));
-
-// Initialize user ID on app load
-const initializeUserId = async () => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      useTaskStore.setState({ userId: session.user.id });
-      console.log('TaskStore: initialized userId from session:', session.user.id);
-    }
-  } catch (error) {
-    console.error('Error initializing userId:', error);
-  }
-};
-
-// Run this immediately
-initializeUserId();
 
 export default useTaskStore;
