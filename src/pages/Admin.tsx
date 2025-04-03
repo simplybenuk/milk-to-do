@@ -34,20 +34,24 @@ const Admin = () => {
         
         if (error) {
           console.error('Error checking admin status:', error);
+          throw new Error('Error checking admin status');
+        }
+        
+        // If user is not an admin, redirect them immediately
+        if (!data) {
+          toast.error('Access denied. You do not have administrator privileges.');
+          navigate('/', { replace: true });
           setIsAdmin(false);
           return;
         }
         
-        setIsAdmin(!!data);
-        
-        if (!data) {
-          toast.error('Access denied. You do not have administrator privileges.');
-          navigate('/');
-        }
+        // User is an admin, set state
+        setIsAdmin(true);
       } catch (error) {
         console.error('Admin check error:', error);
+        toast.error('Authentication error. Please try again.');
         setIsAdmin(false);
-        navigate('/');
+        navigate('/', { replace: true });
       } finally {
         setLoading(false);
       }
@@ -66,6 +70,8 @@ const Admin = () => {
     );
   }
 
+  // If not admin and not loading, show access denied
+  // This is a fallback in case the redirect didn't happen
   if (isAdmin === false) {
     return (
       <PageContainer inFocusMode={false}>
