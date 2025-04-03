@@ -55,12 +55,23 @@ const Admin = () => {
       }
     },
     retry: 1,
-    onError: (err) => {
-      console.error('Role query error:', err);
+    meta: {
+      onError: (err: Error) => {
+        console.error('Role query error:', err);
+        toast.error('Failed to verify your access rights');
+        navigate('/', { replace: true });
+      }
+    }
+  });
+
+  // Handle errors outside the query with useEffect
+  useEffect(() => {
+    if (error) {
+      console.error('Role query error:', error);
       toast.error('Failed to verify your access rights');
       navigate('/', { replace: true });
     }
-  });
+  }, [error, navigate]);
 
   // Determine if user has admin role
   const isAdmin = userRoles?.roles.includes('admin');
