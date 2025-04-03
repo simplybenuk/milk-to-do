@@ -286,6 +286,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_user_emails: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+        }[]
+      }
       increment: {
         Args: {
           row_id: string

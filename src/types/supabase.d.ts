@@ -3,8 +3,9 @@
 declare module '@supabase/supabase-js' {
   interface SupabaseClient {
     rpc<T = any>(
-      fn: 'get_user_emails'
-    ): { data: T; error: Error | null };
+      fn: 'get_user_emails',
+      params?: {}
+    ): Promise<{ data: T; error: Error | null }>;
     
     rpc<T = any>(
       fn: 'is_admin',
