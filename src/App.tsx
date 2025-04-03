@@ -17,6 +17,7 @@ import FAQ from "./pages/FAQ";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Admin from "./pages/Admin"; // Import the new Admin page
 
 const queryClient = new QueryClient();
 
@@ -127,6 +128,14 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <Settings />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <PrivateRoute>
+                  <Admin />
                 </PrivateRoute>
               }
             />

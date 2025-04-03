@@ -9,26 +9,169 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_roles: {
+        Row: {
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          billing_interval: string | null
+          can_edit_tasks: boolean | null
+          can_use_expiry: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          price_pence: number | null
+          priority_limit: number | null
+          task_limit: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_interval?: string | null
+          can_edit_tasks?: boolean | null
+          can_use_expiry?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          price_pence?: number | null
+          priority_limit?: number | null
+          task_limit?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_interval?: string | null
+          can_edit_tasks?: boolean | null
+          can_use_expiry?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          price_pence?: number | null
+          priority_limit?: number | null
+          task_limit?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           id: string
+          plan_id: string | null
+          plan_started_at: string | null
           updated_at: string | null
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
           id: string
+          plan_id?: string | null
+          plan_started_at?: string | null
           updated_at?: string | null
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
           id?: string
+          plan_id?: string | null
+          plan_started_at?: string | null
           updated_at?: string | null
           username?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
         Relationships: []
+      }
+      tags: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      task_tags: {
+        Row: {
+          tag_id: string
+          task_id: string
+        }
+        Insert: {
+          tag_id: string
+          task_id: string
+        }
+        Update: {
+          tag_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_tags_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
@@ -105,16 +248,55 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          role_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          role_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          role_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      add_user_role: {
+        Args: {
+          target_user_id: string
+          role_name: string
+        }
+        Returns: undefined
+      }
       increment: {
         Args: {
           row_id: string
         }
         Returns: number
+      }
+      is_admin: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
