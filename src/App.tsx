@@ -81,8 +81,10 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
       
       // Handle different auth events
       if (isAuthenticated) {
-        // If user just confirmed their email or authenticated in any way
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        // Only redirect to /app if not already on admin or settings page
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && 
+            !location.pathname.includes('/admin') && 
+            !location.pathname.includes('/settings')) {
           console.log('Auth event detected, redirecting to app');
           navigate('/app', { replace: true });
         }
