@@ -17,9 +17,17 @@ import FAQ from "./pages/FAQ";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Admin from "./pages/Admin"; // Import the new Admin page
+import Admin from "./pages/Admin";
 
-const queryClient = new QueryClient();
+// Initialize React Query client with better defaults for this app
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000, // 30 seconds
+    },
+  },
+});
 
 // Check for auth tokens in URL (for OAuth redirects like Google login)
 const checkForAuthTokens = () => {
@@ -62,7 +70,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
       console.log('Session check result:', !!session);
       setSession(!!session);
       
-      // If user is authenticated and still on landing page, redirect to app
+      // If user is authenticated and on landing page, redirect to app
       if (session && location.pathname === '/') {
         console.log('User authenticated, redirecting from landing to app');
         navigate('/app', { replace: true });
@@ -81,10 +89,9 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
       
       // Handle different auth events
       if (isAuthenticated) {
-        // Only redirect to /app if not already on admin or settings page
+        // Only redirect to /app if on landing page
         if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && 
-            !location.pathname.includes('/admin') && 
-            !location.pathname.includes('/settings')) {
+            location.pathname === '/') {
           console.log('Auth event detected, redirecting to app');
           navigate('/app', { replace: true });
         }
@@ -143,7 +150,7 @@ const App = () => {
             />
             <Route path="/auth" element={<Auth />} />
             <Route path="/email-confirmation" element={<EmailConfirmation />} />
-            {/* New public routes */}
+            {/* Public routes */}
             <Route path="/features" element={<Features />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/pricing" element={<Pricing />} />

@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminUsers } from '@/components/admin/AdminUsers';
@@ -8,83 +8,105 @@ import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminRoles } from '@/components/admin/AdminRoles';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Shield } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 const Admin = () => {
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
 
-  useEffect(() => {
-    const checkAdminRole = async () => {
+  // Use React Query to fetch and cache user roles
+  const { data: userRoles, isLoading, error } = useQuery({
+    queryKey: ['userRoles'],
+    queryFn: async () => {
       try {
-        setLoading(true);
-        
-        // Get current user
+        // First get the current authenticated user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (userError || !user) {
-          throw new Error('Not authenticated');
+          throw new Error('Authentication required');
         }
-        
-        // Check if user has admin role using the is_admin function
-        const { data, error } = await supabase.rpc('is_admin', {
-          user_id: user.id
-        });
-        
-        if (error) {
-          console.error('Error checking admin status:', error);
-          throw new Error('Error checking admin status');
-        }
-        
-        // If user is not an admin, redirect them immediately
-        if (!data) {
-          toast.error('Access denied. You do not have administrator privileges.');
-          navigate('/', { replace: true });
-          setIsAdmin(false);
-          return;
-        }
-        
-        // User is an admin, set state
-        setIsAdmin(true);
-      } catch (error) {
-        console.error('Admin check error:', error);
-        toast.error('Authentication error. Please try again.');
-        setIsAdmin(false);
-        navigate('/', { replace: true });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    checkAdminRole();
-  }, [navigate]);
 
-  if (loading) {
+        // Then query for the user's roles
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select(`
+            role_id,
+            roles:roles(name)
+          `)
+          .eq('user_id', user.id);
+        
+        if (roleError) {
+          console.error('Error fetching user roles:', roleError);
+          throw new Error('Failed to fetch user roles');
+        }
+
+        // Extract role names from the nested structure
+        const roles = roleData?.map(item => item.roles?.name as string) || [];
+        console.log('User roles:', roles);
+        
+        return {
+          userId: user.id,
+          roles: roles
+        };
+      } catch (err) {
+        console.error('Error in role verification:', err);
+        throw err;
+      }
+    },
+    retry: 1,
+    onError: (err) => {
+      console.error('Role query error:', err);
+      toast.error('Failed to verify your access rights');
+      navigate('/', { replace: true });
+    }
+  });
+
+  // Determine if user has admin role
+  const isAdmin = userRoles?.roles.includes('admin');
+
+  // Redirect if roles are loaded and user is not an admin
+  useEffect(() => {
+    if (!isLoading && userRoles && !isAdmin) {
+      toast.error('Access denied. You do not have administrator privileges.');
+      navigate('/', { replace: true });
+    }
+  }, [isLoading, isAdmin, userRoles, navigate]);
+
+  // Show loading state
+  if (isLoading) {
     return (
       <PageContainer inFocusMode={false}>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <p className="text-lg">Loading admin dashboard...</p>
+        <div className="space-y-6">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-8" />
+            <Skeleton className="h-8 w-60" />
+          </div>
+          <Skeleton className="h-[300px] w-full rounded-lg" />
+          <Skeleton className="h-[200px] w-full rounded-lg" />
         </div>
       </PageContainer>
     );
   }
 
-  // If not admin and not loading, show access denied
-  // This is a fallback in case the redirect didn't happen
-  if (isAdmin === false) {
+  // If there was an error or user is not admin, show access denied
+  if (error || !isAdmin) {
     return (
       <PageContainer inFocusMode={false}>
         <Card className="mt-8">
           <CardContent className="pt-6">
-            <h1 className="text-2xl font-bold text-center">Access Denied</h1>
-            <p className="text-center mt-4">You don't have permission to access this page.</p>
+            <div className="flex flex-col items-center gap-4 py-8">
+              <Shield className="h-16 w-16 text-red-500" />
+              <h1 className="text-2xl font-bold text-center">Access Denied</h1>
+              <p className="text-center">You don't have permission to access this page.</p>
+            </div>
           </CardContent>
         </Card>
       </PageContainer>
     );
   }
 
+  // Only render admin dashboard when user is confirmed as admin
   return (
     <PageContainer inFocusMode={false}>
       <div className="space-y-8 py-4">
