@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface UserProfile {
   id: string;
@@ -27,8 +28,10 @@ export function AdminUsers() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        // Fetch users with their plans using a join
-        const { data, error } = await supabase
+        console.log('Fetching all users...');
+        
+        // Fetch all profiles
+        const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select(`
             id,
@@ -39,28 +42,33 @@ export function AdminUsers() {
           `)
           .order('username');
 
-        if (error) {
-          console.error('Error fetching users:', error);
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+          toast.error('Could not load user profiles');
           return;
         }
         
-        // Get emails from auth.users (requires admin access via RPC)
+        // Get emails for all users using the admin RPC function
         const { data: userData, error: userError } = await supabase.rpc('get_user_emails');
         
         if (userError) {
           console.error('Error fetching user emails:', userError);
+          toast.error('Could not load user emails');
+          return;
         }
+
+        console.log(`Fetched ${profilesData?.length || 0} profiles and ${userData?.length || 0} user emails`);
         
         // Get user roles
         await fetchUserRoles();
         
         // Combine profile data with email data
-        const emailMap = userData ? userData.reduce((acc: Record<string, string>, user: any) => {
+        const emailMap: Record<string, string> = userData?.reduce((acc: Record<string, string>, user: any) => {
           acc[user.id] = user.email;
           return acc;
-        }, {}) : {};
+        }, {}) || {};
         
-        const formattedUsers = data?.map((profile: any) => ({
+        const formattedUsers = profilesData?.map((profile: any) => ({
           id: profile.id,
           email: emailMap[profile.id] || 'Unknown',
           username: profile.username,
@@ -72,6 +80,7 @@ export function AdminUsers() {
         setUsers(formattedUsers);
       } catch (error) {
         console.error('Error in fetchUsers:', error);
+        toast.error('Failed to load users');
       } finally {
         setLoading(false);
       }
@@ -91,6 +100,7 @@ export function AdminUsers() {
       
       if (roleError) {
         console.error('Error fetching user roles:', roleError);
+        toast.error('Could not load user roles');
         return;
       }
       
@@ -108,6 +118,7 @@ export function AdminUsers() {
       setUserRoles(roles);
     } catch (error) {
       console.error('Error fetching user roles:', error);
+      toast.error('Failed to load user roles');
     }
   };
   
