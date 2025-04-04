@@ -11,6 +11,7 @@ export { TaskActionButtons } from './TaskActionButtons';
 export { SkipCountBadge } from './SkipCountBadge';
 export { PriorityScoreBadge } from './PriorityScoreBadge';
 export { ParentTaskBadge } from './ParentTaskBadge';
+export { ExpiryDateDisplay } from './ExpiryDateDisplay';
 
 // Export button components
 export * from './buttons';

@@ -1,10 +1,10 @@
 
-import { format } from 'date-fns';
 import { PriorityBadge } from './PriorityBadge';
 import { TaskAgeIndicator } from './TaskAgeIndicator';
 import { SkipCountBadge } from './SkipCountBadge';
 import { PriorityScoreBadge } from './PriorityScoreBadge';
 import { ParentTaskBadge } from './ParentTaskBadge';
+import { ExpiryDateDisplay } from './ExpiryDateDisplay';
 import { Task } from '@/types/task';
 
 interface TaskMetadataProps {
@@ -37,9 +37,7 @@ export function TaskMetadata({ task }: TaskMetadataProps) {
         {isParentTask && <ParentTaskBadge />}
       </div>
       
-      <span className="text-xs sm:text-sm">
-        Expires: {format(task.expiry_date, "d MMM HH:mm")}
-      </span>
+      <ExpiryDateDisplay expiryDate={task.expiry_date} />
     </div>
   );
 }
