@@ -11,12 +11,12 @@ import { toast } from 'sonner';
 export function SignUpForm() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [allowTracking, setAllowTracking] = useState(true);
-  const [allowMarketing, setAllowMarketing] = useState(false);
+  const [acceptsAnalytics, setAcceptsAnalytics] = useState(true);
+  const [acceptsMarketing, setAcceptsMarketing] = useState(false);
   const navigate = useNavigate();
 
   const isValidEmail = (email: string) => {
@@ -59,9 +59,9 @@ export function SignUpForm() {
         options: {
           emailRedirectTo: window.location.origin + '/app',
           data: {
-            username: username,
-            allow_tracking: allowTracking,
-            allow_marketing: allowMarketing,
+            full_name: fullName,
+            accepts_analytics: acceptsAnalytics,
+            accepts_marketing: acceptsMarketing,
           },
         },
       });
@@ -100,13 +100,13 @@ export function SignUpForm() {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+        <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
         <Input
-          id="username"
+          id="fullName"
           type="text"
-          placeholder="Choose a username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter your full name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
           required
           className="h-11"
         />
@@ -140,8 +140,8 @@ export function SignUpForm() {
         <div className="flex items-start space-x-2">
           <Checkbox 
             id="allow-tracking" 
-            checked={allowTracking}
-            onCheckedChange={(checked) => setAllowTracking(checked === true)}
+            checked={acceptsAnalytics}
+            onCheckedChange={(checked) => setAcceptsAnalytics(checked === true)}
             className="mt-1"
           />
           <Label htmlFor="allow-tracking" className="text-sm font-normal cursor-pointer">
@@ -154,8 +154,8 @@ export function SignUpForm() {
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="allow-marketing" 
-            checked={allowMarketing}
-            onCheckedChange={(checked) => setAllowMarketing(checked === true)}
+            checked={acceptsMarketing}
+            onCheckedChange={(checked) => setAcceptsMarketing(checked === true)}
           />
           <Label htmlFor="allow-marketing" className="text-sm font-normal cursor-pointer">
             I'd like to receive marketing emails about product updates and offers

@@ -71,26 +71,38 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accepts_analytics: boolean | null
+          accepts_marketing: boolean | null
           avatar_url: string | null
+          full_name: string | null
           id: string
           plan_id: string | null
           plan_started_at: string | null
+          role: string | null
           updated_at: string | null
           username: string | null
         }
         Insert: {
+          accepts_analytics?: boolean | null
+          accepts_marketing?: boolean | null
           avatar_url?: string | null
+          full_name?: string | null
           id: string
           plan_id?: string | null
           plan_started_at?: string | null
+          role?: string | null
           updated_at?: string | null
           username?: string | null
         }
         Update: {
+          accepts_analytics?: boolean | null
+          accepts_marketing?: boolean | null
           avatar_url?: string | null
+          full_name?: string | null
           id?: string
           plan_id?: string | null
           plan_started_at?: string | null
+          role?: string | null
           updated_at?: string | null
           username?: string | null
         }
