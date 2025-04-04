@@ -41,7 +41,7 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="/email/confirm" element={<EmailConfirmation />} />
+          <Route path="/email-confirmation" element={<EmailConfirmation />} />
           <Route path="/upgrade" element={<Upgrade />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

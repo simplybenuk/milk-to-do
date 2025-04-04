@@ -80,7 +80,7 @@ export default function Auth() {
         });
     
         if (error) throw error;
-        // Redirect to email confirmation page instead of /app
+        // Use the correct route for email confirmation
         navigate('/email-confirmation');
       }
     } catch (error: any) {
