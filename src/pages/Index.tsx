@@ -14,6 +14,8 @@ import { MainContent } from '@/components/MainContent';
 import { AllTasksList } from '@/components/AllTasksList';
 import { ClosedTasksList } from '@/components/ClosedTasksList';
 import { TaskStats } from '@/components/TaskStats';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { fetchTasks } = useTaskStore();
@@ -27,6 +29,8 @@ const Index = () => {
     confirmExitFocusMode
   } = useAppView('all');
   const { toast } = useToast();
+  const { isPro } = useSubscription();
+  const navigate = useNavigate();
   
   // Initialize focus mode handlers
   const { 
@@ -59,6 +63,19 @@ const Index = () => {
     handleReturnToTop,
     isProcessing
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
+
+  // Check if user has access to statistics
+  useEffect(() => {
+    if (currentView === 'stats' && !isPro) {
+      toast({
+        title: "Pro subscription required",
+        description: "Statistics are only available to Pro subscribers.",
+        variant: "destructive"
+      });
+      setCurrentView('all');
+      navigate('/upgrade');
+    }
+  }, [currentView, isPro, toast, navigate, setCurrentView]);
 
   // Initial data fetching
   useEffect(() => {
@@ -137,7 +154,8 @@ const Index = () => {
           </>
         );
       case 'stats':
-        return <TaskStats />;
+        // Only render stats if user is Pro
+        return isPro ? <TaskStats /> : null;
       default:
         return null;
     }

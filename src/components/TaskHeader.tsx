@@ -11,6 +11,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { AppLogo } from '@/components/AppLogo';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useToast } from '@/hooks/use-toast';
 
 interface TaskHeaderProps {
   currentView: 'main' | 'all' | 'closed' | 'stats';
@@ -20,6 +22,8 @@ interface TaskHeaderProps {
 
 export function TaskHeader({ currentView, onViewChange, inFocusMode = false }: TaskHeaderProps) {
   const navigate = useNavigate();
+  const { isPro } = useSubscription();
+  const { toast } = useToast();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -28,6 +32,21 @@ export function TaskHeader({ currentView, onViewChange, inFocusMode = false }: T
 
   const handleSettingsClick = () => {
     navigate('/settings');
+  };
+
+  const handleViewChange = (view: 'main' | 'all' | 'closed' | 'stats') => {
+    // Check if user is trying to access stats but is not a Pro user
+    if (view === 'stats' && !isPro) {
+      toast({
+        title: "Pro subscription required",
+        description: "Statistics are only available to Pro subscribers.",
+        variant: "destructive"
+      });
+      navigate('/upgrade');
+      return;
+    }
+    
+    onViewChange(view);
   };
 
   return (
@@ -40,21 +59,26 @@ export function TaskHeader({ currentView, onViewChange, inFocusMode = false }: T
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onViewChange('main')}>
+            <DropdownMenuItem onClick={() => handleViewChange('main')}>
               <Check className="mr-2 h-4 w-4" />
               Focus
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onViewChange('all')}>
+            <DropdownMenuItem onClick={() => handleViewChange('all')}>
               <List className="mr-2 h-4 w-4" />
               All Tasks
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onViewChange('closed')}>
+            <DropdownMenuItem onClick={() => handleViewChange('closed')}>
               <Archive className="mr-2 h-4 w-4" />
               Closed Tasks
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onViewChange('stats')}>
+            <DropdownMenuItem 
+              onClick={() => handleViewChange('stats')}
+              disabled={!isPro}
+              className={!isPro ? "opacity-50 cursor-not-allowed" : ""}
+            >
               <BarChart className="mr-2 h-4 w-4" />
               Statistics
+              {!isPro && <span className="ml-2 text-xs text-muted-foreground">(Pro)</span>}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSettingsClick}>
