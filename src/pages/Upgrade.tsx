@@ -6,14 +6,45 @@ import { AppLogo } from '@/components/AppLogo';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { supabase } from '@/integrations/supabase/client';
 
 const Upgrade = () => {
-  const { trackPageView, trackButtonClick } = useAnalytics();
+  const { trackPageView, trackButtonClick, identifyUser } = useAnalytics();
 
-  // Track page view when component mounts
+  // Track page view and identify user when component mounts
   useEffect(() => {
     trackPageView('upgrade_page');
-  }, [trackPageView]);
+    
+    // Identify the user if they're logged in
+    const identifyCurrentUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Get additional user info from profiles table if needed
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, email, plan_id')
+            .eq('id', user.id)
+            .single();
+          
+          // Identify the user with PostHog
+          identifyUser(user.id, {
+            email: user.email,
+            name: profileData?.full_name || user.email,
+            plan: profileData?.plan_id || 'free',
+            $set_once: { 
+              first_seen: new Date().toISOString(),
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error identifying user:', error);
+      }
+    };
+    
+    identifyCurrentUser();
+  }, [trackPageView, identifyUser]);
 
   const handleBackToAppClick = () => {
     trackButtonClick('back_to_app');

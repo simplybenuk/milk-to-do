@@ -20,6 +20,7 @@ if (!posthog.__loaded) {
         password: true,
       },
     },
+    persistence: 'localStorage', // Use localStorage for better persistence
   });
 }
 

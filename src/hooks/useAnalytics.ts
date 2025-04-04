@@ -29,8 +29,29 @@ export function useAnalytics() {
     });
   };
 
+  /**
+   * Identify a user in PostHog analytics
+   * @param userId Unique identifier for the user
+   * @param traits Optional user properties/traits like email, name, etc.
+   */
   const identifyUser = (userId: string, traits?: Record<string, any>) => {
+    if (!userId) {
+      console.warn('User ID is required for PostHog identification');
+      return;
+    }
+    
+    // Identify the user in PostHog
     posthog.identify(userId, traits);
+    
+    console.log(`User identified in PostHog: ${userId}`);
+  };
+
+  /**
+   * Reset the current user identification (typically used at logout)
+   */
+  const resetIdentity = () => {
+    posthog.reset();
+    console.log('User identity reset in PostHog');
   };
 
   return {
@@ -39,5 +60,6 @@ export function useAnalytics() {
     trackPageView,
     trackFeatureUsage,
     identifyUser,
+    resetIdentity,
   };
 }
