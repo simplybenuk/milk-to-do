@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 export function SignUpForm() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -58,6 +59,7 @@ export function SignUpForm() {
         options: {
           emailRedirectTo: window.location.origin + '/app',
           data: {
+            username: username,
             allow_tracking: allowTracking,
             allow_marketing: allowMarketing,
           },
@@ -96,6 +98,20 @@ export function SignUpForm() {
           className="h-11"
         />
       </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+        <Input
+          id="username"
+          type="text"
+          placeholder="Choose a username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          className="h-11"
+        />
+      </div>
+      
       <div className="space-y-2">
         <Label htmlFor="password" className="text-sm font-medium">Password</Label>
         <Input
