@@ -1,5 +1,4 @@
-
-import { Task, Priority } from '@/types/task';
+import { useState } from 'react';
 import { TaskItem } from './task-item';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +7,7 @@ import { SplitTaskDialog } from './SplitTaskDialog';
 import { EditTaskDialog } from './EditTaskDialog';
 import { UpgradeToProDialog } from './UpgradeToProDialog';
 import { useSubscription } from '@/hooks/useSubscription';
+import { ClosedStatusReason, Task } from '@/types/task';
 
 export function AllTasksList() {
   const { tasks, deleteTask, completeTask, editTask } = useTaskStore();
@@ -22,8 +22,14 @@ export function AllTasksList() {
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [upgradeFeatureName, setUpgradeFeatureName] = useState<string>("");
   
-  // Get all open tasks and their closed parents if they exist
-  const openTasks = tasks.filter(task => task.status === 'open');
+  // Get all open tasks, excluding expired ones
+  const openTasks = tasks.filter(task => 
+    task.status === 'open' && 
+    // Ensure expiry_date is valid and greater than or equal to the current date
+    new Date(task.expiry_date) >= new Date()
+  );
+  
+  // Get relevant parents for the filtered open tasks
   const relevantParents = tasks.filter(task => 
     task.status === 'closed' && 
     task.closed_status === 'parent' &&

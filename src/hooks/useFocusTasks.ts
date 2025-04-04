@@ -12,7 +12,14 @@ export function useFocusTasks(inFocusMode: boolean) {
   useEffect(() => {
     // If we're in focus mode, initialize the task list
     if (inFocusMode) {
-      const openTasks = getTasksByPriority().filter(task => task.status === 'open');
+      const currentDate = new Date();
+      
+      // Filter tasks to include only those that are open and not expired
+      const openTasks = getTasksByPriority().filter(task => 
+        task.status === 'open' && 
+        new Date(task.expiry_date) >= currentDate
+      );
+      
       console.log('Initializing focus tasks with', openTasks.length, 'tasks');
       setFocusTaskOrder(openTasks);
       setCurrentIndex(0);
