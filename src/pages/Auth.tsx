@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppLogo } from '@/components/AppLogo';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type View = 'sign-in' | 'sign-up';
 
@@ -17,6 +18,8 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [allowTracking, setAllowTracking] = useState(false);
+  const [allowMarketing, setAllowMarketing] = useState(true);
   const navigate = useNavigate();
 
   const isValidEmail = (email: string) => {
@@ -76,6 +79,10 @@ export default function Auth() {
           password,
           options: {
             emailRedirectTo: window.location.origin + '/app',
+            data: {
+              allow_tracking: allowTracking,
+              allow_marketing: allowMarketing,
+            },
           },
         });
     
@@ -128,18 +135,42 @@ export default function Auth() {
               />
             </div>
             {view === 'sign-up' && (
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="text-sm font-medium">Confirm Password</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password" className="text-sm font-medium">Confirm Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="allow-tracking" 
+                      checked={allowTracking}
+                      onCheckedChange={(checked) => setAllowTracking(checked === true)}
+                    />
+                    <Label htmlFor="allow-tracking" className="text-sm font-normal cursor-pointer">
+                      Allow analytics tracking to help us improve our app
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="allow-marketing" 
+                      checked={allowMarketing}
+                      onCheckedChange={(checked) => setAllowMarketing(checked === true)}
+                    />
+                    <Label htmlFor="allow-marketing" className="text-sm font-normal cursor-pointer">
+                      I'd like to receive marketing emails about product updates and offers
+                    </Label>
+                  </div>
+                </div>
+              </>
             )}
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             <Button disabled={loading} className="w-full h-11 mt-2">

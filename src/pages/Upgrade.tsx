@@ -33,6 +33,8 @@ const Upgrade = () => {
             email: user.email,
             name: profileData?.username || user.email,
             plan: profileData?.plan_id || 'free',
+            allow_marketing: user.user_metadata?.allow_marketing || false,
+            allow_tracking: user.user_metadata?.allow_tracking || false,
             $set_once: { 
               first_seen: new Date().toISOString(),
             }

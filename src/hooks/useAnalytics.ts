@@ -2,10 +2,12 @@
 import { usePostHog } from '@/context/PostHogProvider';
 
 export function useAnalytics() {
-  const { posthog } = usePostHog();
+  const { posthog, isTrackingEnabled } = usePostHog();
 
   const trackEvent = (eventName: string, properties?: Record<string, any>) => {
-    posthog.capture(eventName, properties);
+    if (isTrackingEnabled) {
+      posthog.capture(eventName, properties);
+    }
   };
 
   const trackButtonClick = (buttonName: string, properties?: Record<string, any>) => {
@@ -35,13 +37,16 @@ export function useAnalytics() {
    * @param traits Optional user properties/traits like email, name, etc.
    */
   const identifyUser = (userId: string, traits?: Record<string, any>) => {
-    if (!userId) {
-      console.warn('User ID is required for PostHog identification');
+    if (!userId || !isTrackingEnabled) {
       return;
     }
     
     // Identify the user in PostHog
-    posthog.identify(userId, traits);
+    posthog.identify(userId, {
+      ...traits,
+      // Add marketing preference explicitly
+      allow_marketing: traits?.allow_marketing || false,
+    });
     
     console.log(`User identified in PostHog: ${userId}`);
   };
@@ -61,5 +66,6 @@ export function useAnalytics() {
     trackFeatureUsage,
     identifyUser,
     resetIdentity,
+    isTrackingEnabled,
   };
 }
