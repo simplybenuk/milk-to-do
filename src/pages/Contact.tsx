@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ const Contact = () => {
     subject: '',
     message: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -25,21 +27,44 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send the form data to an API
-    console.log('Form submitted:', formData);
-    toast({
-      title: "Message sent!",
-      description: "Thank you for reaching out. We'll get back to you soon.",
-    });
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: '',
-    });
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Call the Supabase Edge Function to send the email
+      const { error } = await supabase.functions.invoke('send-contact-email', {
+        body: formData
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      // Show success message
+      toast({
+        title: "Message sent!",
+        description: "Thank you for reaching out. We'll get back to you soon.",
+      });
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem sending your message. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -86,7 +111,7 @@ const Contact = () => {
                   <Mail className="h-6 w-6 text-emerald-500 mr-4 mt-1" />
                   <div>
                     <h3 className="font-semibold text-lg">Email</h3>
-                    <p className="text-milk-600">support@sourlist.app</p>
+                    <p className="text-milk-600">Contact us using the form</p>
                     <p className="text-milk-500 text-sm mt-1">We aim to respond within 24 hours</p>
                   </div>
                 </div>
@@ -147,6 +172,7 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div>
@@ -158,6 +184,7 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div>
@@ -168,6 +195,7 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleInputChange}
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div>
@@ -179,13 +207,15 @@ const Contact = () => {
                     value={formData.message}
                     onChange={handleInputChange}
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
                 <Button 
                   type="submit" 
                   className="bg-emerald-500 hover:bg-emerald-600 w-full"
+                  disabled={isSubmitting}
                 >
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </div>
@@ -214,6 +244,7 @@ const Contact = () => {
                 <h3 className="font-bold mb-2">Company</h3>
                 <ul className="text-milk-300 text-sm">
                   <li className="mb-1"><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
+                  <li className="mb-1"><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                   <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
                 </ul>
               </div>
