@@ -2,15 +2,13 @@
 import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
-import { format, differenceInDays } from 'date-fns';
-import { Trash2, CheckCircle, ArrowUp, Scissors, Edit } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { differenceInDays } from 'date-fns';
 import { TextWithLinks } from './TextWithLinks';
-import { PriorityBadge } from './PriorityBadge';
 import { ChildTasksList } from './ChildTasksList';
 import { DeleteTaskDialog } from './DeleteTaskDialog';
-import { Badge } from '@/components/ui/badge';
-import { TaskAgeIndicator } from './TaskAgeIndicator';
+import { TaskMetadata } from './TaskMetadata';
+import { ParentTaskLink } from './ParentTaskLink';
+import { TaskActionButtons } from './TaskActionButtons';
 
 interface TaskItemProps {
   task: Task;
@@ -58,18 +56,9 @@ export function TaskItem({
     return "task-fresh";
   };
 
-  const handleComplete = () => {
+  const handleComplete = (id: string) => {
     setIsCompleting(true);
-    // Add slight delay to allow animation to play
-    setTimeout(() => {
-      onComplete(task.id);
-    }, 300);
-  };
-
-  const handleSplitTask = () => {
-    if (onCreateChildTask) {
-      onCreateChildTask(task.id, task.title);
-    }
+    onComplete(id);
   };
 
   return (
@@ -88,116 +77,36 @@ export function TaskItem({
       >
         <div className="flex-1 min-w-0 overflow-hidden break-words mb-16 sm:mb-14">
           {/* Parent task link */}
-          {parentId && (
-            <div className="mb-2 text-xs flex items-center">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="p-0 h-6 flex items-center gap-1 hover:text-milk-900"
-                onClick={() => onViewParent && onViewParent(parentId)}
-              >
-                <ArrowUp className="h-3 w-3" />
-                <span>View Parent Task</span>
-              </Button>
-            </div>
-          )}
+          <ParentTaskLink parentId={parentId} onViewParent={onViewParent} />
           
           <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words">
             <TextWithLinks text={task.title} />
           </h3>
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap gap-2 items-center">
-              <PriorityBadge priority={task.priority} />
-              
-              {/* Age indicator */}
-              {task.status === 'open' && (
-                <TaskAgeIndicator 
-                  createdAt={new Date(task.created_at)} 
-                  expiryDate={new Date(task.expiry_date)}
-                />
-              )}
-              
-              {/* Skip count badge */}
-              {task.skip_count > 0 && (
-                <Badge variant="outline" className="text-xs">
-                  Skipped: {task.skip_count}
-                </Badge>
-              )}
-              
-              {/* Priority score badge */}
-              <Badge variant="secondary" className="text-xs">
-                Score: {Math.round(task.priority_score)}
-              </Badge>
-              
-              {/* Add a parent task badge */}
-              {isParentTask && (
-                <Badge variant="outline" className="text-xs bg-[#F5F4FF] text-teal-700 border-teal-200">
-                  Parent
-                </Badge>
-              )}
-            </div>
-            
-            <span className="text-xs sm:text-sm">
-              Expires: {format(task.expiry_date, "d MMM HH:mm")}
-            </span>
+          
+          {/* Task metadata section */}
+          <TaskMetadata task={task} />
 
-            {/* Display child tasks section for parent tasks */}
-            {isParentTask && (
-              <ChildTasksList
-                task={task}
-                childTasks={childTasks}
-                onCreateChildTask={onCreateChildTask}
-              />
-            )}
-          </div>
+          {/* Display child tasks section for parent tasks */}
+          {isParentTask && (
+            <ChildTasksList
+              task={task}
+              childTasks={childTasks}
+              onCreateChildTask={onCreateChildTask}
+            />
+          )}
         </div>
         
-        <div className="absolute bottom-5 right-5 flex gap-3">
-          {showCompleteButton && (
-            <>
-              {onEdit && task.status === 'open' && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 shrink-0 w-10 h-10 rounded-full"
-                  onClick={() => onEdit(task)}
-                  title="Edit task"
-                >
-                  <Edit className="h-5 w-5" />
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                size="icon"
-                className="text-green-500 hover:text-green-700 hover:bg-green-50 shrink-0 w-10 h-10 rounded-full"
-                onClick={handleComplete}
-                title="Complete task"
-              >
-                <CheckCircle className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="text-teal-500 hover:text-teal-700 hover:bg-teal-50 shrink-0 w-10 h-10 rounded-full"
-                onClick={handleSplitTask}
-                title="Split into subtasks"
-              >
-                <Scissors className="h-5 w-5" />
-              </Button>
-            </>
-          )}
-          {showDeleteButton && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 w-10 h-10 rounded-full"
-              onClick={() => setShowDeleteDialog(true)}
-              title="Delete task"
-            >
-              <Trash2 className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
+        {/* Action buttons */}
+        <TaskActionButtons
+          task={task}
+          showCompleteButton={showCompleteButton}
+          showDeleteButton={showDeleteButton}
+          onComplete={handleComplete}
+          onCreateChildTask={onCreateChildTask}
+          onEdit={onEdit}
+          isCompleting={isCompleting}
+          setShowDeleteDialog={setShowDeleteDialog}
+        />
       </div>
 
       <DeleteTaskDialog
