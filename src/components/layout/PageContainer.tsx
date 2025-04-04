@@ -24,11 +24,10 @@ export function PageContainer({ inFocusMode, children }: PageContainerProps) {
   return (
     <div className={pageClasses}>
       <div className={textClasses}>
+        {/* Show the upgrade banner at the top when not in focus mode */}
+        {!inFocusMode && <UpgradeBanner />}
         {children}
       </div>
-      
-      {/* Only show the upgrade banner when not in focus mode */}
-      {!inFocusMode && <UpgradeBanner />}
     </div>
   );
 }

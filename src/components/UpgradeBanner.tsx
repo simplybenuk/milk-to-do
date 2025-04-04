@@ -15,7 +15,7 @@ export function UpgradeBanner() {
   }
   
   return (
-    <div className="w-full bg-gradient-to-r from-violet-50 to-indigo-50 border-t border-violet-100 p-3 mt-auto">
+    <div className="w-full bg-gradient-to-r from-violet-50 to-indigo-50 border-b border-violet-100 p-3 mb-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Sparkles className="h-4 w-4 text-violet-500" />
