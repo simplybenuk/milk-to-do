@@ -24,14 +24,14 @@ const Upgrade = () => {
           // Get additional user info from profiles table if needed
           const { data: profileData } = await supabase
             .from('profiles')
-            .select('full_name, email, plan_id')
+            .select('username, plan_id')
             .eq('id', user.id)
             .single();
           
           // Identify the user with PostHog
           identifyUser(user.id, {
             email: user.email,
-            name: profileData?.full_name || user.email,
+            name: profileData?.username || user.email,
             plan: profileData?.plan_id || 'free',
             $set_once: { 
               first_seen: new Date().toISOString(),
