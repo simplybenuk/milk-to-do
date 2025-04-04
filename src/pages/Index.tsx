@@ -1,165 +1,24 @@
 
-import { useEffect } from 'react';
+import React from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { TaskHeader } from '@/components/TaskHeader';
-import { useAppView } from '@/hooks/useAppView';
-import { useTaskNavigation } from '@/hooks/useTaskNavigation';
-import { useToast } from '@/hooks/use-toast';
-import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
-import { FocusModePage } from '@/components/focus/FocusModePage';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { useFocusModeHandlers } from '@/hooks/useFocusModeHandlers';
-import { MainContent } from '@/components/MainContent';
-import { AllTasksList } from '@/components/AllTasksList';
-import { ClosedTasksList } from '@/components/ClosedTasksList';
-import { TaskStats } from '@/components/TaskStats';
-import { useSubscription } from '@/hooks/useSubscription';
-import { useNavigate } from 'react-router-dom';
+import { FocusModeContainer } from '@/components/focus/FocusModeContainer';
+import { ViewContent } from '@/components/ViewContent';
+import { useIndexPage } from '@/hooks/useIndexPage';
 
 const Index = () => {
-  const { fetchTasks } = useTaskStore();
-  const { 
-    currentView, 
-    setCurrentView, 
-    inFocusMode, 
-    setInFocusMode, 
-    showExitConfirm, 
-    setShowExitConfirm, 
-    confirmExitFocusMode
-  } = useAppView('all');
-  const { toast } = useToast();
-  const { isPro } = useSubscription();
-  const navigate = useNavigate();
-  
-  // Initialize focus mode handlers
-  const { 
-    handleEnterFocusMode, 
-    handleExitFocusMode, 
-    handleConfirmExit 
-  } = useFocusModeHandlers(
-    setCurrentView, 
-    setInFocusMode, 
+  // Use our new hook for page initialization and state management
+  const {
+    currentView,
+    setCurrentView,
+    inFocusMode,
+    setInFocusMode,
+    showExitConfirm,
     setShowExitConfirm,
     confirmExitFocusMode
-  );
-  
-  // Initialize focus mode or end it
-  const handleFocusEnd = () => {
-    setInFocusMode(false);
-    fetchTasks(); // Refresh tasks to update priority scores
-    
-    // Ensure interactivity is restored immediately
-    document.body.style.pointerEvents = "";
-  };
-  
-  // Set up task navigation
-  const {
-    currentTask,
-    currentIndex,
-    focusTaskOrder,
-    handleComplete,
-    handleSkip,
-    handleReturnToTop,
-    isProcessing
-  } = useTaskNavigation(inFocusMode, handleFocusEnd);
-
-  // Check if user has access to statistics
-  useEffect(() => {
-    if (currentView === 'stats' && !isPro) {
-      toast({
-        title: "Pro subscription required",
-        description: "Statistics are only available to Pro subscribers.",
-        variant: "destructive"
-      });
-      setCurrentView('all');
-      navigate('/upgrade');
-    }
-  }, [currentView, isPro, toast, navigate, setCurrentView]);
-
-  // Initial data fetching
-  useEffect(() => {
-    console.log('Index component mounted, fetching tasks...');
-    try {
-      fetchTasks().catch(err => {
-        console.error('Error fetching tasks:', err);
-        toast({
-          title: 'Error fetching tasks',
-          description: 'Please try refreshing the page',
-          variant: 'destructive',
-        });
-      });
-    } catch (err) {
-      console.error('Exception in fetchTasks:', err);
-    }
-    
-    console.log('App state:', { 
-      currentView,
-      inFocusMode
-    });
-  }, [fetchTasks, toast, currentView, inFocusMode]);
-
-  // Enter focus mode when explicitly switching to main view
-  useEffect(() => {
-    if (currentView === 'main' && !inFocusMode) {
-      setInFocusMode(true);
-      // Make sure pointer events are enabled when entering focus mode
-      document.body.style.pointerEvents = "";
-    }
-  }, [currentView, inFocusMode, setInFocusMode]);
-
-  // Global cleanup for pointer events
-  useEffect(() => {
-    // Reset on mount
-    document.body.style.pointerEvents = "";
-    console.log('Index component initialized');
-    
-    // Set up an interval to periodically check and fix pointer-events
-    // This is a failsafe in case other mechanisms fail
-    const intervalId = setInterval(() => {
-      if (document.body.style.pointerEvents === 'none') {
-        document.body.style.pointerEvents = '';
-        console.log('Restored pointer-events via interval check');
-      }
-    }, 2000);
-    
-    // Cleanup on unmount
-    return () => {
-      clearInterval(intervalId);
-      document.body.style.pointerEvents = "";
-      console.log('Index component unmounted');
-    };
-  }, []);
-
-  // Render the appropriate content based on the current view
-  const renderContent = () => {
-    if (inFocusMode && currentView === 'main') {
-      // Focus mode content is handled by FocusModePage
-      return null;
-    }
-    
-    switch (currentView) {
-      case 'all':
-        return (
-          <>
-            <h2 className="text-2xl font-bold text-milk-900 mb-6">All Tasks</h2>
-            <AllTasksList />
-          </>
-        );
-      case 'closed':
-        return (
-          <>
-            <h2 className="text-2xl font-bold text-milk-900 mb-6">Closed Tasks</h2>
-            <ClosedTasksList />
-          </>
-        );
-      case 'stats':
-        // Only render stats if user is Pro
-        return isPro ? <TaskStats /> : null;
-      default:
-        return null;
-    }
-  };
+  } = useIndexPage();
 
   return (
     <PageContainer inFocusMode={inFocusMode}>
@@ -169,27 +28,21 @@ const Index = () => {
         inFocusMode={inFocusMode}
       />
 
-      <FocusModePage
-        currentTask={currentTask}
-        currentIndex={currentIndex}
-        totalTasks={focusTaskOrder.length}
-        isProcessing={isProcessing}
-        onComplete={handleComplete}
-        onSkip={handleSkip}
-        onReturnToTop={handleReturnToTop}
-        onExitFocusMode={handleExitFocusMode}
-        onEnterFocusMode={handleEnterFocusMode}
-        inFocusMode={inFocusMode}
+      {/* Focus mode container handles all focus mode related components and logic */}
+      <FocusModeContainer
         currentView={currentView}
+        setCurrentView={setCurrentView}
+        inFocusMode={inFocusMode}
+        setInFocusMode={setInFocusMode}
+        showExitConfirm={showExitConfirm}
+        setShowExitConfirm={setShowExitConfirm}
+        confirmExitFocusMode={confirmExitFocusMode}
       />
       
-      {/* Render regular content based on current view */}
-      {renderContent()}
-      
-      <FocusExitConfirmDialog
-        open={showExitConfirm}
-        onOpenChange={setShowExitConfirm}
-        onConfirm={handleConfirmExit}
+      {/* Render content based on current view */}
+      <ViewContent 
+        currentView={currentView}
+        inFocusMode={inFocusMode}
       />
       
       {/* Only show the AddTaskDialog when not in focus mode */}
