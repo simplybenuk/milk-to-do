@@ -8,7 +8,7 @@ interface TaskActionButtonsProps {
   showCompleteButton?: boolean;
   showDeleteButton?: boolean;
   onComplete: (id: string) => void;
-  onDelete: () => void;
+  onDelete?: () => void; // Made optional with ?
   onCreateChildTask?: (parentId: string, parentTitle: string) => void;
   onEdit?: (task: Task) => void;
   isCompleting: boolean;
