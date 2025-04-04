@@ -36,10 +36,10 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Send email to site owner
-    const emailResponse = await resend.emails.send({
-      from: "Contact Form <onboarding@resend.dev>", // You can update this to your verified domain later
-      to: "support@sourlist.app", // Update this to your actual email address
+    // Send email to site owner - your SourList admin email
+    const adminEmailResponse = await resend.emails.send({
+      from: "SourList Contact Form <onboarding@resend.dev>", // You can update this to your verified domain later
+      to: "support@sourlist.app", // This is where your messages are sent
       subject: `New Contact Form: ${subject}`,
       html: `
         <h1>New Contact Form Submission</h1>
@@ -52,8 +52,10 @@ const handler = async (req: Request): Promise<Response> => {
       reply_to: email
     });
 
+    console.log("Admin email sent successfully:", adminEmailResponse);
+
     // Send confirmation email to the user
-    await resend.emails.send({
+    const userEmailResponse = await resend.emails.send({
       from: "SourList <onboarding@resend.dev>",
       to: email,
       subject: "We received your message!",
@@ -64,7 +66,7 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Emails sent successfully");
+    console.log("User confirmation email sent successfully:", userEmailResponse);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
