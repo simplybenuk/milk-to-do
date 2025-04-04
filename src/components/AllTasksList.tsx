@@ -1,4 +1,4 @@
-import { useState } from 'react';
+
 import { TaskItem } from './task-item';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
@@ -7,7 +7,7 @@ import { SplitTaskDialog } from './SplitTaskDialog';
 import { EditTaskDialog } from './EditTaskDialog';
 import { UpgradeToProDialog } from './UpgradeToProDialog';
 import { useSubscription } from '@/hooks/useSubscription';
-import { ClosedStatusReason, Task } from '@/types/task';
+import { ClosedStatusReason, Task, Priority } from '@/types/task';
 
 export function AllTasksList() {
   const { tasks, deleteTask, completeTask, editTask } = useTaskStore();
