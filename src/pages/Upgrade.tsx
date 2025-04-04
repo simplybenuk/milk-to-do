@@ -79,7 +79,7 @@ const Upgrade = () => {
               </CardContent>
               <CardFooter>
                 <Button className="w-full bg-emerald-500 hover:bg-emerald-600">
-                  Upgrade Now
+                  Coming Soon
                 </Button>
               </CardFooter>
             </Card>
