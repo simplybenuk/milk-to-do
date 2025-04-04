@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminUsers } from '@/components/admin/AdminUsers';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { AdminRoles } from '@/components/admin/AdminRoles';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -123,7 +122,6 @@ const Admin = () => {
       <div className="space-y-8 py-4">
         <AdminHeader />
         <AdminUsers />
-        <AdminRoles />
       </div>
     </PageContainer>
   );
