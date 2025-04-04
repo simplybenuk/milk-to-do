@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 
 export function SignUpForm() {
   const [loading, setLoading] = useState(false);
@@ -50,7 +51,8 @@ export function SignUpForm() {
         return;
       }
   
-      const { error } = await supabase.auth.signUp({
+      console.log('Attempting to sign up with email:', email);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -62,10 +64,19 @@ export function SignUpForm() {
         },
       });
   
-      if (error) throw error;
+      if (error) {
+        console.error('Signup error:', error);
+        throw error;
+      }
+
+      console.log('Signup successful, data:', data);
+      toast.success('Account created successfully! Please check your email for verification.');
       navigate('/email-confirmation');
     } catch (error: any) {
-      setError(error.message || error.error_description || 'Authentication failed');
+      console.error('Full error object:', error);
+      const errorMessage = error.message || error.error_description || 'Authentication failed';
+      setError(errorMessage);
+      toast.error(`Signup failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
