@@ -31,9 +31,9 @@ export function AppLogo({ size = 'medium', variant = 'default' }: AppLogoProps) 
 
   return (
     <div className={containerClasses[size]}>
-      {/* Use the new uploaded logo image */}
+      {/* Use the updated logo image */}
       <img 
-        src="/sourmilk-logo.PNG" 
+        src="/sourlist-logo.png" 
         alt="SourList Logo" 
         width={logoSizes[size].width} 
         height={logoSizes[size].height}
