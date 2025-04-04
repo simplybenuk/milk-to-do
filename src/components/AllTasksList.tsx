@@ -6,16 +6,21 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { SplitTaskDialog } from './SplitTaskDialog';
 import { EditTaskDialog } from './EditTaskDialog';
+import { UpgradeToProDialog } from './UpgradeToProDialog';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export function AllTasksList() {
   const { tasks, deleteTask, completeTask, editTask } = useTaskStore();
   const { toast } = useToast();
+  const { isPro } = useSubscription();
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
   const [showSplitDialog, setShowSplitDialog] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [selectedTaskTitle, setSelectedTaskTitle] = useState<string>("");
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [upgradeFeatureName, setUpgradeFeatureName] = useState<string>("");
   
   // Get all open tasks and their closed parents if they exist
   const openTasks = tasks.filter(task => task.status === 'open');
@@ -42,6 +47,12 @@ export function AllTasksList() {
   };
 
   const handleCreateChildTask = (parentId: string, parentTitle: string) => {
+    if (!isPro) {
+      setUpgradeFeatureName("Split Task");
+      setShowUpgradeDialog(true);
+      return;
+    }
+    
     setSelectedTaskId(parentId);
     setSelectedTaskTitle(parentTitle);
     setShowSplitDialog(true);
@@ -67,6 +78,12 @@ export function AllTasksList() {
   };
 
   const handleEditTask = (task: Task) => {
+    if (!isPro) {
+      setUpgradeFeatureName("Edit Task");
+      setShowUpgradeDialog(true);
+      return;
+    }
+    
     setTaskToEdit(task);
     setShowEditDialog(true);
   };
@@ -147,6 +164,13 @@ export function AllTasksList() {
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
         onEdit={handleSaveEdit}
+      />
+      
+      {/* Upgrade to Pro Dialog */}
+      <UpgradeToProDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        featureName={upgradeFeatureName}
       />
     </div>
   );

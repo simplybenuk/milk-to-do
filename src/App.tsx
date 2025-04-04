@@ -1,167 +1,40 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
-import Settings from "./pages/Settings";
-import Landing from "./pages/Landing";
-import EmailConfirmation from "./pages/EmailConfirmation";
-import Features from "./pages/Features";
-import FAQ from "./pages/FAQ";
-import Pricing from "./pages/Pricing";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Admin from "./pages/Admin";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Index from './pages/Index';
+import NotFound from './pages/NotFound';
+import Landing from './pages/Landing';
+import About from './pages/About';
+import Features from './pages/Features';
+import Pricing from './pages/Pricing';
+import FAQ from './pages/FAQ';
+import Contact from './pages/Contact';
+import Auth from './pages/Auth';
+import EmailConfirmation from './pages/EmailConfirmation';
+import Settings from './pages/Settings';
+import Admin from './pages/Admin';
+import Upgrade from './pages/Upgrade';
+import './App.css';
 
-// Initialize React Query client with better defaults for this app
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30000, // 30 seconds
-    },
-  },
-});
-
-// Check for auth tokens in URL (for OAuth redirects like Google login)
-const checkForAuthTokens = () => {
-  // Only run in browser environment
-  if (typeof window === 'undefined') return false;
-  
-  const hash = window.location.hash;
-  const query = new URLSearchParams(window.location.search);
-  
-  // Check if we have auth tokens in the URL (after OAuth redirect)
-  return !!(
-    hash.includes('access_token=') || 
-    hash.includes('refresh_token=') ||
-    query.has('access_token') ||
-    query.has('refresh_token')
-  );
-};
-
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<boolean | null>(null);
-  const location = useLocation();
-  const navigate = useNavigate();
-  
-  // Handle auth redirects
-  useEffect(() => {
-    console.log('PrivateRoute - Current path:', location.pathname);
-    
-    const hasAuthTokens = checkForAuthTokens();
-    console.log('Auth tokens in URL:', hasAuthTokens);
-    
-    // If we have auth tokens in the URL, navigate to /app
-    // This handles both OAuth redirects and email confirmation redirects
-    if (hasAuthTokens) {
-      console.log("Auth tokens detected in URL, redirecting to /app");
-      navigate('/app', { replace: true });
-      return;
-    }
-    
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Session check result:', !!session);
-      setSession(!!session);
-      
-      // If user is authenticated and on landing page, redirect to app
-      if (session && location.pathname === '/') {
-        console.log('User authenticated, redirecting from landing to app');
-        navigate('/app', { replace: true });
-      }
-    }).catch(error => {
-      console.error('Error getting session:', error);
-      setSession(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed - Event:', event);
-      const isAuthenticated = !!session;
-      setSession(isAuthenticated);
-      
-      // Handle different auth events
-      if (isAuthenticated) {
-        // Only redirect to /app if on landing page
-        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && 
-            location.pathname === '/') {
-          console.log('Auth event detected, redirecting to app');
-          navigate('/app', { replace: true });
-        }
-      } else if (event === 'SIGNED_OUT') {
-        // Redirect to landing page on sign out
-        navigate('/', { replace: true });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [location.pathname, navigate]);
-
-  if (session === null) {
-    console.log('PrivateRoute - Loading state');
-    return null; // Loading state
-  }
-
-  console.log('PrivateRoute - Session state:', session);
-  return session ? <>{children}</> : <Navigate to="/auth" replace />;
-};
-
-const App = () => {
-  console.log('App component rendering');
-  
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route
-              path="/app"
-              element={
-                <PrivateRoute>
-                  <Index />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <PrivateRoute>
-                  <Admin />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/email-confirmation" element={<EmailConfirmation />} />
-            {/* Public routes */}
-            <Route path="/features" element={<Features />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/app" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/email/confirm" element={<EmailConfirmation />} />
+        <Route path="/upgrade" element={<Upgrade />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
-};
+}
 
 export default App;
