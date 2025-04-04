@@ -1,14 +1,16 @@
 
 import { Task } from '@/types/task';
-import { Button } from '@/components/ui/button';
-import { Trash2, CheckCircle, Scissors, Edit } from 'lucide-react';
+import { EditButton } from './buttons/EditButton';
+import { CompleteButton } from './buttons/CompleteButton';
+import { SplitButton } from './buttons/SplitButton';
+import { DeleteButton } from './buttons/DeleteButton';
 
 interface TaskActionButtonsProps {
   task: Task;
   showCompleteButton?: boolean;
   showDeleteButton?: boolean;
   onComplete: (id: string) => void;
-  onDelete?: () => void; // Made optional with ?
+  onDelete?: () => void;
   onCreateChildTask?: (parentId: string, parentTitle: string) => void;
   onEdit?: (task: Task) => void;
   isCompleting: boolean;
@@ -22,7 +24,6 @@ export function TaskActionButtons({
   onComplete, 
   onCreateChildTask,
   onEdit,
-  isCompleting,
   setShowDeleteDialog
 }: TaskActionButtonsProps) {
   const handleComplete = () => {
@@ -43,46 +44,14 @@ export function TaskActionButtons({
       {showCompleteButton && (
         <>
           {onEdit && task.status === 'open' && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 shrink-0 w-10 h-10 rounded-full"
-              onClick={() => onEdit(task)}
-              title="Edit task"
-            >
-              <Edit className="h-5 w-5" />
-            </Button>
+            <EditButton task={task} onEdit={onEdit} />
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            className="text-green-500 hover:text-green-700 hover:bg-green-50 shrink-0 w-10 h-10 rounded-full"
-            onClick={handleComplete}
-            title="Complete task"
-          >
-            <CheckCircle className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="text-teal-500 hover:text-teal-700 hover:bg-teal-50 shrink-0 w-10 h-10 rounded-full"
-            onClick={handleSplitTask}
-            title="Split into subtasks"
-          >
-            <Scissors className="h-5 w-5" />
-          </Button>
+          <CompleteButton onComplete={handleComplete} />
+          <SplitButton onSplit={handleSplitTask} />
         </>
       )}
       {showDeleteButton && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 w-10 h-10 rounded-full"
-          onClick={() => setShowDeleteDialog(true)}
-          title="Delete task"
-        >
-          <Trash2 className="h-5 w-5" />
-        </Button>
+        <DeleteButton onClick={() => setShowDeleteDialog(true)} />
       )}
     </div>
   );
