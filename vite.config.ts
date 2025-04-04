@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => ({
         'pwa-512x512.png', 
         'milk_logo192.png', 
         'milk_logo512.png',
+        'sourmilk-logo.PNG',
         'sw-modules/cache-manager.js',
         'sw-modules/notification-manager.js',
         'sw-modules/message-handler.js'
