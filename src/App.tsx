@@ -15,6 +15,7 @@ import Admin from './pages/Admin';
 import Upgrade from './pages/Upgrade';
 import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PostHogProvider } from './context/PostHogProvider';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -30,21 +31,23 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/app" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/email-confirmation" element={<EmailConfirmation />} />
-          <Route path="/upgrade" element={<Upgrade />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <PostHogProvider>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/app" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/email-confirmation" element={<EmailConfirmation />} />
+            <Route path="/upgrade" element={<Upgrade />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </PostHogProvider>
       </Router>
     </QueryClientProvider>
   );

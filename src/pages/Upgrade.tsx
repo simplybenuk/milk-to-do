@@ -1,12 +1,32 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AppLogo } from '@/components/AppLogo';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, ArrowLeft } from 'lucide-react';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const Upgrade = () => {
+  const { trackPageView, trackButtonClick } = useAnalytics();
+
+  // Track page view when component mounts
+  useEffect(() => {
+    trackPageView('upgrade_page');
+  }, [trackPageView]);
+
+  const handleBackToAppClick = () => {
+    trackButtonClick('back_to_app');
+  };
+
+  const handleContinueFreeClick = () => {
+    trackButtonClick('continue_free');
+  };
+
+  const handleUpgradeClick = () => {
+    trackButtonClick('upgrade_to_pro');
+  };
+
   return (
     <div className="min-h-screen bg-fresh-bg flex flex-col">
       {/* Navigation */}
@@ -15,7 +35,11 @@ const Upgrade = () => {
           <AppLogo size="medium" />
         </Link>
         <Link to="/">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={handleBackToAppClick}
+          >
             <ArrowLeft className="h-4 w-4" />
             Back to App
           </Button>
@@ -78,14 +102,21 @@ const Upgrade = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full bg-emerald-500 hover:bg-emerald-600">
+                <Button 
+                  className="w-full bg-emerald-500 hover:bg-emerald-600"
+                  onClick={handleUpgradeClick}
+                >
                   Coming Soon
                 </Button>
               </CardFooter>
             </Card>
 
             <div className="mt-8 text-center">
-              <Link to="/" className="text-milk-600 hover:text-milk-800 underline">
+              <Link 
+                to="/" 
+                className="text-milk-600 hover:text-milk-800 underline"
+                onClick={handleContinueFreeClick}
+              >
                 Continue with Free Plan
               </Link>
             </div>
