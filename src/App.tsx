@@ -13,6 +13,7 @@ import EmailConfirmation from './pages/EmailConfirmation';
 import Settings from './pages/Settings';
 import Admin from './pages/Admin';
 import Upgrade from './pages/Upgrade';
+import Privacy from './pages/Privacy';
 import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PostHogProvider } from './context/PostHogProvider';
@@ -37,6 +38,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/app" element={<Index />} />

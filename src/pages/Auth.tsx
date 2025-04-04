@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppLogo } from '@/components/AppLogo';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Link } from 'react-router-dom';
 
 type View = 'sign-in' | 'sign-up';
 
@@ -18,8 +19,8 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [allowTracking, setAllowTracking] = useState(false);
-  const [allowMarketing, setAllowMarketing] = useState(true);
+  const [allowTracking, setAllowTracking] = useState(true);
+  const [allowMarketing, setAllowMarketing] = useState(false);
   const navigate = useNavigate();
 
   const isValidEmail = (email: string) => {
@@ -149,14 +150,18 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-start space-x-2">
                     <Checkbox 
                       id="allow-tracking" 
                       checked={allowTracking}
                       onCheckedChange={(checked) => setAllowTracking(checked === true)}
+                      className="mt-1"
                     />
                     <Label htmlFor="allow-tracking" className="text-sm font-normal cursor-pointer">
-                      Allow analytics tracking to help us improve our app
+                      Help us improve SourList by allowing analytics. See our{' '}
+                      <Link to="/privacy" className="text-emerald-600 hover:underline">
+                        privacy policy
+                      </Link>
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">

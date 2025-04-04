@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -176,6 +177,7 @@ const Landing = () => {
                 <h3 className="font-bold mb-2">Company</h3>
                 <ul className="text-milk-300 text-sm">
                   <li className="mb-1"><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
+                  <li className="mb-1"><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                   <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
                 </ul>
               </div>
