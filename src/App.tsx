@@ -49,6 +49,7 @@ function App() {
             <Route path="/email-confirmation" element={<EmailConfirmation />} />
             <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/upgrade-success" element={<UpgradeSuccess />} />
+            <Route path="/payment-success" element={<UpgradeSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </PostHogProvider>

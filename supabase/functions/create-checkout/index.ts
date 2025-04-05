@@ -76,6 +76,7 @@ serve(async (req) => {
 
     const { data: requestData } = await req.json();
     const planType = requestData?.planType || "monthly"; // 'monthly' or 'yearly'
+    const returnUrl = requestData?.returnUrl || "http://localhost:3000";
     
     // Set price based on plan type
     const priceId = planType === "yearly" 
@@ -102,8 +103,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${requestData?.returnUrl || "https://sourlist.app"}/upgrade-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${requestData?.returnUrl || "https://sourlist.app"}/upgrade`,
+      success_url: `${returnUrl}/upgrade-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${returnUrl}/upgrade`,
       client_reference_id: user.id,
       customer_email: user.email,
       metadata: {
