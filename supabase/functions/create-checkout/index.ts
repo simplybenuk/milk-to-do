@@ -76,7 +76,21 @@ serve(async (req) => {
 
     const { data: requestData } = await req.json();
     const planType = requestData?.planType || "monthly"; // 'monthly' or 'yearly'
-    const returnUrl = requestData?.returnUrl || "http://localhost:3000";
+    
+    // Get the return URL from the request, or use a default
+    // Remove any trailing slashes for consistency
+    let returnUrl = requestData?.returnUrl || "";
+    returnUrl = returnUrl.replace(/\/$/, "");
+    
+    // If we didn't get a valid return URL, try to get it from the request headers
+    if (!returnUrl) {
+      const origin = req.headers.get("origin");
+      const referer = req.headers.get("referer");
+      returnUrl = origin || referer || "https://yourdomain.com"; // Fallback URL
+      
+      // Remove any trailing slashes for consistency
+      returnUrl = returnUrl.replace(/\/$/, "");
+    }
     
     console.log(`Creating checkout session with return URL: ${returnUrl}`);
     
