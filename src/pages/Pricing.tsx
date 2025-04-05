@@ -1,12 +1,33 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AppLogo } from '@/components/AppLogo';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Pricing = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsAuthenticated(!!data.session);
+    };
+    
+    checkAuth();
+  }, []);
+
+  const handleProButtonClick = () => {
+    if (isAuthenticated) {
+      navigate('/upgrade');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-fresh-bg flex flex-col">
       {/* Navigation */}
@@ -15,16 +36,26 @@ const Pricing = () => {
           <AppLogo size="medium" />
         </Link>
         <div className="flex gap-4">
-          <Link to="/auth">
-            <Button variant="outline" className="border-milk-600 text-milk-800">
-              Login
-            </Button>
-          </Link>
-          <Link to="/auth">
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
-              Sign Up
-            </Button>
-          </Link>
+          {!isAuthenticated ? (
+            <>
+              <Link to="/auth">
+                <Button variant="outline" className="border-milk-600 text-milk-800">
+                  Login
+                </Button>
+              </Link>
+              <Link to="/auth">
+                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <Link to="/app">
+              <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                Go to App
+              </Button>
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -72,7 +103,12 @@ const Pricing = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full">Start for Free</Button>
+                <Button 
+                  className="w-full"
+                  onClick={() => isAuthenticated ? navigate('/app') : navigate('/auth')}
+                >
+                  {isAuthenticated ? 'Go to App' : 'Start for Free'}
+                </Button>
               </CardFooter>
             </Card>
 
@@ -118,7 +154,12 @@ const Pricing = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full bg-emerald-500 hover:bg-emerald-600">Upgrade to Pro</Button>
+                <Button 
+                  className="w-full bg-emerald-500 hover:bg-emerald-600"
+                  onClick={handleProButtonClick}
+                >
+                  Upgrade to Pro
+                </Button>
               </CardFooter>
             </Card>
           </div>

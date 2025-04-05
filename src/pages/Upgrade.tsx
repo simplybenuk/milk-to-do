@@ -7,9 +7,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client';
+import { useStripeCheckout } from '@/hooks/useStripeCheckout';
 
 const Upgrade = () => {
   const { trackPageView, trackButtonClick, identifyUser } = useAnalytics();
+  const { createCheckoutSession, isLoading } = useStripeCheckout();
 
   // Track page view and identify user when component mounts
   useEffect(() => {
@@ -56,8 +58,9 @@ const Upgrade = () => {
     trackButtonClick('continue_free');
   };
 
-  const handleUpgradeClick = () => {
-    trackButtonClick('upgrade_to_pro');
+  const handleUpgradeClick = (planType: 'monthly' | 'yearly') => {
+    trackButtonClick(`upgrade_to_pro_${planType}`);
+    createCheckoutSession(planType);
   };
 
   return (
@@ -134,12 +137,20 @@ const Upgrade = () => {
                   </li>
                 </ul>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex flex-col gap-3">
                 <Button 
                   className="w-full bg-emerald-500 hover:bg-emerald-600"
-                  onClick={handleUpgradeClick}
+                  onClick={() => handleUpgradeClick('monthly')}
+                  disabled={isLoading}
                 >
-                  Coming Soon
+                  {isLoading ? 'Processing...' : 'Subscribe Monthly'}
+                </Button>
+                <Button 
+                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => handleUpgradeClick('yearly')}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Processing...' : 'Subscribe Yearly (Save £4)'}
                 </Button>
               </CardFooter>
             </Card>

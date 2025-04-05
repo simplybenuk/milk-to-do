@@ -13,6 +13,7 @@ import EmailConfirmation from './pages/EmailConfirmation';
 import Settings from './pages/Settings';
 import Admin from './pages/Admin';
 import Upgrade from './pages/Upgrade';
+import UpgradeSuccess from './pages/UpgradeSuccess';
 import Privacy from './pages/Privacy';
 import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -47,6 +48,7 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/email-confirmation" element={<EmailConfirmation />} />
             <Route path="/upgrade" element={<Upgrade />} />
+            <Route path="/upgrade-success" element={<UpgradeSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </PostHogProvider>
