@@ -78,6 +78,8 @@ serve(async (req) => {
     const planType = requestData?.planType || "monthly"; // 'monthly' or 'yearly'
     const returnUrl = requestData?.returnUrl || "http://localhost:3000";
     
+    console.log(`Creating checkout session with return URL: ${returnUrl}`);
+    
     // Set price based on plan type
     const priceId = planType === "yearly" 
       ? "price_yearly" // Replace with your actual yearly price ID
@@ -112,6 +114,8 @@ serve(async (req) => {
         plan_type: planType,
       },
     });
+
+    console.log(`Created checkout session: ${session.id} with success URL: ${returnUrl}/upgrade-success`);
 
     return new Response(
       JSON.stringify({ sessionId: session.id, url: session.url }),
