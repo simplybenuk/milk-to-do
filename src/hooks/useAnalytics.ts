@@ -2,7 +2,7 @@
 import { usePostHog } from '@/context/PostHogProvider';
 
 export function useAnalytics() {
-  const { posthog, isTrackingEnabled } = usePostHog();
+  const { posthog, isTrackingEnabled, updateTrackingPreference } = usePostHog();
 
   const trackEvent = (eventName: string, properties?: Record<string, any>) => {
     if (isTrackingEnabled) {
@@ -59,6 +59,14 @@ export function useAnalytics() {
     console.log('User identity reset in PostHog');
   };
 
+  /**
+   * Update the user's tracking preference
+   * @param enabled Whether tracking should be enabled
+   */
+  const updateTracking = (enabled: boolean) => {
+    updateTrackingPreference(enabled);
+  };
+
   return {
     trackEvent,
     trackButtonClick,
@@ -67,5 +75,6 @@ export function useAnalytics() {
     identifyUser,
     resetIdentity,
     isTrackingEnabled,
+    updateTracking,
   };
 }

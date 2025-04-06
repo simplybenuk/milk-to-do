@@ -1,5 +1,6 @@
 
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
+import { AnalyticsSettings } from '@/components/settings/AnalyticsSettings';
 
 const Settings = () => {
   return (
@@ -11,10 +12,17 @@ const Settings = () => {
         />
 
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="space-y-6">
-            <p className="text-sm text-muted-foreground">
-              Settings options coming soon.
-            </p>
+          <div className="space-y-8">
+            <AnalyticsSettings />
+            
+            <div className="h-px bg-gray-200" />
+            
+            <div>
+              <h3 className="text-lg font-medium text-gray-700">App Settings</h3>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
+                More settings options coming soon.
+              </p>
+            </div>
           </div>
         </div>
       </div>
