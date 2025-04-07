@@ -41,7 +41,7 @@ export function TaskActionButtons({
   };
 
   return (
-    <div className="absolute top-3 right-3 flex items-center gap-2">
+    <div className="flex items-center gap-2 justify-end mt-auto">
       {/* Only show complete button if requested and task is open */}
       {showCompleteButton && task.status === 'open' && (
         <CompleteButton onComplete={handleComplete} />

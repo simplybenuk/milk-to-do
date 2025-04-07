@@ -79,7 +79,7 @@ export function TaskItem({
           isParentTask && "bg-[#F1F0FB]"
         )}
       >
-        <div className="flex-1 min-w-0 overflow-hidden break-words mb-6 sm:mb-4">
+        <div className="flex-1 min-w-0 overflow-hidden break-words mb-2">
           {/* Parent task link */}
           <ParentTaskLink parentId={parentId} onViewParent={onViewParent} />
           
@@ -89,9 +89,39 @@ export function TaskItem({
           
           {/* Task metadata section */}
           <TaskMetadata task={task} />
+        </div>
+        
+        {/* Action buttons - positioned before child tasks list if parent task */}
+        {!isParentTask && (
+          <TaskActionButtons
+            task={task}
+            showCompleteButton={showCompleteButton}
+            showDeleteButton={showDeleteButton}
+            onComplete={handleComplete}
+            onCreateChildTask={onCreateChildTask}
+            onEdit={onEdit}
+            isCompleting={isCompleting}
+            setShowDeleteDialog={setShowDeleteDialog}
+            inFocusMode={inFocusMode}
+          />
+        )}
 
-          {/* Display child tasks section for parent tasks - always expanded in all tasks view */}
-          {isParentTask && (
+        {/* Display child tasks section for parent tasks - always expanded in all tasks view */}
+        {isParentTask && (
+          <>
+            <div className="mb-3">
+              <TaskActionButtons
+                task={task}
+                showCompleteButton={showCompleteButton}
+                showDeleteButton={showDeleteButton}
+                onComplete={handleComplete}
+                onCreateChildTask={onCreateChildTask}
+                onEdit={onEdit}
+                isCompleting={isCompleting}
+                setShowDeleteDialog={setShowDeleteDialog}
+                inFocusMode={inFocusMode}
+              />
+            </div>
             <ChildTasksList
               task={task}
               childTasks={childTasks}
@@ -101,21 +131,8 @@ export function TaskItem({
               onEditChildTask={onEdit}
               onDeleteChildTask={onDelete}
             />
-          )}
-        </div>
-        
-        {/* Action buttons */}
-        <TaskActionButtons
-          task={task}
-          showCompleteButton={showCompleteButton}
-          showDeleteButton={showDeleteButton}
-          onComplete={handleComplete}
-          onCreateChildTask={onCreateChildTask}
-          onEdit={onEdit}
-          isCompleting={isCompleting}
-          setShowDeleteDialog={setShowDeleteDialog}
-          inFocusMode={inFocusMode}
-        />
+          </>
+        )}
       </div>
 
       <DeleteTaskDialog

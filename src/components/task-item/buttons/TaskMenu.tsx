@@ -33,7 +33,7 @@ export function TaskMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 absolute top-3 right-3"
+          className="h-8 w-8"
         >
           <MoreHorizontal className="h-5 w-5" />
           <span className="sr-only">Open menu</span>

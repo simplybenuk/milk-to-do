@@ -1,16 +1,13 @@
 
-import { format } from 'date-fns';
-import { GitBranch, Plus, MoreHorizontal, CheckCircle } from 'lucide-react';
-import { Task } from '@/types/task';
+import { useState } from 'react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { PaperclipIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useState, useEffect } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Task } from '@/types/task';
+import { PriorityBadge } from './PriorityBadge';
+import { TaskAgeIndicator } from './TaskAgeIndicator';
+import { CompleteButton } from './buttons/CompleteButton';
+import { TaskMenu } from './buttons/TaskMenu';
 
 interface ChildTasksListProps {
   task: Task;
@@ -22,122 +19,120 @@ interface ChildTasksListProps {
   onDeleteChildTask?: (id: string) => void;
 }
 
-export function ChildTasksList({ 
-  task, 
-  childTasks, 
+export function ChildTasksList({
+  task,
+  childTasks,
   onCreateChildTask,
   defaultOpen = false,
   onCompleteChildTask,
   onEditChildTask,
   onDeleteChildTask
 }: ChildTasksListProps) {
-  const [isChildrenOpen, setIsChildrenOpen] = useState(defaultOpen);
-  
-  // Update open state when defaultOpen changes
-  useEffect(() => {
-    setIsChildrenOpen(defaultOpen);
-  }, [defaultOpen]);
-  
-  if (!task.child_task_ids?.length || childTasks.length === 0) {
+  const openTasks = childTasks.filter(t => t.status === 'open');
+  const closedTasks = childTasks.filter(t => t.status === 'closed');
+  const [isCompleting, setIsCompleting] = useState<Record<string, boolean>>({});
+
+  const handleCompleteChildTask = (id: string) => {
+    setIsCompleting(prev => ({ ...prev, [id]: true }));
+    
+    // Add slight delay to allow animation to play
+    setTimeout(() => {
+      if (onCompleteChildTask) {
+        onCompleteChildTask(id);
+      }
+    }, 300);
+  };
+
+  const handleCreateChildTask = () => {
+    if (onCreateChildTask) {
+      onCreateChildTask(task.id, task.title);
+    }
+  };
+
+  const hasChildTasks = openTasks.length > 0 || closedTasks.length > 0;
+
+  // If there are no child tasks and no way to create them, don't render anything
+  if (!hasChildTasks && !onCreateChildTask) {
     return null;
   }
 
+  // Default accordion value logic
+  const defaultAccordionValue = defaultOpen ? ['child-tasks'] : [];
+
   return (
-    <Collapsible
-      open={isChildrenOpen}
-      onOpenChange={setIsChildrenOpen}
-      className="mt-2 border-t pt-2"
-    >
-      <CollapsibleTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="flex items-center gap-1 text-milk-700 hover:text-milk-900 p-0 h-auto"
-        >
-          <GitBranch className="h-4 w-4" />
-          <span>{childTasks.length} {childTasks.length === 1 ? 'subtask' : 'subtasks'}</span>
-        </Button>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="mt-2 space-y-2">
-        <div className="pl-4 border-l-2 border-milk-200 space-y-2">
-          {childTasks.map(childTask => (
-            <div 
-              key={childTask.id} 
-              className="text-sm flex items-start group relative"
-            >
-              <div className="w-2 h-2 rounded-full mt-1.5 mr-2 flex-shrink-0" style={{
-                backgroundColor: childTask.status === 'closed' 
-                  ? '#10b981' // green for completed
-                  : '#f59e0b' // amber for in-progress
-              }} />
-              <div className="break-words flex-1 text-milk-700">
-                {childTask.title}
-                <div className="text-xs text-milk-500">
-                  {childTask.status === 'closed' 
-                    ? 'Completed' 
-                    : `Due: ${format(childTask.expiry_date, "d MMM")}`}
-                </div>
+    <div className="mt-2 border-t border-gray-200 pt-3">
+      <Accordion type="single" collapsible defaultValue={defaultAccordionValue.length > 0 ? defaultAccordionValue[0] : undefined}>
+        <AccordionItem value="child-tasks" className="border-none">
+          <div className="flex items-center justify-between">
+            <AccordionTrigger className="py-1 text-sm font-medium text-gray-600 hover:text-gray-900">
+              <div className="flex items-center gap-2">
+                <PaperclipIcon className="h-4 w-4" />
+                <span>
+                  {openTasks.length} subtask{openTasks.length !== 1 ? 's' : ''}
+                  {closedTasks.length > 0 && ` (${closedTasks.length} completed)`}
+                </span>
               </div>
-              
-              {/* Action buttons for child tasks - only visible on hover */}
-              {childTask.status === 'open' && onCompleteChildTask && (
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex items-center gap-1">
-                  {/* Complete button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-green-500 hover:text-green-700 hover:bg-green-50"
-                    onClick={() => onCompleteChildTask(childTask.id)}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
+            </AccordionTrigger>
+          </div>
+          
+          <AccordionContent className="pt-3">
+            <div className="space-y-3">
+              {openTasks.map((childTask) => (
+                <div 
+                  key={childTask.id} 
+                  className={`flex items-center justify-between p-3 bg-white rounded-md border shadow-sm ${
+                    isCompleting[childTask.id] ? 'animate-task-complete' : ''
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <PriorityBadge priority={childTask.priority} size="sm" />
+                      <TaskAgeIndicator createdAt={childTask.created_at} showText={false} />
+                    </div>
+                    <h4 className="text-sm font-medium truncate">{childTask.title}</h4>
+                  </div>
                   
-                  {/* Menu for edit and delete */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {onEditChildTask && (
-                        <DropdownMenuItem onClick={() => onEditChildTask(childTask)}>
-                          Edit task
-                        </DropdownMenuItem>
-                      )}
-                      {onDeleteChildTask && (
-                        <DropdownMenuItem 
-                          onClick={() => onDeleteChildTask(childTask.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          Delete task
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center gap-1 ml-2">
+                    {onCompleteChildTask && (
+                      <CompleteButton onComplete={() => handleCompleteChildTask(childTask.id)} />
+                    )}
+                    <TaskMenu 
+                      task={childTask}
+                      onEdit={onEditChildTask ? () => onEditChildTask(childTask) : undefined}
+                      onDelete={onDeleteChildTask ? () => onDeleteChildTask(childTask.id) : undefined}
+                    />
+                  </div>
+                </div>
+              ))}
+              
+              {/* Add Subtask Button */}
+              {onCreateChildTask && (
+                <Button 
+                  onClick={handleCreateChildTask} 
+                  variant="outline" 
+                  className="w-full text-teal-600 hover:text-teal-700 border-dashed border-teal-300 hover:border-teal-400 hover:bg-teal-50"
+                >
+                  Add another subtask
+                </Button>
+              )}
+              
+              {/* Completed Subtasks */}
+              {closedTasks.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <h5 className="text-xs font-medium uppercase text-gray-500">Completed</h5>
+                  {closedTasks.map((childTask) => (
+                    <div key={childTask.id} className="flex items-center p-2 bg-gray-50 rounded-md opacity-70">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm line-through truncate">{childTask.title}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          ))}
-        </div>
-        
-        {/* "Create more" button for parent tasks */}
-        {onCreateChildTask && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="mt-2 w-full"
-            onClick={() => onCreateChildTask(task.id, task.title)}
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Add another subtask
-          </Button>
-        )}
-      </CollapsibleContent>
-    </Collapsible>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
   );
 }
