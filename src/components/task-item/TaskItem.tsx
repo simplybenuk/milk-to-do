@@ -20,6 +20,7 @@ interface TaskItemProps {
   allTasks?: Task[]; // To find and display child tasks
   onViewParent?: (parentId: string) => void; // New prop for handling parent view
   onEdit?: (task: Task) => void; // New prop for handling edit
+  alwaysShowChildren?: boolean; // New prop to control child tasks visibility
 }
 
 export function TaskItem({ 
@@ -31,7 +32,8 @@ export function TaskItem({
   onCreateChildTask,
   allTasks = [],
   onViewParent,
-  onEdit
+  onEdit,
+  alwaysShowChildren = false
 }: TaskItemProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -75,23 +77,24 @@ export function TaskItem({
           isParentTask && "bg-[#F1F0FB]"
         )}
       >
-        <div className="flex-1 min-w-0 overflow-hidden break-words mb-16 sm:mb-14">
+        <div className="flex-1 min-w-0 overflow-hidden break-words mb-6 sm:mb-4">
           {/* Parent task link */}
           <ParentTaskLink parentId={parentId} onViewParent={onViewParent} />
           
-          <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words">
+          <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words pr-8">
             <TextWithLinks text={task.title} />
           </h3>
           
           {/* Task metadata section */}
           <TaskMetadata task={task} />
 
-          {/* Display child tasks section for parent tasks */}
+          {/* Display child tasks section for parent tasks - always expanded in all tasks view */}
           {isParentTask && (
             <ChildTasksList
               task={task}
               childTasks={childTasks}
               onCreateChildTask={onCreateChildTask}
+              defaultOpen={alwaysShowChildren}
             />
           )}
         </div>

@@ -1,9 +1,6 @@
 
 import { Task } from '@/types/task';
-import { EditButton } from './buttons/EditButton';
-import { CompleteButton } from './buttons/CompleteButton';
-import { SplitButton } from './buttons/SplitButton';
-import { DeleteButton } from './buttons/DeleteButton';
+import { TaskMenu } from './buttons/TaskMenu';
 
 interface TaskActionButtonsProps {
   task: Task;
@@ -20,12 +17,12 @@ interface TaskActionButtonsProps {
 export function TaskActionButtons({ 
   task, 
   showCompleteButton, 
-  showDeleteButton,
   onComplete, 
   onCreateChildTask,
   onEdit,
   setShowDeleteDialog
 }: TaskActionButtonsProps) {
+  
   const handleComplete = () => {
     // Add slight delay to allow animation to play
     setTimeout(() => {
@@ -40,19 +37,13 @@ export function TaskActionButtons({
   };
 
   return (
-    <div className="absolute bottom-5 right-5 flex gap-3">
-      {showCompleteButton && (
-        <>
-          {onEdit && task.status === 'open' && (
-            <EditButton task={task} onEdit={onEdit} />
-          )}
-          <CompleteButton onComplete={handleComplete} />
-          <SplitButton onSplit={handleSplitTask} />
-        </>
-      )}
-      {showDeleteButton && (
-        <DeleteButton onClick={() => setShowDeleteDialog(true)} />
-      )}
-    </div>
+    <TaskMenu 
+      task={task}
+      onComplete={showCompleteButton ? handleComplete : undefined}
+      onEdit={onEdit}
+      onDelete={() => setShowDeleteDialog(true)}
+      onSplit={onCreateChildTask ? handleSplitTask : undefined}
+      showCompleteOption={showCompleteButton && task.status === 'open'}
+    />
   );
 }

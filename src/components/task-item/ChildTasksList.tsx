@@ -4,16 +4,27 @@ import { GitBranch, Plus } from 'lucide-react';
 import { Task } from '@/types/task';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ChildTasksListProps {
   task: Task;
   childTasks: Task[];
   onCreateChildTask?: (parentId: string, parentTitle: string) => void;
+  defaultOpen?: boolean;
 }
 
-export function ChildTasksList({ task, childTasks, onCreateChildTask }: ChildTasksListProps) {
-  const [isChildrenOpen, setIsChildrenOpen] = useState(false);
+export function ChildTasksList({ 
+  task, 
+  childTasks, 
+  onCreateChildTask,
+  defaultOpen = false
+}: ChildTasksListProps) {
+  const [isChildrenOpen, setIsChildrenOpen] = useState(defaultOpen);
+  
+  // Update open state when defaultOpen changes
+  useEffect(() => {
+    setIsChildrenOpen(defaultOpen);
+  }, [defaultOpen]);
   
   if (!task.child_task_ids?.length || childTasks.length === 0) {
     return null;

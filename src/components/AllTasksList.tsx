@@ -36,6 +36,10 @@ export function AllTasksList() {
     openTasks.some(childTask => childTask.parent_id === task.id)
   );
   
+  // Filter out child tasks from the open tasks list 
+  // so we don't show them as individual cards
+  const topLevelOpenTasks = openTasks.filter(task => !task.parent_id);
+  
   const handleDelete = async (taskId: string) => {
     await deleteTask(taskId);
     toast({
@@ -106,7 +110,7 @@ export function AllTasksList() {
 
   return (
     <div className="w-full max-w-full space-y-4 px-2">
-      {openTasks.length === 0 ? (
+      {topLevelOpenTasks.length === 0 && relevantParents.length === 0 ? (
         <p className="text-center text-milk-500">No tasks available</p>
       ) : (
         <>
@@ -127,12 +131,14 @@ export function AllTasksList() {
                 allTasks={tasks}
                 onViewParent={handleViewParent}
                 onCreateChildTask={handleCreateChildTask}
+                onEdit={handleEditTask}
+                alwaysShowChildren={true}
               />
             </div>
           ))}
           
-          {/* Display open tasks */}
-          {openTasks.map((task) => (
+          {/* Display open top-level tasks (excluding child tasks) */}
+          {topLevelOpenTasks.map((task) => (
             <div 
               key={task.id} 
               id={`task-${task.id}`}
@@ -149,6 +155,7 @@ export function AllTasksList() {
                 onViewParent={handleViewParent}
                 onCreateChildTask={handleCreateChildTask}
                 onEdit={handleEditTask}
+                alwaysShowChildren={true}
               />
             </div>
           ))}
