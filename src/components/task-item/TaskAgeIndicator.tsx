@@ -6,9 +6,15 @@ interface TaskAgeIndicatorProps {
   createdAt: Date;
   expiryDate: Date;
   className?: string;
+  showText?: boolean;
 }
 
-export function TaskAgeIndicator({ createdAt, expiryDate, className }: TaskAgeIndicatorProps) {
+export function TaskAgeIndicator({ 
+  createdAt, 
+  expiryDate, 
+  className,
+  showText = true 
+}: TaskAgeIndicatorProps) {
   const now = new Date();
   const ageInDays = differenceInDays(now, createdAt);
   const daysUntilExpiry = differenceInDays(expiryDate, now);
@@ -55,13 +61,15 @@ export function TaskAgeIndicator({ createdAt, expiryDate, className }: TaskAgeIn
         "h-2 w-2 rounded-full",
         ageStatus.colorClass
       )} />
-      <span className={cn(
-        "text-xs",
-        isExpired && "font-semibold",
-        ageStatus.status === 'sour' && "animate-wobble font-medium"
-      )}>
-        {ageStatus.label}
-      </span>
+      {showText && (
+        <span className={cn(
+          "text-xs",
+          isExpired && "font-semibold",
+          ageStatus.status === 'sour' && "animate-wobble font-medium"
+        )}>
+          {ageStatus.label}
+        </span>
+      )}
     </div>
   );
 }
