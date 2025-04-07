@@ -22,14 +22,15 @@ export default defineConfig(({ mode }) => ({
         'milk_logo192.png', 
         'milk_logo512.png',
         'sourlist-logo.png',
+        'og-image.png',
         'sw-modules/cache-manager.js',
         'sw-modules/notification-manager.js',
         'sw-modules/message-handler.js'
       ],
       manifest: {
-        name: 'Milk - The Expiring To-Do App',
-        short_name: 'Milk',
-        description: 'A to-do app with task expiry and prioritization',
+        name: 'SourList - The Expiring To-Do App',
+        short_name: 'SourList',
+        description: 'A to-do app where tasks go sour after 30 days. Keep your tasks fresh and your priorities clear.',
         theme_color: '#ffffff',
         icons: [
           {
