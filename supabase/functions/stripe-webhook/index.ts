@@ -114,26 +114,27 @@ serve(async (req) => {
         const userId = subscription.metadata?.user_id;
         
         if (!userId) {
-  try {
-    console.warn("No user_id found in subscription metadata; falling back to customer.email lookup.");
-    const customer = await stripe.customers.retrieve(subscription.customer);
-    const customerEmail = (customer as any).email;
+          try {
+            console.warn("No user_id found in subscription metadata; falling back to customer.retrieve lookup.");
+            const customerId = subscription.customer;
+            const customer = await stripe.customers.retrieve(customerId);
+            const customerEmail = (customer as any).email;
 
-    if (customerEmail) {
-      const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
-      const user = userData?.users?.find(u => u.email === customerEmail);
-      if (user) {
-        await handleCancelSubscription(user.id, supabaseAdmin);
-      } else {
-        console.error("No Supabase user found with email:", customerEmail);
-      }
-    } else {
-      console.error("Customer has no email:", subscription.customer);
-    }
-  } catch (err) {
-    console.error("Failed to retrieve Stripe customer:", err.message);
-  }
-} else {
+            if (customerEmail) {
+              const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
+              const user = userData?.users?.find(u => u.email === customerEmail);
+              if (user) {
+                await handleCancelSubscription(user.id, supabaseAdmin);
+              } else {
+                console.error("No Supabase user found with email:", customerEmail);
+              }
+            } else {
+              console.error("Customer has no email:", subscription.customer);
+            }
+          } catch (err) {
+            console.error("Failed to retrieve Stripe customer:", err.message);
+          }
+        } else {
           await handleCancelSubscription(userId, supabaseAdmin);
         }
         
