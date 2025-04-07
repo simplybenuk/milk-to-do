@@ -1,6 +1,7 @@
 
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
 import { AnalyticsSettings } from '@/components/settings/AnalyticsSettings';
+import { SubscriptionSettings } from '@/components/settings/SubscriptionSettings';
 
 const Settings = () => {
   return (
@@ -13,6 +14,10 @@ const Settings = () => {
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="space-y-8">
+            <SubscriptionSettings />
+            
+            <div className="h-px bg-gray-200" />
+            
             <AnalyticsSettings />
             
             <div className="h-px bg-gray-200" />
