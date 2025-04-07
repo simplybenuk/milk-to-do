@@ -114,22 +114,26 @@ serve(async (req) => {
         const userId = subscription.metadata?.user_id;
         
         if (!userId) {
-          // Try to find the user by customer ID
-          const customer = await stripe.customers.retrieve(subscription.customer);
-const customerEmail = (customer as any).email;
+          try {
+            const customer = await
+stripe.customers.retrieve(subscription.customer);
+    const customerEmail = (customer as any).email;
 
-          if (customers && customers.data.length > 0) {
-            const customerEmail = customers.data[0].email;
-            if (customerEmail) {
-              // Find user by email
-              const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
-              const user = userData?.users?.find(u => u.email === customerEmail);
-              if (user) {
-                await handleCancelSubscription(user.id, supabaseAdmin);
-              }
-            }
-          }
-        } else {
+    if (customerEmail) {
+      const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
+      const user = userData?.users?.find(u => u.email === customerEmail);
+      if (user) {
+        await handleCancelSubscription(user.id, supabaseAdmin);
+      } else {
+        console.error("No Supabase user found with email:", customerEmail);
+      }
+    } else {
+      console.error("Customer has no email:", subscription.customer);
+    }
+  } catch (err) {
+    console.error("Failed to retrieve Stripe customer:", err.message);
+  }
+} else {
           await handleCancelSubscription(userId, supabaseAdmin);
         }
         
