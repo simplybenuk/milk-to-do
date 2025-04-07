@@ -87,7 +87,11 @@ export function ChildTasksList({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <PriorityBadge priority={childTask.priority} size="sm" />
-                      <TaskAgeIndicator createdAt={childTask.created_at} showText={false} />
+                      <TaskAgeIndicator 
+                        createdAt={childTask.created_at} 
+                        expiryDate={childTask.expiry_date} 
+                        showText={false} 
+                      />
                     </div>
                     <h4 className="text-sm font-medium truncate">{childTask.title}</h4>
                   </div>
