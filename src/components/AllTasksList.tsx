@@ -1,3 +1,4 @@
+
 import { TaskItem } from './task-item';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
@@ -160,6 +161,9 @@ export function AllTasksList() {
               />
             </div>
           ))}
+          
+          {/* Add bottom padding to prevent overlap with floating add button on mobile */}
+          <div className="h-24 md:h-20" />
         </>
       )}
       

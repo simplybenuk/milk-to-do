@@ -9,6 +9,7 @@ import { DeleteTaskDialog } from './DeleteTaskDialog';
 import { TaskMetadata } from './TaskMetadata';
 import { ParentTaskLink } from './ParentTaskLink';
 import { TaskActionButtons } from './TaskActionButtons';
+import { TaskMenu } from './buttons/TaskMenu';
 
 interface TaskItemProps {
   task: Task;
@@ -79,6 +80,16 @@ export function TaskItem({
           isParentTask && "bg-[#F1F0FB]"
         )}
       >
+        {/* Position menu at top right */}
+        <div className="absolute top-3 right-2">
+          <TaskMenu 
+            task={task}
+            onEdit={onEdit}
+            onDelete={() => setShowDeleteDialog(true)}
+            showMenuButton={!inFocusMode}
+          />
+        </div>
+
         <div className="flex-1 min-w-0 overflow-hidden break-words mb-2">
           {/* Parent task link */}
           <ParentTaskLink parentId={parentId} onViewParent={onViewParent} />
@@ -120,6 +131,7 @@ export function TaskItem({
                 isCompleting={isCompleting}
                 setShowDeleteDialog={setShowDeleteDialog}
                 inFocusMode={inFocusMode}
+                showSplitButton={false} // Hide the separate split button on parent tasks
               />
             </div>
             <ChildTasksList

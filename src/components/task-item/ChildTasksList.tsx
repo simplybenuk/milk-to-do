@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { PaperclipIcon } from 'lucide-react';
+import { PaperclipIcon, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Task } from '@/types/task';
 import { PriorityBadge } from './PriorityBadge';
@@ -109,13 +109,14 @@ export function ChildTasksList({
                 </div>
               ))}
               
-              {/* Add Subtask Button */}
+              {/* Add Subtask Button with scissors icon */}
               {onCreateChildTask && (
                 <Button 
                   onClick={handleCreateChildTask} 
                   variant="outline" 
                   className="w-full text-teal-600 hover:text-teal-700 border-dashed border-teal-300 hover:border-teal-400 hover:bg-teal-50"
                 >
+                  <Scissors className="h-4 w-4 mr-2" />
                   Add another subtask
                 </Button>
               )}
