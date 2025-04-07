@@ -10,10 +10,9 @@ console.log('Initializing app and service worker registration');
 const updateSW = registerSW({
   immediate: true, // Register immediately
   onNeedRefresh() {
-    // Prompt user to update when new version is available
-    if (confirm('New content available. Reload app?')) {
-      updateSW(true);
-    }
+    // Always update when new version is available
+    console.log('New content available. Reloading app automatically.');
+    updateSW(true);
   },
   onOfflineReady() {
     console.log('App ready to work offline');
@@ -26,13 +25,12 @@ const updateSW = registerSW({
       return;
     }
     
-    // Force update the service worker to ensure latest version
+    // Force update the service worker on every page load
     registration.update().then(() => {
-      console.log('Service worker updated - notifications disabled');
+      console.log('Service worker update forced - notifications disabled');
       
       // Make sure to clear any existing service worker state
       navigator.serviceWorker.ready.then(registration => {
-        // No messaging to service worker for notifications
         console.log('Service worker is ready - no notifications will be shown');
       });
     }).catch(err => {

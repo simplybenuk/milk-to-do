@@ -5,7 +5,8 @@
  */
 
 // Cache Configuration
-const CACHE_NAME = 'milk-cache-v1';
+const CACHE_NAME = 'milk-cache-v2'; // Incremented version number
+
 const urlsToCache = [
   '/',
   '/index.html',
@@ -34,30 +35,66 @@ export function handleInstall(event) {
 }
 
 /**
- * Handles the activate event - claims clients
+ * Handles the activate event - claims clients and cleans up old caches
  */
 export function handleActivate(event) {
   console.log('[Cache Manager] Activating Service Worker ...', event);
-  // Claim clients right away so the page is controlled by the service worker
+  
+  // Delete old caches
   event.waitUntil(
-    self.clients.claim().then(() => {
-      console.log('[Cache Manager] Claimed all clients - notifications disabled');
-      // No notification-related code here
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[Cache Manager] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('[Cache Manager] Claiming clients');
+      return self.clients.claim();
     })
   );
 }
 
 /**
- * Handles fetch events - serves from cache when available
+ * Handles fetch events - serves from network first, fallback to cache
  */
 export function handleFetch(event) {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
+  // Use network-first strategy for HTML and JS files
+  if (event.request.url.includes('index.html') || 
+      event.request.url.endsWith('.js') || 
+      event.request.url.endsWith('.css')) {
+    
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Clone the response to cache it
+          const responseToCache = response.clone();
+          
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+            
           return response;
-        }
-        return fetch(event.request);
-      })
-  );
+        })
+        .catch(() => {
+          // If network fetch fails, try from cache
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // For other resources, try cache first
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          if (response) {
+            return response;
+          }
+          return fetch(event.request);
+        })
+    );
+  }
 }
