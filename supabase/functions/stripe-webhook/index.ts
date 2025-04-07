@@ -114,9 +114,8 @@ serve(async (req) => {
         const userId = subscription.metadata?.user_id;
         
         if (!userId) {
-          try {
-            const customer = await
-stripe.customers.retrieve(subscription.customer);
+  try {
+    const customer = await stripe.customers.retrieve(subscription.customer);
     const customerEmail = (customer as any).email;
 
     if (customerEmail) {
