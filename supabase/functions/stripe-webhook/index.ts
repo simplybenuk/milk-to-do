@@ -104,40 +104,48 @@ serve(async (req) => {
       
       case "customer.subscription.updated": {
         const subscription = event.data.object;
-        // Handle subscription updates (e.g., plan changes, payment method updates)
-        console.log("Subscription updated:", subscription.id);
+        
+        if (subscription.status === "canceled") {
+          const userId = subscription.metadata?.user_id;
+          
+          if (!userId) {
+            console.warn("No user_id found in canceled subscription metadata.");
+            try {
+              console.log("Attempting to find user via customer ID:", subscription.customer);
+              const customerId = subscription.customer;
+              const customer = await stripe.customers.retrieve(customerId);
+              const customerEmail = (customer as any).email;
+              
+              if (customerEmail) {
+                const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
+                const user = userData?.users?.find(u => u.email === customerEmail);
+                if (user) {
+                  console.log(`Found user ${user.id} via email lookup for cancelled subscription`);
+                  await handleCancelSubscription(user.id, supabaseAdmin);
+                } else {
+                  console.error("No Supabase user found with email:", customerEmail);
+                }
+              } else {
+                console.error("Customer has no email:", subscription.customer);
+              }
+            } catch (err) {
+              console.error("Failed to retrieve Stripe customer:", err.message);
+            }
+            break;
+          }
+          
+          console.log(`Subscription for user ${userId} is now fully canceled. Downgrading.`);
+          await handleCancelSubscription(userId, supabaseAdmin);
+        } else {
+          console.log("Subscription updated but not canceled:", subscription.id);
+        }
+        
         break;
       }
       
       case "customer.subscription.deleted": {
         const subscription = event.data.object;
-        const userId = subscription.metadata?.user_id;
-        
-        if (!userId) {
-          try {
-            console.warn("No user_id found in subscription metadata; falling back to customer.retrieve lookup.");
-            const customerId = subscription.customer;
-            const customer = await stripe.customers.retrieve(customerId);
-            const customerEmail = (customer as any).email;
-
-            if (customerEmail) {
-              const { data: userData } = await supabaseAdmin.auth.admin.listUsers();
-              const user = userData?.users?.find(u => u.email === customerEmail);
-              if (user) {
-                await handleCancelSubscription(user.id, supabaseAdmin);
-              } else {
-                console.error("No Supabase user found with email:", customerEmail);
-              }
-            } else {
-              console.error("Customer has no email:", subscription.customer);
-            }
-          } catch (err) {
-            console.error("Failed to retrieve Stripe customer:", err.message);
-          }
-        } else {
-          await handleCancelSubscription(userId, supabaseAdmin);
-        }
-        
+        console.log(`Subscription ${subscription.id} marked for cancellation.`);
         break;
       }
     }
