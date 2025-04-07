@@ -123,9 +123,11 @@ serve(async (req) => {
       cancel_url: `${returnUrl}/upgrade`,
       client_reference_id: user.id,
       customer_email: user.email,
-      metadata: {
-        user_id: user.id,
-        plan_type: planType,
+      subscription_data: {
+        metadata: {
+          user_id: user.id,
+          plan_type: planType,
+        },
       },
     });
 
