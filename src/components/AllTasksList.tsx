@@ -10,7 +10,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { ClosedStatusReason, Task, Priority } from '@/types/task';
 
 export function AllTasksList() {
-  const { tasks, deleteTask, completeTask, editTask } = useTaskStore();
+  const { tasks, deleteTask, completeTask, editTask, fetchTasks } = useTaskStore();
   const { toast } = useToast();
   const { isPro } = useSubscription();
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
@@ -98,10 +98,10 @@ export function AllTasksList() {
     await editTask(id, title, priority);
   };
 
-  const handleSplitComplete = () => {
+  const handleSplitComplete = async () => {
+    console.log("Split completed, refreshing tasks");
     // Refresh the task list
-    const { fetchTasks } = useTaskStore.getState();
-    fetchTasks();
+    await fetchTasks();
   };
 
   return (

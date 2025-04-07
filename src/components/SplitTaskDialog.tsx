@@ -1,16 +1,18 @@
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
 import { Scissors } from 'lucide-react';
+import useTaskStore from '@/stores/useTaskStore';
+import { useToast } from '@/hooks/use-toast';
 
 interface SplitTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parentTaskId: string;
   parentTaskTitle: string;
-  onSplitComplete: (title: string, priority: Priority) => void;
+  onSplitComplete: () => void;
 }
 
 export function SplitTaskDialog({
@@ -24,6 +26,10 @@ export function SplitTaskDialog({
   const [priority, setPriority] = useState<Priority>("medium");
   const [localParentId, setLocalParentId] = useState(parentTaskId);
   const [localParentTitle, setLocalParentTitle] = useState(parentTaskTitle);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { addTask, completeTask } = useTaskStore();
+  const { toast } = useToast();
 
   // Update local state when props change to ensure we have the latest values
   useEffect(() => {
@@ -36,14 +42,50 @@ export function SplitTaskDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || isSubmitting) return;
     
-    // Pass the new task details to the parent component
-    onSplitComplete(title.trim(), priority);
-    
-    // Reset form
-    setTitle("");
-    setPriority("medium");
+    try {
+      setIsSubmitting(true);
+      
+      // Calculate expiry date (30 days from now by default)
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
+      
+      console.log("Creating split task:", {
+        title: title.trim(),
+        priority,
+        parentId: localParentId,
+        expiryDate
+      });
+      
+      // Create the new split task as a child of the parent
+      await addTask(title.trim(), priority, expiryDate, localParentId);
+      
+      // Mark the parent task as a parent (closed with special status)
+      await completeTask(localParentId, 'parent');
+      
+      toast({
+        title: "Task split successfully",
+        description: "The new subtask has been created.",
+      });
+      
+      // Reset form and close dialog
+      setTitle("");
+      setPriority("medium");
+      onOpenChange(false);
+      
+      // Notify parent component that split is complete
+      onSplitComplete();
+    } catch (error) {
+      console.error("Error splitting task:", error);
+      toast({
+        title: "Error",
+        description: "Failed to split the task. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,6 +93,9 @@ export function SplitTaskDialog({
       <DialogContent className="animate-slide-up sm:max-w-[425px] pb-6">
         <DialogHeader>
           <DialogTitle>Split Task Into Smaller Steps</DialogTitle>
+          <DialogDescription>
+            Breaking down large tasks helps you make progress more effectively.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="my-4 text-sm text-muted-foreground">
@@ -78,9 +123,14 @@ export function SplitTaskDialog({
               </Button>
             ))}
           </div>
-          <Button type="submit" className="w-full">
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={!title.trim() || isSubmitting}
+          >
             <Scissors className="mr-2 h-4 w-4" />
             Create Split Task
+            {isSubmitting && "..."}
           </Button>
         </form>
       </DialogContent>
