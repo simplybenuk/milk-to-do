@@ -49,6 +49,12 @@ export function TaskItem({
   // Get parent task if this is a child task
   const parentId = task.parent_id;
   const isParentTask = task.closed_status === 'parent' && childTasks.length > 0;
+  
+  // Find parent task title if this is a child task
+  const parentTask = parentId && allTasks?.length > 0
+    ? allTasks.find(t => t.id === parentId)
+    : undefined;
+  const parentTitle = parentTask?.title;
 
   // Calculate age-based classes
   const ageInDays = differenceInDays(new Date(), new Date(task.created_at));
@@ -91,8 +97,13 @@ export function TaskItem({
         </div>
 
         <div className="flex-1 min-w-0 overflow-hidden break-words mb-2">
-          {/* Parent task link */}
-          <ParentTaskLink parentId={parentId} onViewParent={onViewParent} />
+          {/* Parent task link with added props */}
+          <ParentTaskLink 
+            parentId={parentId} 
+            onViewParent={onViewParent} 
+            inFocusMode={inFocusMode}
+            parentTitle={parentTitle}
+          />
           
           <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words pr-8">
             <TextWithLinks text={task.title} />
@@ -155,3 +166,4 @@ export function TaskItem({
     </>
   );
 }
+
