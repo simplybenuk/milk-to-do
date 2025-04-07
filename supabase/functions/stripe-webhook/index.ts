@@ -115,6 +115,7 @@ serve(async (req) => {
         
         if (!userId) {
   try {
+    console.warn("No user_id found in subscription metadata; falling back to customer.email lookup.");
     const customer = await stripe.customers.retrieve(subscription.customer);
     const customerEmail = (customer as any).email;
 
