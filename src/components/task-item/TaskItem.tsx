@@ -21,6 +21,7 @@ interface TaskItemProps {
   onViewParent?: (parentId: string) => void; // New prop for handling parent view
   onEdit?: (task: Task) => void; // New prop for handling edit
   alwaysShowChildren?: boolean; // New prop to control child tasks visibility
+  inFocusMode?: boolean; // New prop to indicate if in focus mode
 }
 
 export function TaskItem({ 
@@ -33,7 +34,8 @@ export function TaskItem({
   allTasks = [],
   onViewParent,
   onEdit,
-  alwaysShowChildren = false
+  alwaysShowChildren = false,
+  inFocusMode = false
 }: TaskItemProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -95,6 +97,9 @@ export function TaskItem({
               childTasks={childTasks}
               onCreateChildTask={onCreateChildTask}
               defaultOpen={alwaysShowChildren}
+              onCompleteChildTask={onComplete}
+              onEditChildTask={onEdit}
+              onDeleteChildTask={onDelete}
             />
           )}
         </div>
@@ -109,6 +114,7 @@ export function TaskItem({
           onEdit={onEdit}
           isCompleting={isCompleting}
           setShowDeleteDialog={setShowDeleteDialog}
+          inFocusMode={inFocusMode}
         />
       </div>
 

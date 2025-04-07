@@ -1,6 +1,8 @@
 
 import { Task } from '@/types/task';
 import { TaskMenu } from './buttons/TaskMenu';
+import { CompleteButton } from './buttons/CompleteButton';
+import { SplitButton } from './buttons/SplitButton';
 
 interface TaskActionButtonsProps {
   task: Task;
@@ -12,6 +14,7 @@ interface TaskActionButtonsProps {
   onEdit?: (task: Task) => void;
   isCompleting: boolean;
   setShowDeleteDialog: (show: boolean) => void;
+  inFocusMode?: boolean;
 }
 
 export function TaskActionButtons({ 
@@ -20,7 +23,8 @@ export function TaskActionButtons({
   onComplete, 
   onCreateChildTask,
   onEdit,
-  setShowDeleteDialog
+  setShowDeleteDialog,
+  inFocusMode = false
 }: TaskActionButtonsProps) {
   
   const handleComplete = () => {
@@ -37,13 +41,24 @@ export function TaskActionButtons({
   };
 
   return (
-    <TaskMenu 
-      task={task}
-      onComplete={showCompleteButton ? handleComplete : undefined}
-      onEdit={onEdit}
-      onDelete={() => setShowDeleteDialog(true)}
-      onSplit={onCreateChildTask ? handleSplitTask : undefined}
-      showCompleteOption={showCompleteButton && task.status === 'open'}
-    />
+    <div className="absolute top-3 right-3 flex items-center gap-2">
+      {/* Only show complete button if requested and task is open */}
+      {showCompleteButton && task.status === 'open' && (
+        <CompleteButton onComplete={handleComplete} />
+      )}
+      
+      {/* Show split button if onCreateChildTask is provided */}
+      {onCreateChildTask && (
+        <SplitButton onClick={handleSplitTask} />
+      )}
+      
+      {/* Menu for Edit and Delete actions - hide in focus mode */}
+      <TaskMenu 
+        task={task}
+        onEdit={onEdit}
+        onDelete={() => setShowDeleteDialog(true)}
+        showMenuButton={!inFocusMode}
+      />
+    </div>
   );
 }

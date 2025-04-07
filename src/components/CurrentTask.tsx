@@ -1,4 +1,3 @@
-
 import { Task } from '@/types/task';
 import { TaskItem } from './task-item';
 import { useState } from 'react';
@@ -39,7 +38,6 @@ export function CurrentTask({
   const [viewingParent, setViewingParent] = useState<Task | null>(null);
   const { toast } = useToast();
 
-  // Add a safety check for task existence
   if (!task && !viewingParent) {
     return (
       <div className="text-center py-12 bg-white rounded-lg shadow-lg">
@@ -48,7 +46,6 @@ export function CurrentTask({
     );
   }
 
-  // Function to handle parent view
   const handleViewParent = (parentId: string) => {
     const parentTask = tasks.find(t => t.id === parentId);
     if (parentTask) {
@@ -56,13 +53,10 @@ export function CurrentTask({
     }
   };
 
-  // If viewing a parent, show that instead of current task
   const displayTask = viewingParent || task;
   
-  // Get button styling based on task age
   const buttonStyles = getButtonStyles(task);
 
-  // If viewing parent task, show the parent view component
   if (viewingParent) {
     return (
       <ParentTaskView 
@@ -91,7 +85,8 @@ export function CurrentTask({
           onDelete={() => {}}
           allTasks={tasks}
           onViewParent={handleViewParent}
-          showDeleteButton={false} // Hide delete button in focus mode
+          showDeleteButton={false}
+          inFocusMode={true}
         />
       </div>
       
@@ -102,7 +97,6 @@ export function CurrentTask({
         buttonStyles={buttonStyles}
       />
         
-      {/* Exit focus mode button below the action buttons */}
       {inFocusMode && onExitFocusMode && (
         <div className="mt-4 flex justify-center">
           <Button 

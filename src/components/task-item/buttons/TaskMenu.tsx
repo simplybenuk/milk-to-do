@@ -11,21 +11,22 @@ import { Task } from '@/types/task';
 
 interface TaskMenuProps {
   task: Task;
-  onComplete?: () => void;
   onEdit?: (task: Task) => void;
   onDelete?: () => void;
-  onSplit?: () => void;
-  showCompleteOption?: boolean;
+  showMenuButton?: boolean;
 }
 
 export function TaskMenu({ 
   task, 
-  onComplete,
   onEdit, 
   onDelete,
-  onSplit,
-  showCompleteOption = true
+  showMenuButton = true
 }: TaskMenuProps) {
+  // If there are no actions available or menu button is hidden, don't render anything
+  if ((!onEdit && !onDelete) || !showMenuButton) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,16 +40,6 @@ export function TaskMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {showCompleteOption && onComplete && (
-          <DropdownMenuItem onClick={onComplete}>
-            Mark as complete
-          </DropdownMenuItem>
-        )}
-        {onSplit && (
-          <DropdownMenuItem onClick={onSplit}>
-            Split into smaller tasks
-          </DropdownMenuItem>
-        )}
         {onEdit && (
           <DropdownMenuItem onClick={() => onEdit(task)}>
             Edit task

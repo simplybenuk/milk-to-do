@@ -1,4 +1,3 @@
-
 import { TaskItem } from './task-item';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
@@ -133,6 +132,7 @@ export function AllTasksList() {
                 onCreateChildTask={handleCreateChildTask}
                 onEdit={handleEditTask}
                 alwaysShowChildren={true}
+                inFocusMode={false}
               />
             </div>
           ))}
@@ -156,6 +156,7 @@ export function AllTasksList() {
                 onCreateChildTask={handleCreateChildTask}
                 onEdit={handleEditTask}
                 alwaysShowChildren={true}
+                inFocusMode={false}
               />
             </div>
           ))}
