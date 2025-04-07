@@ -115,10 +115,9 @@ serve(async (req) => {
         
         if (!userId) {
           // Try to find the user by customer ID
-          const { data: customers } = await stripe.customers.search({
-            query: `id:'${subscription.customer}'`,
-          });
-          
+          const customer = await stripe.customers.retrieve(subscription.customer);
+const customerEmail = (customer as any).email;
+
           if (customers && customers.data.length > 0) {
             const customerEmail = customers.data[0].email;
             if (customerEmail) {
