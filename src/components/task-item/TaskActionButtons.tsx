@@ -49,7 +49,7 @@ export function TaskActionButtons({
       
       {/* Show split button if onCreateChildTask is provided */}
       {onCreateChildTask && (
-        <SplitButton onClick={handleSplitTask} />
+        <SplitButton onSplit={handleSplitTask} />
       )}
       
       {/* Menu for Edit and Delete actions - hide in focus mode */}
