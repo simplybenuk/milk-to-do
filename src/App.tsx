@@ -18,6 +18,7 @@ import Privacy from './pages/Privacy';
 import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PostHogProvider } from './context/PostHogProvider';
+import { PageViewTracker } from './components/PageViewTracker';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -32,28 +33,30 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <PostHogProvider>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/app" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/email-confirmation" element={<EmailConfirmation />} />
-            <Route path="/upgrade" element={<Upgrade />} />
-            <Route path="/upgrade-success" element={<UpgradeSuccess />} />
-            <Route path="/payment-success" element={<UpgradeSuccess />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </PostHogProvider>
-      </Router>
+      <PostHogProvider>
+        <Router>
+          <PageViewTracker>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/app" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/email-confirmation" element={<EmailConfirmation />} />
+              <Route path="/upgrade" element={<Upgrade />} />
+              <Route path="/upgrade-success" element={<UpgradeSuccess />} />
+              <Route path="/payment-success" element={<UpgradeSuccess />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </PageViewTracker>
+        </Router>
+      </PostHogProvider>
     </QueryClientProvider>
   );
 }

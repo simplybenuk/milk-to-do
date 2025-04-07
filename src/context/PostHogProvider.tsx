@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import posthog from 'posthog-js';
 import { PostHogProvider as PHProvider } from 'posthog-js/react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigationType } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 // PostHog configuration
@@ -39,8 +38,27 @@ const PostHogContext = createContext<PostHogContextType>({
 
 export const usePostHog = () => useContext(PostHogContext);
 
-export const PostHogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// Create a wrapper component to handle location tracking
+const LocationTracker: React.FC<{ children: React.ReactNode, isTrackingEnabled: boolean }> = ({ 
+  children, 
+  isTrackingEnabled 
+}) => {
   const location = useLocation();
+  
+  // Track page views only if tracking is enabled
+  useEffect(() => {
+    if (isTrackingEnabled) {
+      posthog.capture('$pageview', {
+        current_url: window.location.href,
+        path: location.pathname,
+      });
+    }
+  }, [location, isTrackingEnabled]);
+  
+  return <>{children}</>;
+};
+
+export const PostHogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isTrackingEnabled, setIsTrackingEnabled] = useState<boolean>(true);
   
   // Update tracking status based on the current state
@@ -91,20 +109,36 @@ export const PostHogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     checkUserTrackingPreferences();
   }, []);
 
-  // Track page views only if tracking is enabled
-  useEffect(() => {
-    if (isTrackingEnabled) {
-      posthog.capture('$pageview', {
-        current_url: window.location.href,
-        path: location.pathname,
-      });
-    }
-  }, [location, isTrackingEnabled]);
+  // Create a context value object
+  const contextValue = {
+    posthog,
+    isTrackingEnabled,
+    updateTrackingPreference
+  };
+
+  // Determine if we should wrap with LocationTracker
+  // We check if window.location exists to ensure we're in a browser environment
+  const needsLocationTracker = typeof window !== 'undefined';
 
   return (
     <PHProvider client={posthog}>
-      <PostHogContext.Provider value={{ posthog, isTrackingEnabled, updateTrackingPreference }}>
-        {children}
+      <PostHogContext.Provider value={contextValue}>
+        {needsLocationTracker ? (
+          <React.Fragment>
+            {/* This will conditionally use useLocation only when rendered inside a Router */}
+            {React.Children.map(children, child => {
+              if (React.isValidElement(child) && child.type === 'Router') {
+                // If the direct child is a Router, pass through as is
+                return child;
+              }
+              // Otherwise render without location tracking
+              return child;
+            })}
+          </React.Fragment>
+        ) : (
+          // If we're not in a browser or don't need location tracking
+          children
+        )}
       </PostHogContext.Provider>
     </PHProvider>
   );
