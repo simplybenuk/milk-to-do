@@ -33,7 +33,15 @@ const useTagStore = create<TagStore>((set, get) => ({
         .eq('user_id', user.id);
 
       if (error) throw error;
-      set({ tags: data, isLoading: false });
+      // Convert the data to proper Tag objects
+      const formattedTags: Tag[] = data.map(tag => ({
+        id: tag.id,
+        name: tag.name,
+        user_id: tag.user_id,
+        created_at: new Date(tag.created_at)
+      }));
+      
+      set({ tags: formattedTags, isLoading: false });
     } catch (error) {
       console.error('Error fetching tags:', error);
       set({ error: 'Failed to fetch tags', isLoading: false });
@@ -63,8 +71,16 @@ const useTagStore = create<TagStore>((set, get) => ({
 
       if (error) throw error;
       
-      set(state => ({ tags: [...state.tags, data] }));
-      return data;
+      // Convert to Tag format
+      const newTag: Tag = {
+        id: data.id,
+        name: data.name,
+        user_id: data.user_id,
+        created_at: new Date(data.created_at)
+      };
+      
+      set(state => ({ tags: [...state.tags, newTag] }));
+      return newTag;
     } catch (error) {
       console.error('Error creating tag:', error);
       set({ error: 'Failed to create tag' });
@@ -132,12 +148,14 @@ const useTagStore = create<TagStore>((set, get) => ({
       }
       
       // Update the tasks table to include the tag ID in its tags array
-      const { error: updateError } = await supabase
-        .from('tasks')
-        .update({ 
-          tags: supabase.sql`array_append(tags, ${tagId})` 
-        })
-        .eq('id', taskId);
+      // We'll use a raw SQL query to append to the array
+      const { error: updateError } = await supabase.rpc(
+        'append_tag_to_task',
+        { 
+          p_task_id: taskId,
+          p_tag_id: tagId
+        }
+      );
 
       if (updateError) throw updateError;
       
@@ -161,12 +179,14 @@ const useTagStore = create<TagStore>((set, get) => ({
       if (error) throw error;
       
       // Update the tasks table to remove the tag ID from its tags array
-      const { error: updateError } = await supabase
-        .from('tasks')
-        .update({ 
-          tags: supabase.sql`array_remove(tags, ${tagId})` 
-        })
-        .eq('id', taskId);
+      // We'll use a raw SQL query to remove from the array
+      const { error: updateError } = await supabase.rpc(
+        'remove_tag_from_task',
+        { 
+          p_task_id: taskId,
+          p_tag_id: tagId
+        }
+      );
 
       if (updateError) throw updateError;
       
