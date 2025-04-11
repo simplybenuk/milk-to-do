@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PaperclipIcon, Scissors } from 'lucide-react';
@@ -35,7 +34,6 @@ export function ChildTasksList({
   const handleCompleteChildTask = (id: string) => {
     setIsCompleting(prev => ({ ...prev, [id]: true }));
     
-    // Add slight delay to allow animation to play
     setTimeout(() => {
       if (onCompleteChildTask) {
         onCompleteChildTask(id);
@@ -51,12 +49,10 @@ export function ChildTasksList({
 
   const hasChildTasks = openTasks.length > 0 || closedTasks.length > 0;
 
-  // If there are no child tasks and no way to create them, don't render anything
   if (!hasChildTasks && !onCreateChildTask) {
     return null;
   }
 
-  // Default accordion value logic
   const defaultAccordionValue = defaultOpen ? ['child-tasks'] : [];
 
   return (
@@ -90,7 +86,6 @@ export function ChildTasksList({
                       <TaskAgeIndicator 
                         createdAt={childTask.created_at} 
                         expiryDate={childTask.expiry_date} 
-                        showText={false} 
                       />
                     </div>
                     <h4 className="text-sm font-medium truncate">{childTask.title}</h4>
@@ -109,7 +104,6 @@ export function ChildTasksList({
                 </div>
               ))}
               
-              {/* Add Subtask Button with scissors icon */}
               {onCreateChildTask && (
                 <Button 
                   onClick={handleCreateChildTask} 
@@ -121,7 +115,6 @@ export function ChildTasksList({
                 </Button>
               )}
               
-              {/* Completed Subtasks */}
               {closedTasks.length > 0 && (
                 <div className="mt-4 space-y-2">
                   <h5 className="text-xs font-medium uppercase text-gray-500">Completed</h5>
