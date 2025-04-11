@@ -1,6 +1,7 @@
 
 import { cn } from '@/lib/utils';
 import { Priority } from '@/types/task';
+import { ArrowUp, ArrowRight, ArrowDown } from 'lucide-react';
 
 interface PriorityBadgeProps {
   priority: Priority;
@@ -8,11 +9,30 @@ interface PriorityBadgeProps {
 }
 
 export function PriorityBadge({ priority, size = 'md' }: PriorityBadgeProps) {
-  const priorityColors = {
-    low: "bg-green-100 text-green-800 border-green-200",
-    medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    high: "bg-red-100 text-red-800 border-red-200",
+  // Improved styles with icons for better visual distinction
+  const priorityConfig = {
+    low: {
+      bg: "bg-green-100",
+      text: "text-green-800",
+      border: "border-green-200",
+      icon: ArrowDown
+    },
+    medium: {
+      bg: "bg-yellow-100",
+      text: "text-yellow-800",
+      border: "border-yellow-200",
+      icon: ArrowRight
+    },
+    high: {
+      bg: "bg-red-100",
+      text: "text-red-800",
+      border: "border-red-200",
+      icon: ArrowUp
+    },
   };
+
+  const config = priorityConfig[priority];
+  const Icon = config.icon;
 
   const sizeClasses = {
     sm: "px-2 py-0.5 text-xs",
@@ -22,11 +42,14 @@ export function PriorityBadge({ priority, size = 'md' }: PriorityBadgeProps) {
 
   return (
     <span className={cn(
-      "inline-flex items-center rounded-full font-medium w-fit border",
-      priorityColors[priority],
+      "inline-flex items-center gap-1 rounded-full font-medium border",
+      config.bg,
+      config.text,
+      config.border,
       sizeClasses[size]
     )}>
-      {priority}
+      <Icon className="h-3 w-3" />
+      <span>{priority}</span>
     </span>
   );
 }

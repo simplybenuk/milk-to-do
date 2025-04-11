@@ -1,4 +1,5 @@
 
+import { Clock } from 'lucide-react';
 import { PriorityBadge } from './PriorityBadge';
 import { TaskAgeIndicator } from './TaskAgeIndicator';
 import { SkipCountBadge } from './SkipCountBadge';
@@ -16,25 +17,30 @@ export function TaskMetadata({ task }: TaskMetadataProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2 items-center">
-        <PriorityBadge priority={task.priority} />
+      <div className="flex items-center flex-wrap gap-2">
+        <div className="flex gap-1.5 items-center">
+          <PriorityBadge priority={task.priority} />
+          
+          {/* Priority score badge now has its own section */}
+          <PriorityScoreBadge score={task.priority_score} />
+        </div>
         
-        {/* Age indicator */}
-        {task.status === 'open' && (
-          <TaskAgeIndicator 
-            createdAt={new Date(task.created_at)} 
-            expiryDate={new Date(task.expiry_date)}
-          />
-        )}
-        
-        {/* Skip count badge */}
-        <SkipCountBadge skipCount={task.skip_count} />
-        
-        {/* Priority score badge */}
-        <PriorityScoreBadge score={task.priority_score} />
-        
-        {/* Add a parent task badge */}
-        {isParentTask && <ParentTaskBadge />}
+        {/* Second line for status indicators */}
+        <div className="flex gap-1.5 items-center">
+          {/* Age indicator */}
+          {task.status === 'open' && (
+            <TaskAgeIndicator 
+              createdAt={new Date(task.created_at)} 
+              expiryDate={new Date(task.expiry_date)}
+            />
+          )}
+          
+          {/* Skip count badge */}
+          <SkipCountBadge skipCount={task.skip_count} />
+          
+          {/* Add a parent task badge */}
+          {isParentTask && <ParentTaskBadge />}
+        </div>
       </div>
       
       <ExpiryDateDisplay expiryDate={task.expiry_date} />

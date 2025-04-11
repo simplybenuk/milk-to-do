@@ -1,5 +1,5 @@
 
-import { Badge } from '@/components/ui/badge';
+import { AlertCircle } from 'lucide-react';
 
 interface PriorityScoreBadgeProps {
   score: number;
@@ -7,8 +7,9 @@ interface PriorityScoreBadgeProps {
 
 export function PriorityScoreBadge({ score }: PriorityScoreBadgeProps) {
   return (
-    <Badge variant="secondary" className="text-xs">
-      Score: {Math.round(score)}
-    </Badge>
+    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+      <AlertCircle className="h-3 w-3" />
+      <span>{Math.round(score)}</span>
+    </div>
   );
 }

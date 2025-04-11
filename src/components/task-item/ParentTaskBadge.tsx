@@ -1,10 +1,11 @@
 
-import { Badge } from '@/components/ui/badge';
+import { FolderTree } from 'lucide-react';
 
 export function ParentTaskBadge() {
   return (
-    <Badge variant="outline" className="text-xs bg-[#F5F4FF] text-teal-700 border-teal-200">
-      Parent
-    </Badge>
+    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+      <FolderTree className="h-3 w-3" />
+      <span>Parent</span>
+    </div>
   );
 }

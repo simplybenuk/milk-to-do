@@ -1,15 +1,20 @@
 
 import { format } from 'date-fns';
+import { Calendar } from 'lucide-react';
 
 interface ExpiryDateDisplayProps {
-  expiryDate: Date;
-  className?: string;
+  expiryDate: Date | string;
 }
 
-export function ExpiryDateDisplay({ expiryDate, className }: ExpiryDateDisplayProps) {
+export function ExpiryDateDisplay({ expiryDate }: ExpiryDateDisplayProps) {
+  const formattedDate = typeof expiryDate === 'string' 
+    ? format(new Date(expiryDate), 'd MMM HH:mm')
+    : format(expiryDate, 'd MMM HH:mm');
+  
   return (
-    <span className={`text-xs sm:text-sm ${className || ''}`}>
-      Expires: {format(expiryDate, "d MMM HH:mm")}
-    </span>
+    <div className="flex items-center text-sm text-gray-500 mt-1">
+      <Calendar className="h-3.5 w-3.5 mr-1.5" />
+      <span>Expires: {formattedDate}</span>
+    </div>
   );
 }

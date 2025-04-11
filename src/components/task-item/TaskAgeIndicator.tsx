@@ -1,75 +1,67 @@
 
 import { differenceInDays } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Clock, Hourglass } from 'lucide-react';
 
 interface TaskAgeIndicatorProps {
   createdAt: Date;
   expiryDate: Date;
-  className?: string;
-  showText?: boolean;
 }
 
-export function TaskAgeIndicator({ 
-  createdAt, 
-  expiryDate, 
-  className,
-  showText = true 
-}: TaskAgeIndicatorProps) {
-  const now = new Date();
-  const ageInDays = differenceInDays(now, createdAt);
-  const daysUntilExpiry = differenceInDays(expiryDate, now);
+export function TaskAgeIndicator({ createdAt, expiryDate }: TaskAgeIndicatorProps) {
+  const ageInDays = differenceInDays(new Date(), createdAt);
+  const daysUntilExpiry = differenceInDays(expiryDate, new Date());
   
-  // Determine status based on age
-  const getAgeStatus = () => {
-    if (daysUntilExpiry < 0) {
-      return {
-        status: 'expired',
-        label: 'Expired',
-        colorClass: 'bg-expired-accent'
-      };
-    } else if (ageInDays >= 21) {
-      return {
-        status: 'sour',
-        label: 'Sour',
-        colorClass: 'bg-sour-accent'
-      };
-    } else if (ageInDays >= 8) {
-      return {
-        status: 'spoiling',
-        label: 'Spoiling',
-        colorClass: 'bg-spoiling-accent'
-      };
-    } else {
-      return {
-        status: 'fresh',
-        label: 'Fresh',
-        colorClass: 'bg-fresh-accent'
-      };
+  let status: 'fresh' | 'spoiling' | 'sour' | 'expired';
+  let label: string;
+  
+  if (daysUntilExpiry < 0) {
+    status = 'expired';
+    label = 'Expired';
+  } else if (ageInDays >= 21) {
+    status = 'sour';
+    label = 'Sour';
+  } else if (ageInDays >= 8) {
+    status = 'spoiling';
+    label = 'Spoiling';
+  } else {
+    status = 'fresh';
+    label = 'Fresh';
+  }
+  
+  const statusConfig = {
+    fresh: {
+      bg: "bg-emerald-100",
+      text: "text-emerald-800",
+      border: "border-emerald-200",
+      icon: Clock
+    },
+    spoiling: {
+      bg: "bg-amber-100",
+      text: "text-amber-800", 
+      border: "border-amber-200",
+      icon: Clock
+    },
+    sour: {
+      bg: "bg-orange-100",
+      text: "text-orange-800",
+      border: "border-orange-200",
+      icon: Hourglass
+    },
+    expired: {
+      bg: "bg-gray-100",
+      text: "text-gray-800",
+      border: "border-gray-200",
+      icon: Hourglass
     }
   };
-
-  const ageStatus = getAgeStatus();
-  const isExpired = ageStatus.status === 'expired';
-
+  
+  const config = statusConfig[status];
+  const Icon = config.icon;
+  
   return (
-    <div className={cn(
-      "flex items-center gap-2",
-      isExpired && "stink-cloud",
-      className
-    )}>
-      <div className={cn(
-        "h-2 w-2 rounded-full",
-        ageStatus.colorClass
-      )} />
-      {showText && (
-        <span className={cn(
-          "text-xs",
-          isExpired && "font-semibold",
-          ageStatus.status === 'sour' && "animate-wobble font-medium"
-        )}>
-          {ageStatus.label}
-        </span>
-      )}
+    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text} border ${config.border}`}>
+      <Icon className="h-3 w-3" />
+      <span>{label}</span>
     </div>
   );
 }

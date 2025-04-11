@@ -116,7 +116,7 @@ export function TaskItem({
             <TextWithLinks text={task.title} />
           </h3>
           
-          {/* Task tags */}
+          {/* Task tags - moved to a more prominent position */}
           {task.tags && task.tags.length > 0 && (
             <TaskTags 
               taskId={task.id} 

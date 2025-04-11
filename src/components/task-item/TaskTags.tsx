@@ -31,7 +31,7 @@ export function TaskTags({ taskId, tags = [], onRemoveTag, className = '' }: Tas
   if (!taskTags.length) return null;
   
   return (
-    <div className={`flex flex-wrap gap-1 ${className}`}>
+    <div className={`flex flex-wrap gap-1.5 ${className}`}>
       {taskTags.map((tag) => (
         <TagBadge 
           key={tag.id} 
