@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { Tag } from '@/types/tag';
+import { toast } from '@/hooks/use-toast';
 
 interface TagStore {
   tags: Tag[];
@@ -148,22 +149,33 @@ const useTagStore = create<TagStore>((set, get) => ({
       }
       
       // Update the tasks table to include the tag ID in its tags array
-      // We'll use a raw SQL query to append to the array
-      const { error: updateError } = await supabase.rpc(
-        'append_tag_to_task',
+      // Use the RPC function to append the tag to the task
+      const { error: rpcError } = await supabase.rpc(
+        'append_tag_to_task' as any,
         { 
           p_task_id: taskId,
           p_tag_id: tagId
         }
       );
 
-      if (updateError) throw updateError;
+      if (rpcError) throw rpcError;
       
       // Refresh tags to ensure state is up to date
       await get().fetchTags();
+      
+      toast({
+        title: "Tag added",
+        description: "The tag has been added to the task",
+      });
     } catch (error) {
       console.error('Error adding tag to task:', error);
       set({ error: 'Failed to add tag to task' });
+      
+      toast({
+        title: "Error",
+        description: "Failed to add tag to task",
+        variant: "destructive",
+      });
     }
   },
 
@@ -179,22 +191,33 @@ const useTagStore = create<TagStore>((set, get) => ({
       if (error) throw error;
       
       // Update the tasks table to remove the tag ID from its tags array
-      // We'll use a raw SQL query to remove from the array
-      const { error: updateError } = await supabase.rpc(
-        'remove_tag_from_task',
+      // Use the RPC function to remove the tag from the task
+      const { error: rpcError } = await supabase.rpc(
+        'remove_tag_from_task' as any,
         { 
           p_task_id: taskId,
           p_tag_id: tagId
         }
       );
 
-      if (updateError) throw updateError;
+      if (rpcError) throw rpcError;
       
       // Refresh tags to ensure state is up to date
       await get().fetchTags();
+      
+      toast({
+        title: "Tag removed",
+        description: "The tag has been removed from the task",
+      });
     } catch (error) {
       console.error('Error removing tag from task:', error);
       set({ error: 'Failed to remove tag from task' });
+      
+      toast({
+        title: "Error",
+        description: "Failed to remove tag from task",
+        variant: "destructive",
+      });
     }
   },
 
