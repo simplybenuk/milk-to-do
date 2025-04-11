@@ -21,5 +21,21 @@ declare module '@supabase/supabase-js' {
         role_name: string
       }
     ): Promise<{ data: T; error: Error | null }>;
+    
+    rpc<T = any>(
+      fn: 'append_tag_to_task',
+      params: { 
+        p_task_id: string,
+        p_tag_id: string
+      }
+    ): Promise<{ data: T; error: Error | null }>;
+    
+    rpc<T = any>(
+      fn: 'remove_tag_from_task',
+      params: { 
+        p_task_id: string,
+        p_tag_id: string
+      }
+    ): Promise<{ data: T; error: Error | null }>;
   }
 }

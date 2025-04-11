@@ -280,6 +280,10 @@ export type Database = {
         Args: { target_user_id: string; role_name: string }
         Returns: undefined
       }
+      append_tag_to_task: {
+        Args: { p_task_id: string; p_tag_id: string }
+        Returns: undefined
+      }
       get_user_emails: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -294,6 +298,10 @@ export type Database = {
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      remove_tag_from_task: {
+        Args: { p_task_id: string; p_tag_id: string }
+        Returns: undefined
       }
     }
     Enums: {
