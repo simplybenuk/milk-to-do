@@ -8,6 +8,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Task, Priority } from '@/types/task';
 import { Textarea } from './ui/textarea';
+import { TagSelector } from '@/components/TagSelector';
+import useTagStore from '@/stores/useTagStore';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -20,12 +22,14 @@ interface EditTaskDialogProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEdit: (id: string, title: string, priority: Priority) => Promise<void>;
+  onEdit: (id: string, title: string, priority: Priority, tagIds?: string[]) => Promise<void>;
 }
 
 export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDialogProps) {
   const { toast } = useToast();
   const [selectedPriority, setSelectedPriority] = useState<Priority>('medium');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const { fetchTags, addTagToTask, removeTagFromTask } = useTagStore();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -43,14 +47,35 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
         priority: task.priority,
       });
       setSelectedPriority(task.priority);
+      setSelectedTags(task.tags || []);
     }
   }, [task, form]);
+
+  useEffect(() => {
+    fetchTags();
+  }, [fetchTags]);
+
+  const handleSelectTag = (tagId: string) => {
+    if (!selectedTags.includes(tagId)) {
+      setSelectedTags([...selectedTags, tagId]);
+      if (task) {
+        addTagToTask(task.id, tagId);
+      }
+    }
+  };
+
+  const handleDeselectTag = (tagId: string) => {
+    setSelectedTags(selectedTags.filter(id => id !== tagId));
+    if (task) {
+      removeTagFromTask(task.id, tagId);
+    }
+  };
 
   const onSubmit = async (values: FormValues) => {
     if (!task) return;
     
     try {
-      await onEdit(task.id, values.title, selectedPriority);
+      await onEdit(task.id, values.title, selectedPriority, selectedTags);
       onOpenChange(false);
       toast({
         title: 'Task updated',
@@ -98,6 +123,18 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
               </Button>
             ))}
           </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Tags</label>
+            <TagSelector
+              selectedTags={selectedTags}
+              onSelectTag={handleSelectTag}
+              onDeselectTag={handleDeselectTag}
+              placeholder="Manage tags..."
+              taskId={task?.id}
+            />
+          </div>
+          
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

@@ -1,18 +1,26 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
 import { Plus } from 'lucide-react';
+import { TagSelector } from '@/components/TagSelector';
+import useTagStore from '@/stores/useTagStore';
 
 interface AddTaskDialogProps {
-  onAddTask: (title: string, priority: Priority, expiryDate: Date) => void;
+  onAddTask: (title: string, priority: Priority, expiryDate: Date, tagIds?: string[]) => void;
 }
 
 export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const { fetchTags } = useTagStore();
+
+  useEffect(() => {
+    fetchTags();
+  }, [fetchTags]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,10 +29,21 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
     // Set expiry date to 30 days from now
     const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     
-    onAddTask(title.trim(), priority, expiryDate);
+    onAddTask(title.trim(), priority, expiryDate, selectedTags);
     setTitle("");
     setPriority("medium");
+    setSelectedTags([]);
     setIsOpen(false);
+  };
+
+  const handleSelectTag = (tagId: string) => {
+    if (!selectedTags.includes(tagId)) {
+      setSelectedTags([...selectedTags, tagId]);
+    }
+  };
+
+  const handleDeselectTag = (tagId: string) => {
+    setSelectedTags(selectedTags.filter(id => id !== tagId));
   };
 
   return (
@@ -60,6 +79,17 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
               </Button>
             ))}
           </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Tags</label>
+            <TagSelector
+              selectedTags={selectedTags}
+              onSelectTag={handleSelectTag}
+              onDeselectTag={handleDeselectTag}
+              placeholder="Add tags..."
+            />
+          </div>
+          
           <Button type="submit" className="w-full">
             Add Task
           </Button>

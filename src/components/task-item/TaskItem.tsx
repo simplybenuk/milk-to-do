@@ -10,6 +10,8 @@ import { TaskMetadata } from './TaskMetadata';
 import { ParentTaskLink } from './ParentTaskLink';
 import { TaskActionButtons } from './TaskActionButtons';
 import { TaskMenu } from './buttons/TaskMenu';
+import { TaskTags } from './TaskTags';
+import useTagStore from '@/stores/useTagStore';
 
 interface TaskItemProps {
   task: Task;
@@ -40,6 +42,7 @@ export function TaskItem({
 }: TaskItemProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { removeTagFromTask } = useTagStore();
 
   // Get child tasks if this is a parent task
   const childTasks = task.child_task_ids?.length > 0 && allTasks?.length > 0
@@ -70,6 +73,10 @@ export function TaskItem({
   const handleComplete = (id: string) => {
     setIsCompleting(true);
     onComplete(id);
+  };
+
+  const handleRemoveTag = (tagId: string) => {
+    removeTagFromTask(task.id, tagId);
   };
 
   return (
@@ -108,6 +115,16 @@ export function TaskItem({
           <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words pr-8">
             <TextWithLinks text={task.title} />
           </h3>
+          
+          {/* Task tags */}
+          {task.tags && task.tags.length > 0 && (
+            <TaskTags 
+              taskId={task.id} 
+              tags={task.tags} 
+              onRemoveTag={!inFocusMode ? handleRemoveTag : undefined}
+              className="mb-3"
+            />
+          )}
           
           {/* Task metadata section */}
           <TaskMetadata task={task} />
@@ -166,4 +183,3 @@ export function TaskItem({
     </>
   );
 }
-

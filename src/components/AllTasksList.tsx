@@ -2,17 +2,20 @@
 import { TaskItem } from './task-item';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SplitTaskDialog } from './SplitTaskDialog';
 import { EditTaskDialog } from './EditTaskDialog';
 import { UpgradeToProDialog } from './UpgradeToProDialog';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ClosedStatusReason, Task, Priority } from '@/types/task';
+import { TaskTagFilter } from './TaskTagFilter';
+import { useSearchParams } from 'react-router-dom';
 
 export function AllTasksList() {
   const { tasks, deleteTask, completeTask, editTask, fetchTasks } = useTaskStore();
   const { toast } = useToast();
   const { isPro } = useSubscription();
+  const [searchParams] = useSearchParams();
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
   const [showSplitDialog, setShowSplitDialog] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
@@ -22,11 +25,17 @@ export function AllTasksList() {
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [upgradeFeatureName, setUpgradeFeatureName] = useState<string>("");
   
+  // Filter tasks by tags
+  const selectedTagIds = searchParams.get('tags')?.split(',') || [];
+  
   // Get all open tasks, excluding expired ones
   const openTasks = tasks.filter(task => 
     task.status === 'open' && 
     // Ensure expiry_date is valid and greater than or equal to the current date
-    new Date(task.expiry_date) >= new Date()
+    new Date(task.expiry_date) >= new Date() &&
+    // Filter by selected tags if any
+    (selectedTagIds.length === 0 || 
+      task.tags?.some(tagId => selectedTagIds.includes(tagId)))
   );
   
   // Get relevant parents for the filtered open tasks
@@ -98,8 +107,8 @@ export function AllTasksList() {
     setShowEditDialog(true);
   };
 
-  const handleSaveEdit = async (id: string, title: string, priority: Priority) => {
-    await editTask(id, title, priority);
+  const handleSaveEdit = async (id: string, title: string, priority: Priority, tagIds?: string[]) => {
+    await editTask(id, title, priority, tagIds);
   };
 
   const handleSplitComplete = async () => {
@@ -110,6 +119,9 @@ export function AllTasksList() {
 
   return (
     <div className="w-full max-w-full space-y-4 px-2">
+      {/* Tag filter component */}
+      <TaskTagFilter />
+      
       {topLevelOpenTasks.length === 0 && relevantParents.length === 0 ? (
         <p className="text-center text-milk-500">No tasks available</p>
       ) : (

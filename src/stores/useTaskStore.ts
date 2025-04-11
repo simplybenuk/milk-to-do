@@ -33,12 +33,12 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
-  addTask: async (title, priority, expiryDate, parentId) => {
+  addTask: async (title, priority, expiryDate, parentId, tagIds = []) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
-      await addTaskToDB(title, priority, expiryDate, user.id, parentId);
+      await addTaskToDB(title, priority, expiryDate, user.id, parentId, tagIds);
       await get().fetchTasks();
     } catch (error) {
       console.error('Error adding task:', error);
@@ -46,13 +46,13 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
-  editTask: async (id, title, priority) => {
+  editTask: async (id, title, priority, tagIds) => {
     try {
-      await updateTaskInDB(id, { title, priority });
+      await updateTaskInDB(id, { title, priority, tags: tagIds });
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id
-            ? { ...task, title, priority }
+            ? { ...task, title, priority, tags: tagIds || task.tags }
             : task
         ),
       }));
