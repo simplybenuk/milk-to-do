@@ -1,5 +1,5 @@
 
-import { AllTasksList } from '@/components/AllTasksList';
+import { AllTasksList } from '@/components/all-tasks';
 import { ClosedTasksList } from '@/components/ClosedTasksList';
 import { TaskStats } from '@/components/TaskStats';
 import { CurrentTask } from '@/components/CurrentTask';
