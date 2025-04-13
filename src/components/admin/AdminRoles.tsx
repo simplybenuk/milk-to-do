@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Role {
   id: string;
@@ -37,6 +38,7 @@ export function AdminRoles() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
+  const isMobile = useIsMobile();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -149,7 +151,7 @@ export function AdminRoles() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className={`grid gap-4 ${isMobile ? '' : 'md:grid-cols-2'}`}>
               <FormField
                 control={form.control}
                 name="userId"
@@ -164,7 +166,7 @@ export function AdminRoles() {
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a user" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-60 overflow-y-auto z-50">
                         {users.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             {getUserDisplayName(user)}
@@ -190,7 +192,7 @@ export function AdminRoles() {
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-50">
                         {roles.map((role) => (
                           <SelectItem key={role.id} value={role.id}>
                             {role.name}
@@ -203,7 +205,7 @@ export function AdminRoles() {
               />
             </div>
             
-            <Button type="submit" disabled={loading} className="flex gap-2">
+            <Button type="submit" disabled={loading} className="flex gap-2 w-full sm:w-auto">
               <Shield className="h-4 w-4" />
               Assign Role
             </Button>
