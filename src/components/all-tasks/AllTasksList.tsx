@@ -14,7 +14,7 @@ import { useAllTasksView } from './useAllTasksView';
 export function AllTasksList() {
   const { deleteTask, completeTask, editTask, fetchTasks } = useTaskStore();
   const { toast } = useToast();
-  const { isPro } = useSubscription();
+  const { isPro, canEditTasks } = useSubscription();
   
   const [showSplitDialog, setShowSplitDialog] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
@@ -50,7 +50,7 @@ export function AllTasksList() {
   };
 
   const handleCreateChildTask = (parentId: string, parentTitle: string) => {
-    if (!isPro) {
+    if (!canEditTasks && !isPro) {
       setUpgradeFeatureName("Split Task");
       setShowUpgradeDialog(true);
       return;
@@ -62,7 +62,7 @@ export function AllTasksList() {
   };
 
   const handleEditTask = (task: Task) => {
-    if (!isPro) {
+    if (!canEditTasks && !isPro) {
       setUpgradeFeatureName("Edit Task");
       setShowUpgradeDialog(true);
       return;

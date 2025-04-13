@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminUsers } from '@/components/admin/AdminUsers';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { AdminRoles } from '@/components/admin/AdminRoles';
+import { FeatureFlags } from '@/components/admin/FeatureFlags';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -129,13 +129,13 @@ const Admin = () => {
           <Tabs defaultValue="users" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="roles">Roles</TabsTrigger>
+              <TabsTrigger value="features">Features</TabsTrigger>
             </TabsList>
             <TabsContent value="users" className="mt-4">
               <AdminUsers />
             </TabsContent>
-            <TabsContent value="roles" className="mt-4">
-              <AdminRoles />
+            <TabsContent value="features" className="mt-4">
+              <FeatureFlags />
             </TabsContent>
           </Tabs>
         </div>
@@ -153,7 +153,7 @@ const Admin = () => {
             <AdminUsers />
           </div>
           <div className="lg:col-span-2">
-            <AdminRoles />
+            <FeatureFlags />
           </div>
         </div>
       </div>

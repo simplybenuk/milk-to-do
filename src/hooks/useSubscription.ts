@@ -2,19 +2,31 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export function useSubscription() {
-  const [isPro, setIsPro] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export interface SubscriptionFeatures {
+  isPro: boolean;
+  canEditTasks: boolean;
+  isLoading: boolean;
+}
+
+export function useSubscription(): SubscriptionFeatures {
+  const [features, setFeatures] = useState<SubscriptionFeatures>({
+    isPro: false,
+    canEditTasks: false,
+    isLoading: true
+  });
 
   useEffect(() => {
     const checkSubscription = async () => {
-      setIsLoading(true);
       try {
         // Get the current user
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
-          setIsPro(false);
+          setFeatures({
+            isPro: false,
+            canEditTasks: false,
+            isLoading: false
+          });
           return;
         }
 
@@ -28,16 +40,21 @@ export function useSubscription() {
           .eq('id', user.id)
           .single();
 
-        if (profile?.plans?.can_edit_tasks) {
-          setIsPro(true);
-        } else {
-          setIsPro(false);
-        }
+        const isPro = profile?.plans?.name === 'Pro';
+        const canEditTasks = profile?.plans?.can_edit_tasks || false;
+
+        setFeatures({
+          isPro,
+          canEditTasks,
+          isLoading: false
+        });
       } catch (error) {
         console.error('Error checking subscription:', error);
-        setIsPro(false);
-      } finally {
-        setIsLoading(false);
+        setFeatures({
+          isPro: false,
+          canEditTasks: false,
+          isLoading: false
+        });
       }
     };
 
@@ -53,8 +70,5 @@ export function useSubscription() {
     };
   }, []);
 
-  return {
-    isPro,
-    isLoading,
-  };
+  return features;
 }
