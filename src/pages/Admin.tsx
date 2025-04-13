@@ -5,18 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminUsers } from '@/components/admin/AdminUsers';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { AdminRoles } from '@/components/admin/AdminRoles';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Shield } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Admin = () => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   // Use React Query to fetch and cache user roles
   const { data: userRoles, isLoading, error } = useQuery({
@@ -120,42 +116,12 @@ const Admin = () => {
     );
   }
 
-  // On mobile, use tabs for navigation between sections
-  if (isMobile) {
-    return (
-      <PageContainer inFocusMode={false}>
-        <div className="space-y-4 py-4">
-          <AdminHeader />
-          <Tabs defaultValue="users" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="roles">Roles</TabsTrigger>
-            </TabsList>
-            <TabsContent value="users" className="mt-4">
-              <AdminUsers />
-            </TabsContent>
-            <TabsContent value="roles" className="mt-4">
-              <AdminRoles />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </PageContainer>
-    );
-  }
-
-  // Desktop layout
+  // Only render admin dashboard when user is confirmed as admin
   return (
     <PageContainer inFocusMode={false}>
       <div className="space-y-8 py-4">
         <AdminHeader />
-        <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
-          <div className="lg:col-span-2">
-            <AdminUsers />
-          </div>
-          <div className="lg:col-span-2">
-            <AdminRoles />
-          </div>
-        </div>
+        <AdminUsers />
       </div>
     </PageContainer>
   );
