@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
-import { Plus } from 'lucide-react';
+import { Plus, Tag as TagIcon } from 'lucide-react';
 import { TagSelector } from '@/components/TagSelector';
+import { TagBadge } from '@/components/TagBadge';
 import useTagStore from '@/stores/useTagStore';
 
 interface AddTaskDialogProps {
@@ -16,7 +16,8 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   const [priority, setPriority] = useState<Priority>("medium");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const { fetchTags } = useTagStore();
+  const [showTagSelector, setShowTagSelector] = useState(false);
+  const { tags, fetchTags } = useTagStore();
 
   useEffect(() => {
     fetchTags();
@@ -26,7 +27,6 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
     e.preventDefault();
     if (!title.trim()) return;
     
-    // Set expiry date to 30 days from now
     const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     
     onAddTask(title.trim(), priority, expiryDate, selectedTags);
@@ -36,14 +36,12 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
     setIsOpen(false);
   };
 
-  const handleSelectTag = (tagId: string) => {
-    if (!selectedTags.includes(tagId)) {
+  const handleTagClick = (tagId: string) => {
+    if (selectedTags.includes(tagId)) {
+      setSelectedTags(selectedTags.filter(id => id !== tagId));
+    } else {
       setSelectedTags([...selectedTags, tagId]);
     }
-  };
-
-  const handleDeselectTag = (tagId: string) => {
-    setSelectedTags(selectedTags.filter(id => id !== tagId));
   };
 
   return (
@@ -81,13 +79,48 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Tags</label>
-            <TagSelector
-              selectedTags={selectedTags}
-              onSelectTag={handleSelectTag}
-              onDeselectTag={handleDeselectTag}
-              placeholder="Add tags..."
-            />
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Tags</label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTagSelector(true)}
+                className="h-8 px-2"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                New tag
+              </Button>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <TagBadge
+                  key={tag.id}
+                  name={tag.name}
+                  interactive
+                  selected={selectedTags.includes(tag.id)}
+                  onClick={() => handleTagClick(tag.id)}
+                  onRemove={
+                    selectedTags.includes(tag.id)
+                      ? () => setSelectedTags(selectedTags.filter(id => id !== tag.id))
+                      : undefined
+                  }
+                />
+              ))}
+            </div>
+
+            {showTagSelector && (
+              <TagSelector
+                selectedTags={selectedTags}
+                onSelectTag={(tagId) => {
+                  setSelectedTags([...selectedTags, tagId]);
+                  setShowTagSelector(false);
+                }}
+                onDeselectTag={(tagId) => setSelectedTags(selectedTags.filter(id => id !== tagId))}
+                placeholder="Create new tag..."
+              />
+            )}
           </div>
           
           <Button type="submit" className="w-full">
