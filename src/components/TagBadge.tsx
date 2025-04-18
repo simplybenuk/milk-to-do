@@ -1,4 +1,3 @@
-
 import { X, Tag as TagIcon } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
@@ -19,15 +18,14 @@ export function TagBadge({
   interactive = false,
   selected = false
 }: TagBadgeProps) {
-  // Create a visually distinct tag design
   return (
     <div 
       className={cn(
         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium",
         "bg-purple-100 text-purple-800 border border-purple-200",
-        "hover:bg-purple-200 transition-colors",
+        "transition-colors",
         selected && "bg-purple-200 border-purple-300",
-        interactive && "cursor-pointer",
+        interactive && "cursor-pointer hover:bg-purple-200",
         !interactive && !onClick && "cursor-default"
       )}
       onClick={onClick}
