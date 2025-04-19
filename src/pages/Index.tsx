@@ -48,9 +48,9 @@ const Index = () => {
         
         {/* Only show the AddTaskDialog when not in focus mode */}
         {!inFocusMode && (
-          <AddTaskDialog onAddTask={(title, priority, expiryDate) => {
+          <AddTaskDialog onAddTask={(title, priority, expiryDate, tagIds) => {
             const { addTask } = useTaskStore.getState();
-            addTask(title, priority, expiryDate);
+            addTask(title, priority, expiryDate, undefined, tagIds);
           }} />
         )}
       </div>

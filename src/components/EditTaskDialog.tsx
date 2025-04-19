@@ -1,22 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Priority, Task } from '@/types/task';
 import { useToast } from '@/hooks/use-toast';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Task, Priority } from '@/types/task';
-import { Textarea } from './ui/textarea';
-import { TagSelector } from '@/components/TagSelector';
+import { Tag as TagIcon } from 'lucide-react';
+import { TagBadge } from '@/components/TagBadge';
 import useTagStore from '@/stores/useTagStore';
-
-const formSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  priority: z.enum(['high', 'medium', 'low']),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 interface EditTaskDialogProps {
   task: Task | null;
@@ -27,55 +17,32 @@ interface EditTaskDialogProps {
 
 export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDialogProps) {
   const { toast } = useToast();
-  const [selectedPriority, setSelectedPriority] = useState<Priority>('medium');
+  const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState<Priority>("medium");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const { fetchTags, addTagToTask, removeTagFromTask } = useTagStore();
-  
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: '',
-      priority: 'medium' as Priority,
-    },
-  });
-
-  // Reset form and selected priority when task changes
-  useEffect(() => {
-    if (task) {
-      form.reset({
-        title: task.title,
-        priority: task.priority,
-      });
-      setSelectedPriority(task.priority);
-      setSelectedTags(task.tags || []);
-    }
-  }, [task, form]);
+  const { tags, fetchTags, createTag } = useTagStore();
+  const [newTagName, setNewTagName] = useState('');
+  const [isCreatingNewTag, setIsCreatingNewTag] = useState(false);
 
   useEffect(() => {
     fetchTags();
   }, [fetchTags]);
 
-  const handleSelectTag = (tagId: string) => {
-    if (!selectedTags.includes(tagId)) {
-      setSelectedTags([...selectedTags, tagId]);
-      if (task) {
-        addTagToTask(task.id, tagId);
-      }
-    }
-  };
-
-  const handleDeselectTag = (tagId: string) => {
-    setSelectedTags(selectedTags.filter(id => id !== tagId));
+  // Reset form and selected priority when task changes
+  useEffect(() => {
     if (task) {
-      removeTagFromTask(task.id, tagId);
+      setTitle(task.title);
+      setPriority(task.priority);
+      setSelectedTags(task.tags || []);
     }
-  };
+  }, [task]);
 
-  const onSubmit = async (values: FormValues) => {
-    if (!task) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!task || !title.trim()) return;
     
     try {
-      await onEdit(task.id, values.title, selectedPriority, selectedTags);
+      await onEdit(task.id, title.trim(), priority, selectedTags);
       onOpenChange(false);
       toast({
         title: 'Task updated',
@@ -91,32 +58,45 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
     }
   };
 
+  const handleTagClick = (tagId: string) => {
+    if (selectedTags.includes(tagId)) {
+      setSelectedTags(selectedTags.filter(id => id !== tagId));
+    } else {
+      setSelectedTags([...selectedTags, tagId]);
+    }
+  };
+
+  const handleCreateNewTag = async () => {
+    if (!newTagName.trim()) return;
+    
+    const newTag = await createTag(newTagName.trim());
+    if (newTag) {
+      setSelectedTags([...selectedTags, newTag.id]);
+      setNewTagName('');
+      setIsCreatingNewTag(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="animate-slide-up sm:max-w-[425px] pb-6">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
-          <DialogDescription>
-            Make changes to your task here. Click save when you're done.
-          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-          <Textarea
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          <textarea
             placeholder="What needs to be done?"
-            value={form.watch('title')}
-            onChange={(e) => form.setValue('title', e.target.value)}
-            className="min-h-[100px] resize-none"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[100px] resize-none"
           />
           <div className="flex gap-2">
             {(["low", "medium", "high"] as Priority[]).map((p) => (
               <Button
                 key={p}
                 type="button"
-                variant={selectedPriority === p ? "default" : "outline"}
-                onClick={() => {
-                  setSelectedPriority(p);
-                  form.setValue('priority', p);
-                }}
+                variant={priority === p ? "default" : "outline"}
+                onClick={() => setPriority(p)}
                 className="flex-1 capitalize"
               >
                 {p}
@@ -126,23 +106,58 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
           
           <div className="space-y-2">
             <label className="text-sm font-medium">Tags</label>
-            <TagSelector
-              selectedTags={selectedTags}
-              onSelectTag={handleSelectTag}
-              onDeselectTag={handleDeselectTag}
-              placeholder="Manage tags..."
-              taskId={task?.id}
-            />
+            <div className="flex flex-wrap gap-2 items-center">
+              {tags.map((tag) => (
+                <TagBadge
+                  key={tag.id}
+                  name={tag.name}
+                  interactive
+                  selected={selectedTags.includes(tag.id)}
+                  onClick={() => handleTagClick(tag.id)}
+                  onRemove={
+                    selectedTags.includes(tag.id)
+                      ? () => setSelectedTags(selectedTags.filter(id => id !== tag.id))
+                      : undefined
+                  }
+                />
+              ))}
+              {!isCreatingNewTag ? (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-2 opacity-70 hover:opacity-100"
+                  onClick={() => setIsCreatingNewTag(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  New tag
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateNewTag()}
+                    placeholder="Tag name" 
+                    className="border rounded px-2 py-1 text-sm w-32"
+                  />
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    onClick={handleCreateNewTag}
+                    disabled={!newTagName.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
           
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">
-              Save Changes
-            </Button>
-          </div>
+          <Button type="submit" className="w-full">
+            Save Changes
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
