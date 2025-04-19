@@ -24,16 +24,25 @@ const useTaskStore = create<TaskStore>((set, get) => {
     set((state) => ({ ...state, ...newState }));
   };
 
-  const coreActions = getCoreTaskActions(get().tasks, setState, set, get);
-  const focusModeActions = () => getFocusModeActions(get().tasks);
-  const decayActions = () => getDecayActions(get().tasks, (tasks) => set({ tasks }));
-
-  return {
-    // Initial state
+  // Initialize with defaults
+  const initialState: TaskStoreState = {
     tasks: [],
     isLoading: false,
     error: null,
-    sessionId: crypto.randomUUID(),
+    sessionId: crypto.randomUUID()
+  };
+
+  // Get tasks accessor function
+  const getTasks = () => get().tasks;
+
+  // Initialize actions with proper dependencies
+  const coreActions = getCoreTaskActions(setState, set, get);
+  const focusModeActions = getFocusModeActions(getTasks);
+  const decayActions = getDecayActions(() => get().tasks, (tasks) => set({ tasks }));
+
+  return {
+    // Initial state
+    ...initialState,
 
     // Core task operations
     ...coreActions,
@@ -93,7 +102,7 @@ const useTaskStore = create<TaskStore>((set, get) => {
     },
 
     // Focus mode and utility actions
-    ...focusModeActions(),
+    ...focusModeActions,
     ...decayActions()
   };
 });

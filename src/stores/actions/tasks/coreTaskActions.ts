@@ -1,5 +1,5 @@
 
-import { Task, Priority } from '@/types/task';
+import { Task, Priority, ClosedStatusReason } from '@/types/task';
 import { TaskStoreState } from '../../types/taskStoreState.types';
 import { 
   addTaskToDB, 
@@ -11,10 +11,9 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 
 export const getCoreTaskActions = (
-  tasks: Task[],
   setState: (newState: Partial<TaskStoreState>) => void,
   set: (fn: (state: { tasks: Task[] }) => { tasks: Task[] }) => void,
-  get: () => { fetchTasks: () => Promise<void> }
+  get: () => { tasks: Task[]; fetchTasks: () => Promise<void> }
 ) => ({
   fetchTasks: async () => {
     setState({ isLoading: true, error: null });
@@ -60,7 +59,7 @@ export const getCoreTaskActions = (
     }
   },
 
-  completeTask: async (id: string, reason = 'complete') => {
+  completeTask: async (id: string, reason: ClosedStatusReason = 'complete') => {
     try {
       await completeTaskInDB(id, reason);
       set(state => ({
