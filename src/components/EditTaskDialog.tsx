@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Priority, Task } from '@/types/task';
 import { useToast } from '@/hooks/use-toast';
-import { Tag as TagIcon } from 'lucide-react';
+import { Tag as TagIcon, Plus } from 'lucide-react';  // Added Plus import here
 import { TagBadge } from '@/components/TagBadge';
 import useTagStore from '@/stores/useTagStore';
 
