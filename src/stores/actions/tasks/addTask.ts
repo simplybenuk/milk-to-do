@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Priority, Task } from '@/types/task';
+import { Priority, Task, TaskStatus } from '@/types/task';
 import { convertDatabaseDatesToDateObjects } from '../../utils/taskUtils';
 
 export const addTaskToDB = async (
@@ -16,7 +16,7 @@ export const addTaskToDB = async (
     priority,
     expiry_date: expiryDate.toISOString(),
     parent_id: parentId || null,
-    status: 'open',
+    status: 'open' as TaskStatus, // Explicitly type as TaskStatus
     owner_id: userId,
     skip_count: 0,
     child_task_ids: [],
