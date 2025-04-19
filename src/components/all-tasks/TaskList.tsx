@@ -29,13 +29,13 @@ export function TaskList({
   }
 
   return (
-    <>
+    <div className="w-full space-y-4">
       {/* Display relevant closed parent tasks first */}
       {relevantParents.map((task) => (
         <div 
           key={task.id} 
           id={`task-${task.id}`}
-          className={`transition-all duration-500 ${
+          className={`transition-all duration-500 w-full ${
             focusParentId === task.id ? 'ring-2 ring-blue-400 ring-offset-2' : ''
           }`}
         >
@@ -59,7 +59,7 @@ export function TaskList({
         <div 
           key={task.id} 
           id={`task-${task.id}`}
-          className={`transition-all duration-500 ${
+          className={`transition-all duration-500 w-full ${
             focusParentId === task.id ? 'ring-2 ring-blue-400 ring-offset-2' : ''
           }`}
         >
@@ -80,6 +80,6 @@ export function TaskList({
       
       {/* Add bottom padding to prevent overlap with floating add button on mobile */}
       <div className="h-24 md:h-20" />
-    </>
+    </div>
   );
 }

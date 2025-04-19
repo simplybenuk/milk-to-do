@@ -84,7 +84,7 @@ export function TaskItem({
       <div
         className={cn(
           "relative flex flex-col rounded-lg border p-5 sm:p-6 shadow-lg transition-all w-full max-w-full",
-          "hover:shadow-xl animate-fade-in min-h-[140px]",
+          "hover:shadow-xl animate-fade-in min-h-[140px] mx-auto",
           isCompleting && "animate-task-complete",
           task.status === 'closed' && "opacity-50",
           // Add age-based color classes when task is open
