@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
 import { convertDatabaseDatesToDateObjects } from '../utils/taskUtils';
@@ -177,9 +178,14 @@ export const incrementSkipCountInDB = async (id: string): Promise<void> => {
 };
 
 export const updateLastSkippedSessionInDB = async (id: string, sessionId: string): Promise<void> => {
+  // Instead of directly using last_skipped_session in the update object, 
+  // let's update the tasks table with a data object we know is valid
+  const updates: any = {};
+  updates.last_skipped_session = sessionId;
+  
   const { error } = await supabase
     .from('tasks')
-    .update({ last_skipped_session: sessionId })
+    .update(updates)
     .eq('id', id);
 
   if (error) throw error;
