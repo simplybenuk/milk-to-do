@@ -10,14 +10,27 @@ import {
   updateTaskPriorityInDB,
   incrementSkipCountInDB,
   updateTaskInDB,
+  updateLastSkippedSessionInDB,
+  decaySkipCountsInDB,
 } from './actions/taskActions';
-import { calculateTaskStats, sortTasksByPriority } from './utils/taskUtils';
+import { 
+  calculateTaskStats, 
+  sortTasksByPriority 
+} from './utils/taskUtils';
+import { 
+  sortTasksForFocusMode, 
+  hasNewDayStarted,
+  calculateDecayedSkipCount
+} from './utils/taskScoring';
 import { ClosedStatusReason, Priority } from '@/types/task';
+
+const LAST_DECAY_CHECK_KEY = 'sourlist_last_decay_check';
 
 const useTaskStore = create<TaskStore>((set, get) => ({
   tasks: [],
   isLoading: false,
   error: null,
+  sessionId: crypto.randomUUID(), // Generate unique session ID
 
   fetchTasks: async () => {
     set({ isLoading: true, error: null });
@@ -25,6 +38,9 @@ const useTaskStore = create<TaskStore>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
+      // Check for midnight decay when fetching tasks
+      await get().checkAndApplyDecay();
+      
       const tasks = await fetchTasksFromDB(user.id);
       set({ tasks, isLoading: false });
     } catch (error) {
@@ -118,16 +134,39 @@ const useTaskStore = create<TaskStore>((set, get) => ({
 
   incrementSkipCount: async (id) => {
     try {
+      const { sessionId } = get();
+      const task = get().tasks.find(task => task.id === id);
+      
+      // Skip if task doesn't exist
+      if (!task) {
+        console.error('Task not found:', id);
+        return;
+      }
+      
+      // Skip if the task was already skipped in this session
+      if (task.last_skipped_session === sessionId) {
+        console.log('Task already skipped in this session:', id);
+        return;
+      }
+      
+      // Update the task in the database
       await incrementSkipCountInDB(id);
+      await updateLastSkippedSessionInDB(id, sessionId);
+      
       // Update local state to show the skip immediately
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id
-            ? { ...task, skip_count: task.skip_count + 1 }
+            ? { 
+                ...task, 
+                skip_count: task.skip_count + 1,
+                last_skipped_session: sessionId
+              }
             : task
         ),
       }));
-      // Then fetch full task list for accurate priority scores
+      
+      // Then fetch full task list for accurate sorting
       await get().fetchTasks();
     } catch (error) {
       console.error('Error incrementing skip count:', error);
@@ -135,8 +174,55 @@ const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
+  decaySkipCounts: async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user logged in');
+      
+      // Update the last decay check timestamp
+      localStorage.setItem(LAST_DECAY_CHECK_KEY, new Date().toISOString());
+      
+      // Perform the decay operation in the database
+      await decaySkipCountsInDB(user.id);
+      
+      // Update local state with decayed skip counts
+      set(state => ({
+        tasks: state.tasks.map(task => ({
+          ...task,
+          skip_count: calculateDecayedSkipCount(task.skip_count)
+        }))
+      }));
+      
+      console.log('Skip counts decayed successfully');
+    } catch (error) {
+      console.error('Error decaying skip counts:', error);
+      set({ error: 'Failed to decay skip counts' });
+    }
+  },
+
+  checkAndApplyDecay: async () => {
+    try {
+      // Get the timestamp of the last decay check
+      const lastCheckStr = localStorage.getItem(LAST_DECAY_CHECK_KEY);
+      
+      // If no previous check or a new day has started since the last check
+      if (!lastCheckStr || hasNewDayStarted(new Date(lastCheckStr))) {
+        console.log('Applying nightly skip count decay...');
+        await get().decaySkipCounts();
+      }
+    } catch (error) {
+      console.error('Error checking/applying decay:', error);
+    }
+  },
+
   getTasksByPriority: () => {
     return sortTasksByPriority(get().tasks);
+  },
+
+  getSortedTasksForFocusMode: () => {
+    // Filter for open tasks only, then sort by our focus mode criteria
+    const openTasks = get().tasks.filter(task => task.status === 'open');
+    return sortTasksForFocusMode(openTasks);
   },
 
   getTaskStats: () => {

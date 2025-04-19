@@ -17,6 +17,7 @@ export interface Task {
   parent_id?: string;
   child_task_ids: string[];
   skip_count: number;
+  last_skipped_session?: string;
   tags: string[];
   priority_score: number;
 }

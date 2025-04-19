@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { Task } from '@/types/task';
 
 export function useFocusTasks(inFocusMode: boolean) {
-  const { getTasksByPriority } = useTaskStore();
+  const { getSortedTasksForFocusMode } = useTaskStore();
   const [focusTaskOrder, setFocusTaskOrder] = useState<Task[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   
@@ -14,17 +13,19 @@ export function useFocusTasks(inFocusMode: boolean) {
     if (inFocusMode) {
       const currentDate = new Date();
       
-      // Filter tasks to include only those that are open and not expired
-      const openTasks = getTasksByPriority().filter(task => 
-        task.status === 'open' && 
+      // Get tasks sorted using our new focus mode sorting algorithm
+      const sortedTasks = getSortedTasksForFocusMode();
+      
+      // Filter out any expired tasks
+      const validTasks = sortedTasks.filter(task => 
         new Date(task.expiry_date) >= currentDate
       );
       
-      console.log('Initializing focus tasks with', openTasks.length, 'tasks');
-      setFocusTaskOrder(openTasks);
+      console.log('Initializing focus tasks with', validTasks.length, 'tasks');
+      setFocusTaskOrder(validTasks);
       setCurrentIndex(0);
     }
-  }, [inFocusMode, getTasksByPriority]);
+  }, [inFocusMode, getSortedTasksForFocusMode]);
   
   // Reset focus session when leaving focus mode
   useEffect(() => {

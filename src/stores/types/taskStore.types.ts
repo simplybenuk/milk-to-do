@@ -5,6 +5,7 @@ export interface TaskStore {
   tasks: Task[];
   isLoading: boolean;
   error: string | null;
+  sessionId: string;
   fetchTasks: () => Promise<void>;
   addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string, tagIds?: string[]) => Promise<void>;
   editTask: (id: string, title: string, priority: Priority, tagIds?: string[]) => Promise<void>;
@@ -12,7 +13,10 @@ export interface TaskStore {
   deleteTask: (id: string) => Promise<void>;
   updateTaskPriority: (id: string, priority: Priority) => Promise<void>;
   incrementSkipCount: (id: string) => Promise<void>;
+  decaySkipCounts: () => Promise<void>;
+  checkAndApplyDecay: () => Promise<void>;
   getTasksByPriority: () => Task[];
+  getSortedTasksForFocusMode: () => Task[];
   getTaskStats: () => TaskStats;
 }
 

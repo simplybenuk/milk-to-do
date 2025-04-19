@@ -14,27 +14,16 @@ port = 54323
 
 [inbucket]
 port = 54324
-smtp_port = 54325
-pop3_port = 54326
-
-[storage]
-enabled = true
 
 [auth]
 enabled = true
+port = 54325
 
 [realtime]
 enabled = true
 
-[analytics]
-enabled = false
+[storage]
+enabled = true
 
-[vector]
-enabled = false
-
-[functions]
-[functions.stripe-webhook]
+[functions.decay-skip-counts]
 verify_jwt = false
-[functions.create-checkout]
-verify_jwt = true
-

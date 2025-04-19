@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Task, Priority, TaskStatus, ClosedStatusReason } from '@/types/task';
 import { convertDatabaseDatesToDateObjects } from '../utils/taskUtils';
@@ -42,7 +41,6 @@ export const addTaskToDB = async (
 
   if (error) throw error;
   
-  // If this task has a parent, update the parent's child_task_ids array
   if (parentId) {
     const { data: parentTask, error: fetchError } = await supabase
       .from('tasks')
@@ -62,7 +60,6 @@ export const addTaskToDB = async (
     }
   }
   
-  // Create task_tags associations if tags are provided
   if (tagIds && tagIds.length > 0) {
     const taskTagRelations = tagIds.map(tagId => ({
       task_id: data.id,
@@ -90,9 +87,7 @@ export const updateTaskInDB = async (
 
   if (error) throw error;
   
-  // If tags are updated, sync the task_tags relationships
   if (updates.tags) {
-    // First, get current task_tags relationships
     const { data: currentRelations, error: fetchError } = await supabase
       .from('task_tags')
       .select('tag_id')
@@ -106,11 +101,9 @@ export const updateTaskInDB = async (
     const currentTagIds = currentRelations.map(rel => rel.tag_id);
     const newTagIds = updates.tags || [];
     
-    // Find tags to add and remove
     const tagsToAdd = newTagIds.filter(tagId => !currentTagIds.includes(tagId));
     const tagsToRemove = currentTagIds.filter(tagId => !newTagIds.includes(tagId));
     
-    // Add new relations
     if (tagsToAdd.length > 0) {
       const newRelations = tagsToAdd.map(tagId => ({
         task_id: id,
@@ -124,7 +117,6 @@ export const updateTaskInDB = async (
       if (addError) console.error('Error adding new task-tag relations:', addError);
     }
     
-    // Remove old relations
     if (tagsToRemove.length > 0) {
       for (const tagId of tagsToRemove) {
         const { error: deleteError } = await supabase
@@ -153,7 +145,6 @@ export const completeTaskInDB = async (id: string, reason: ClosedStatusReason = 
 };
 
 export const deleteTaskFromDB = async (id: string): Promise<void> => {
-  // First, delete related task_tags entries
   const { error: tagsError } = await supabase
     .from('task_tags')
     .delete()
@@ -161,7 +152,6 @@ export const deleteTaskFromDB = async (id: string): Promise<void> => {
 
   if (tagsError) console.error('Error deleting task-tag relations:', tagsError);
   
-  // Then delete the task
   const { error } = await supabase
     .from('tasks')
     .delete()
@@ -184,4 +174,37 @@ export const incrementSkipCountInDB = async (id: string): Promise<void> => {
     .rpc('increment', { row_id: id });
 
   if (error) throw error;
+};
+
+export const updateLastSkippedSessionInDB = async (id: string, sessionId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('tasks')
+    .update({ last_skipped_session: sessionId })
+    .eq('id', id);
+
+  if (error) throw error;
+};
+
+export const decaySkipCountsInDB = async (userId: string): Promise<void> => {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('id, skip_count')
+    .eq('owner_id', userId);
+
+  if (error) throw error;
+  
+  for (const task of data) {
+    if (task.skip_count > 0) {
+      const newSkipCount = Math.floor(task.skip_count / 2);
+      
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({ skip_count: newSkipCount })
+        .eq('id', task.id);
+        
+      if (updateError) {
+        console.error('Error decaying skip count for task:', task.id, updateError);
+      }
+    }
+  }
 };
