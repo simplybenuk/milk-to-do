@@ -16,16 +16,16 @@ export function ViewContent({ currentView, inFocusMode }: ViewContentProps) {
   // If not in focus mode, render the appropriate view directly
   if (!inFocusMode) {
     return (
-      <>
+      <div className="w-full">
         {currentView === 'main' && (
-          <div className="flex flex-col items-center justify-center py-8">
+          <div className="flex flex-col items-center justify-center py-8 w-full">
             <p className="text-milk-500 text-center mb-4">Switch to Focus Mode to see your prioritized tasks.</p>
           </div>
         )}
         {currentView === 'all' && <AllTasksList />}
         {currentView === 'closed' && <ClosedTasksList />}
         {currentView === 'stats' && <TaskStats />}
-      </>
+      </div>
     );
   }
   
@@ -52,16 +52,18 @@ export function ViewContent({ currentView, inFocusMode }: ViewContentProps) {
   };
   
   return (
-    <MainContent 
-      currentView={currentView}
-      currentTask={currentTask}
-      onComplete={handleComplete}
-      onSkip={handleSkip}
-      onReturnToTop={handleReturnToTop}
-      currentIndex={currentIndex}
-      totalTasks={focusTaskOrder.length}
-      inFocusMode={inFocusMode}
-      onExitFocusMode={handleExitFocusMode}
-    />
+    <div className="w-full">
+      <MainContent 
+        currentView={currentView}
+        currentTask={currentTask}
+        onComplete={handleComplete}
+        onSkip={handleSkip}
+        onReturnToTop={handleReturnToTop}
+        currentIndex={currentIndex}
+        totalTasks={focusTaskOrder.length}
+        inFocusMode={inFocusMode}
+        onExitFocusMode={handleExitFocusMode}
+      />
+    </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
@@ -91,6 +92,7 @@ export function TaskItem({
           // Add a soft purple background for parent tasks
           isParentTask && "bg-[#F1F0FB]"
         )}
+        style={{ width: '100%' }} // Explicitly set width to 100%
       >
         {/* Position menu at top right */}
         <div className="absolute top-3 right-2">
@@ -102,7 +104,7 @@ export function TaskItem({
           />
         </div>
 
-        <div className="flex-1 min-w-0 overflow-hidden break-words mb-2">
+        <div className="flex-1 min-w-0 overflow-hidden break-words mb-2 w-full">
           {/* Parent task link with added props */}
           <ParentTaskLink 
             parentId={parentId} 
@@ -111,7 +113,7 @@ export function TaskItem({
             parentTitle={parentTitle}
           />
           
-          <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words pr-8">
+          <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words pr-8 w-full">
             <TextWithLinks text={task.title} />
           </h3>
           
@@ -121,7 +123,7 @@ export function TaskItem({
               taskId={task.id} 
               tags={task.tags} 
               onRemoveTag={!inFocusMode ? handleRemoveTag : undefined}
-              className="mb-3"
+              className="mb-3 w-full"
             />
           )}
           
@@ -147,7 +149,7 @@ export function TaskItem({
         {/* Display child tasks section for parent tasks - always expanded in all tasks view */}
         {isParentTask && (
           <>
-            <div className="mb-3">
+            <div className="mb-3 w-full">
               <TaskActionButtons
                 task={task}
                 showCompleteButton={showCompleteButton}

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { TagBadge } from '@/components/TagBadge';
 import { Tag as TagIcon } from 'lucide-react';
@@ -35,13 +36,13 @@ export function TaskTagFilter() {
   };
   
   return (
-    <div className="mb-4">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="mb-4 w-full">
+      <div className="flex items-center gap-2 mb-3 w-full">
         <TagIcon className="h-4 w-4" />
         <span className="text-sm font-medium">Filters:</span>
       </div>
       
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 w-full">
         {tags.map((tag) => (
           <TagBadge
             key={tag.id}

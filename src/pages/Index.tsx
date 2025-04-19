@@ -22,36 +22,38 @@ const Index = () => {
 
   return (
     <PageContainer inFocusMode={inFocusMode}>
-      <TaskHeader
-        currentView={currentView}
-        onViewChange={setCurrentView}
-        inFocusMode={inFocusMode}
-      />
+      <div className="w-full">
+        <TaskHeader
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          inFocusMode={inFocusMode}
+        />
 
-      {/* Focus mode container handles all focus mode related components and logic */}
-      <FocusModeContainer
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        inFocusMode={inFocusMode}
-        setInFocusMode={setInFocusMode}
-        showExitConfirm={showExitConfirm}
-        setShowExitConfirm={setShowExitConfirm}
-        confirmExitFocusMode={confirmExitFocusMode}
-      />
-      
-      {/* Render content based on current view */}
-      <ViewContent 
-        currentView={currentView}
-        inFocusMode={inFocusMode}
-      />
-      
-      {/* Only show the AddTaskDialog when not in focus mode */}
-      {!inFocusMode && (
-        <AddTaskDialog onAddTask={(title, priority, expiryDate) => {
-          const { addTask } = useTaskStore.getState();
-          addTask(title, priority, expiryDate);
-        }} />
-      )}
+        {/* Focus mode container handles all focus mode related components and logic */}
+        <FocusModeContainer
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          inFocusMode={inFocusMode}
+          setInFocusMode={setInFocusMode}
+          showExitConfirm={showExitConfirm}
+          setShowExitConfirm={setShowExitConfirm}
+          confirmExitFocusMode={confirmExitFocusMode}
+        />
+        
+        {/* Render content based on current view */}
+        <ViewContent 
+          currentView={currentView}
+          inFocusMode={inFocusMode}
+        />
+        
+        {/* Only show the AddTaskDialog when not in focus mode */}
+        {!inFocusMode && (
+          <AddTaskDialog onAddTask={(title, priority, expiryDate) => {
+            const { addTask } = useTaskStore.getState();
+            addTask(title, priority, expiryDate);
+          }} />
+        )}
+      </div>
     </PageContainer>
   );
 }
