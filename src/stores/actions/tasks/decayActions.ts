@@ -1,4 +1,6 @@
 
+import { Task } from '@/types/task';
+import { supabase } from '@/integrations/supabase/client';
 import { hasNewDayStarted } from '../../utils/taskScoring';
 import { decaySkipCountsInDB } from './skipTask';
 
@@ -38,4 +40,3 @@ export const getDecayActions = (tasks: Task[], setTasks: (tasks: Task[]) => void
     }
   }
 });
-

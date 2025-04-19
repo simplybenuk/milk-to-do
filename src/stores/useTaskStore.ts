@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { TaskStore } from './types/taskStore.types';
 import { TaskStoreState } from './types/taskStoreState.types';
 import { supabase } from '@/integrations/supabase/client';
+import { Priority } from '@/types/task';
 import {
   fetchTasksFromDB,
   addTaskToDB,
@@ -11,6 +12,7 @@ import {
   incrementSkipCountInDB,
   updateTaskInDB,
   updateLastSkippedSessionInDB,
+  updateTaskPriorityInDB
 } from './actions/taskActions';
 import { getFocusModeActions } from './actions/tasks/focusModeActions';
 import { getDecayActions } from './actions/tasks/decayActions';
@@ -68,7 +70,7 @@ const useTaskStore = create<TaskStore>((set, get) => {
 
     editTask: async (id, title, priority, tagIds) => {
       try {
-        await updateTaskInDB(id, { title, priority, tags: tagIds });
+        await updateTaskInDB(id, { title, priority, tags: tagIds || [] });
         set(state => ({
           tasks: state.tasks.map(task =>
             task.id === id
@@ -116,6 +118,21 @@ const useTaskStore = create<TaskStore>((set, get) => {
       }
     },
 
+    updateTaskPriority: async (id, priority: Priority) => {
+      try {
+        await updateTaskPriorityInDB(id, priority);
+        set(state => ({
+          tasks: state.tasks.map(task =>
+            task.id === id ? { ...task, priority } : task
+          ),
+        }));
+        await get().fetchTasks();
+      } catch (error) {
+        console.error('Error updating task priority:', error);
+        setState({ error: 'Failed to update task priority' });
+      }
+    },
+
     incrementSkipCount: async (id) => {
       try {
         const { sessionId } = get();
@@ -160,4 +177,3 @@ const useTaskStore = create<TaskStore>((set, get) => {
 });
 
 export default useTaskStore;
-

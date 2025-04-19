@@ -1,7 +1,7 @@
 
 import { Task } from '@/types/task';
-import { calculateTaskStats, sortTasksByPriority } from '../utils/taskUtils';
-import { sortTasksForFocusMode } from '../utils/taskScoring';
+import { calculateTaskStats, sortTasksByPriority } from '../../utils/taskUtils';
+import { sortTasksForFocusMode } from '../../utils/taskScoring';
 
 export const getFocusModeActions = (tasks: Task[]) => ({
   getTasksByPriority: () => {
@@ -17,4 +17,3 @@ export const getFocusModeActions = (tasks: Task[]) => ({
     return calculateTaskStats(tasks);
   }
 });
-
