@@ -1,3 +1,4 @@
+
 import { X, Tag as TagIcon } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
@@ -21,16 +22,20 @@ export function TagBadge({
   return (
     <div 
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium",
-        "bg-purple-100 text-purple-800 border border-purple-200",
-        "transition-colors",
-        selected && "bg-purple-200 border-purple-300",
-        interactive && "cursor-pointer hover:bg-purple-200",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border",
+        "transition-all duration-200",
+        selected 
+          ? "bg-purple-200 border-purple-300 text-purple-800" 
+          : "bg-transparent border-purple-200 text-purple-500 opacity-70 hover:opacity-100",
+        interactive && "cursor-pointer",
         !interactive && !onClick && "cursor-default"
       )}
       onClick={onClick}
     >
-      <TagIcon className="h-3 w-3 text-purple-600" />
+      <TagIcon className={cn(
+        "h-3 w-3", 
+        selected ? "text-purple-600" : "text-purple-400 opacity-70"
+      )} />
       <span className="truncate max-w-[100px]">{name}</span>
       {onRemove && (
         <X 

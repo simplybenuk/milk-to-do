@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
 import { Plus, Tag as TagIcon } from 'lucide-react';
-import { TagSelector } from '@/components/TagSelector';
 import { TagBadge } from '@/components/TagBadge';
 import useTagStore from '@/stores/useTagStore';
 
@@ -16,8 +15,9 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   const [priority, setPriority] = useState<Priority>("medium");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showTagSelector, setShowTagSelector] = useState(false);
-  const { tags, fetchTags } = useTagStore();
+  const { tags, fetchTags, createTag } = useTagStore();
+  const [newTagName, setNewTagName] = useState('');
+  const [isCreatingNewTag, setIsCreatingNewTag] = useState(false);
 
   useEffect(() => {
     fetchTags();
@@ -41,6 +41,17 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
       setSelectedTags(selectedTags.filter(id => id !== tagId));
     } else {
       setSelectedTags([...selectedTags, tagId]);
+    }
+  };
+
+  const handleCreateNewTag = async () => {
+    if (!newTagName.trim()) return;
+    
+    const newTag = await createTag(newTagName.trim());
+    if (newTag) {
+      setSelectedTags([...selectedTags, newTag.id]);
+      setNewTagName('');
+      setIsCreatingNewTag(false);
     }
   };
 
@@ -79,21 +90,8 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
           </div>
           
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Tags</label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowTagSelector(true)}
-                className="h-8 px-2"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                New tag
-              </Button>
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
+            <label className="text-sm font-medium">Tags</label>
+            <div className="flex flex-wrap gap-2 items-center">
               {tags.map((tag) => (
                 <TagBadge
                   key={tag.id}
@@ -108,19 +106,38 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
                   }
                 />
               ))}
+              {!isCreatingNewTag ? (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-2 opacity-70 hover:opacity-100"
+                  onClick={() => setIsCreatingNewTag(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  New tag
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateNewTag()}
+                    placeholder="Tag name" 
+                    className="border rounded px-2 py-1 text-sm w-32"
+                  />
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    onClick={handleCreateNewTag}
+                    disabled={!newTagName.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
+              )}
             </div>
-
-            {showTagSelector && (
-              <TagSelector
-                selectedTags={selectedTags}
-                onSelectTag={(tagId) => {
-                  setSelectedTags([...selectedTags, tagId]);
-                  setShowTagSelector(false);
-                }}
-                onDeselectTag={(tagId) => setSelectedTags(selectedTags.filter(id => id !== tagId))}
-                placeholder="Create new tag..."
-              />
-            )}
           </div>
           
           <Button type="submit" className="w-full">
