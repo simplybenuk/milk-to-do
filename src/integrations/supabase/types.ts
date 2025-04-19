@@ -181,6 +181,7 @@ export type Database = {
           expired_at: string | null
           expiry_date: string
           id: string
+          last_skipped_session: string | null
           owner_id: string
           parent_id: string | null
           priority: Database["public"]["Enums"]["task_priority"]
@@ -200,6 +201,7 @@ export type Database = {
           expired_at?: string | null
           expiry_date?: string
           id?: string
+          last_skipped_session?: string | null
           owner_id: string
           parent_id?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
@@ -219,6 +221,7 @@ export type Database = {
           expired_at?: string | null
           expiry_date?: string
           id?: string
+          last_skipped_session?: string | null
           owner_id?: string
           parent_id?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
