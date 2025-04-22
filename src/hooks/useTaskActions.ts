@@ -13,7 +13,7 @@ export function useTaskActions(onFocusEnd: () => void) {
     taskId: string, 
     moveToNextTask: () => boolean
   ) => {
-    if (isProcessing) return;
+    if (isProcessing || !taskId) return;
     
     try {
       setIsProcessing(true);
@@ -31,7 +31,9 @@ export function useTaskActions(onFocusEnd: () => void) {
         toast({
           description: "Focus session complete! All tasks have been processed.",
         });
-        onFocusEnd();
+        setTimeout(() => {
+          onFocusEnd();
+        }, 500);
       }
     } catch (error) {
       console.error('Error completing task:', error);
@@ -63,7 +65,9 @@ export function useTaskActions(onFocusEnd: () => void) {
         toast({
           description: "Focus session complete! All tasks have been processed.",
         });
-        onFocusEnd();
+        setTimeout(() => {
+          onFocusEnd();
+        }, 500);
       }
     } catch (error) {
       console.error('Error skipping task:', error);

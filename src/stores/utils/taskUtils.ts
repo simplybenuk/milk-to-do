@@ -9,6 +9,7 @@ export const convertDatabaseDatesToDateObjects = (task: any): Task => ({
   expired_at: task.expired_at ? new Date(task.expired_at) : undefined,
   child_task_ids: task.child_task_ids || [],
   tags: task.tags || [],
+  skip_count: task.skip_count || 0,
 });
 
 export const calculateTaskStats = (tasks: Task[]) => {
@@ -32,8 +33,10 @@ export const calculateTaskStats = (tasks: Task[]) => {
 };
 
 export const sortTasksByPriority = (tasks: Task[]): Task[] => {
+  if (!tasks || tasks.length === 0) return [];
+  
   return [...tasks].sort((a, b) => {
     if (a.status !== b.status) return a.status === 'closed' ? 1 : -1;
-    return b.priority_score - a.priority_score;
+    return ((b.priority_score || 0) - (a.priority_score || 0));
   });
 };

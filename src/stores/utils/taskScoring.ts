@@ -52,6 +52,8 @@ export const calculateFinalScore = (task: Task): number => {
  * Order: finalScore DESC, ageDays DESC, skipCount ASC
  */
 export const sortTasksForFocusMode = (tasks: Task[]): Task[] => {
+  if (!tasks || tasks.length === 0) return [];
+  
   return [...tasks].sort((a, b) => {
     // First sort by final score (descending)
     const scoreA = calculateFinalScore(a);

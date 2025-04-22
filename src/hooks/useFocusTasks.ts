@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { Task } from '@/types/task';
@@ -13,7 +14,7 @@ export function useFocusTasks(inFocusMode: boolean) {
     if (inFocusMode) {
       const currentDate = new Date();
       
-      // Get tasks sorted using our new focus mode sorting algorithm
+      // Get tasks sorted using our focus mode sorting algorithm
       const sortedTasks = getSortedTasksForFocusMode();
       
       // Filter out any expired tasks
@@ -36,7 +37,9 @@ export function useFocusTasks(inFocusMode: boolean) {
   }, [inFocusMode]);
   
   // Get the current task based on the index
-  const currentTask = focusTaskOrder.length > 0 ? focusTaskOrder[currentIndex] : undefined;
+  const currentTask = focusTaskOrder.length > 0 && currentIndex < focusTaskOrder.length 
+    ? focusTaskOrder[currentIndex] 
+    : undefined;
   
   // Move to the next task
   const moveToNextTask = () => {
