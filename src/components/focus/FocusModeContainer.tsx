@@ -5,6 +5,7 @@ import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 import { useTaskNavigation } from '@/hooks/useTaskNavigation';
 import { useFocusModeHandlers } from '@/hooks/useFocusModeHandlers';
 import { AppView } from '@/hooks/useAppView';
+import { MainContent } from '@/components/MainContent';
 
 interface FocusModeContainerProps {
   currentView: AppView;
@@ -55,27 +56,50 @@ export function FocusModeContainer({
     isProcessing
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
 
-  return (
-    <>
+  // If not in focus mode, only show the enter focus mode button
+  if (!inFocusMode && currentView === 'all') {
+    return (
       <FocusModePage
-        currentTask={currentTask}
-        currentIndex={currentIndex}
-        totalTasks={focusTaskOrder.length}
-        isProcessing={isProcessing}
-        onComplete={handleComplete}
-        onSkip={handleSkip}
-        onReturnToTop={handleReturnToTop}
-        onExitFocusMode={handleExitFocusMode}
+        currentTask={null}
+        currentIndex={0}
+        totalTasks={0}
+        isProcessing={false}
+        onComplete={() => {}}
+        onSkip={() => {}}
+        onReturnToTop={() => {}}
+        onExitFocusMode={() => {}}
         onEnterFocusMode={handleEnterFocusMode}
-        inFocusMode={inFocusMode}
+        inFocusMode={false}
         currentView={currentView}
       />
-      
-      <FocusExitConfirmDialog
-        open={showExitConfirm}
-        onOpenChange={setShowExitConfirm}
-        onConfirm={handleConfirmExit}
-      />
-    </>
-  );
+    );
+  }
+  
+  // If in focus mode and on main view, show the focus mode content
+  if (inFocusMode && currentView === 'main') {
+    return (
+      <>
+        <MainContent
+          currentView={currentView}
+          currentTask={currentTask}
+          onComplete={handleComplete}
+          onSkip={handleSkip}
+          onReturnToTop={handleReturnToTop}
+          currentIndex={currentIndex}
+          totalTasks={focusTaskOrder.length}
+          inFocusMode={inFocusMode}
+          onExitFocusMode={handleExitFocusMode}
+        />
+        
+        <FocusExitConfirmDialog
+          open={showExitConfirm}
+          onOpenChange={setShowExitConfirm}
+          onConfirm={handleConfirmExit}
+        />
+      </>
+    );
+  }
+  
+  // For all other scenarios, don't render anything
+  return null;
 }

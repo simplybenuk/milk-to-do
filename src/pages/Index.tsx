@@ -40,7 +40,7 @@ const Index = () => {
           confirmExitFocusMode={confirmExitFocusMode}
         />
         
-        {/* Render content based on current view */}
+        {/* ViewContent will only render when not in focus mode */}
         <ViewContent 
           currentView={currentView}
           inFocusMode={inFocusMode}

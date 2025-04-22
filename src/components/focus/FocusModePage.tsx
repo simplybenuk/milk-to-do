@@ -2,7 +2,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Focus } from 'lucide-react';
-import { MainContent } from '@/components/MainContent';
 
 interface FocusModePageProps {
   currentTask: any;
@@ -19,13 +18,6 @@ interface FocusModePageProps {
 }
 
 export function FocusModePage({
-  currentTask,
-  currentIndex,
-  totalTasks,
-  onComplete,
-  onSkip,
-  onReturnToTop,
-  onExitFocusMode,
   onEnterFocusMode,
   inFocusMode,
   currentView
@@ -46,24 +38,7 @@ export function FocusModePage({
     );
   }
   
-  // Only render MainContent for Focus Mode if actually in focus mode
-  if (inFocusMode && currentView === 'main') {
-    return (
-      <MainContent
-        currentView={currentView}
-        currentTask={currentTask}
-        onComplete={onComplete}
-        onSkip={onSkip}
-        onReturnToTop={onReturnToTop}
-        currentIndex={currentIndex}
-        totalTasks={totalTasks}
-        inFocusMode={inFocusMode}
-        onExitFocusMode={onExitFocusMode}
-      />
-    );
-  }
-  
-  // For all other views, don't render anything
-  // This allows the content to be controlled by Index.tsx
+  // For all other scenarios, don't render anything
+  // This allows other components to control the content
   return null;
 }
