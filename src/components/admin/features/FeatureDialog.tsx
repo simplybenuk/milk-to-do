@@ -37,6 +37,13 @@ interface FeatureDialogProps {
 export function FeatureDialog({ open, onClose, initialData }: FeatureDialogProps) {
   const [availabilityOptions] = useState<("free" | "pro" | "beta")[]>(["free", "pro", "beta"]);
   const queryClient = useQueryClient();
+  
+  // Move useForm inside a conditional to ensure it's only used when the component is actually rendered
+  // This prevents the "Cannot read properties of null (reading 'useRef')" error
+  if (!open) {
+    return null;
+  }
+  
   const form = useForm<FeatureFormData>({
     defaultValues: initialData || {
       name: '',

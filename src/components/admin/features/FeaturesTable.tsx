@@ -36,7 +36,6 @@ export function FeaturesTable() {
 
   const handleCloseDialog = () => {
     setShowDialog(false);
-    setSelectedFeature(undefined);
   };
 
   return (
@@ -87,11 +86,13 @@ export function FeaturesTable() {
         </TableBody>
       </Table>
 
-      <FeatureDialog 
-        open={showDialog}
-        onClose={handleCloseDialog}
-        initialData={selectedFeature}
-      />
+      {showDialog && (
+        <FeatureDialog 
+          open={showDialog}
+          onClose={handleCloseDialog}
+          initialData={selectedFeature}
+        />
+      )}
     </div>
   );
 }
