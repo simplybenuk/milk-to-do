@@ -118,14 +118,17 @@ const Admin = () => {
     );
   }
 
-  // Only render admin dashboard when user is confirmed as admin
   return (
     <PageContainer inFocusMode={false}>
-      <div className="space-y-8 py-4">
+      <div className="space-y-6 py-4 px-2 sm:px-4">
         <AdminHeader />
-        <div className="grid gap-8">
-          <AdminFeatures />
-          <AdminUsers />
+        <div className="grid gap-6">
+          <div className="overflow-x-auto">
+            <AdminFeatures />
+          </div>
+          <div className="overflow-x-auto">
+            <AdminUsers />
+          </div>
         </div>
       </div>
     </PageContainer>
