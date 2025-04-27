@@ -14,7 +14,7 @@ interface Feature {
 }
 
 export function FeaturesTable() {
-  const { features, isLoading } = useFeatures();
+  const { data, isLoading } = useFeatures();
   
   if (isLoading) {
     return <div>Loading features...</div>;
@@ -41,7 +41,7 @@ export function FeaturesTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {features?.map((feature) => (
+          {data?.map((feature) => (
             <TableRow key={feature.id}>
               <TableCell className="font-medium">{feature.name}</TableCell>
               <TableCell>{feature.description}</TableCell>

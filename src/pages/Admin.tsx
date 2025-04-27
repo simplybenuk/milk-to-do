@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -5,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminUsers } from '@/components/admin/AdminUsers';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { AdminFeatures } from '@/components/admin/AdminFeatures';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
