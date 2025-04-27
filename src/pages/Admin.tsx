@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -121,7 +121,10 @@ const Admin = () => {
     <PageContainer inFocusMode={false}>
       <div className="space-y-8 py-4">
         <AdminHeader />
-        <AdminUsers />
+        <div className="grid gap-8">
+          <AdminFeatures />
+          <AdminUsers />
+        </div>
       </div>
     </PageContainer>
   );

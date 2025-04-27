@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      features: {
+        Row: {
+          availability: Database["public"]["Enums"]["feature_availability"][]
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          availability?: Database["public"]["Enums"]["feature_availability"][]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          availability?: Database["public"]["Enums"]["feature_availability"][]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           billing_interval: string | null
@@ -56,6 +83,7 @@ export type Database = {
           accepts_analytics: boolean | null
           accepts_marketing: boolean | null
           avatar_url: string | null
+          beta_access: boolean | null
           full_name: string | null
           id: string
           plan_id: string | null
@@ -68,6 +96,7 @@ export type Database = {
           accepts_analytics?: boolean | null
           accepts_marketing?: boolean | null
           avatar_url?: string | null
+          beta_access?: boolean | null
           full_name?: string | null
           id: string
           plan_id?: string | null
@@ -80,6 +109,7 @@ export type Database = {
           accepts_analytics?: boolean | null
           accepts_marketing?: boolean | null
           avatar_url?: string | null
+          beta_access?: boolean | null
           full_name?: string | null
           id?: string
           plan_id?: string | null
@@ -309,6 +339,7 @@ export type Database = {
     }
     Enums: {
       closed_status_reason: "expired" | "complete" | "parent"
+      feature_availability: "free" | "pro" | "beta"
       task_priority: "low" | "medium" | "high"
       task_status: "open" | "closed"
     }
@@ -427,6 +458,7 @@ export const Constants = {
   public: {
     Enums: {
       closed_status_reason: ["expired", "complete", "parent"],
+      feature_availability: ["free", "pro", "beta"],
       task_priority: ["low", "medium", "high"],
       task_status: ["open", "closed"],
     },
