@@ -20,13 +20,14 @@ export function UsersTable({ filteredUsers, userRoles }: UsersTableProps) {
             <TableHead>Email</TableHead>
             <TableHead>Plan</TableHead>
             <TableHead>Plan Start Date</TableHead>
+            <TableHead>Last Active</TableHead>
             <TableHead>Roles</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredUsers.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+              <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
                 No users found
               </TableCell>
             </TableRow>
@@ -40,6 +41,11 @@ export function UsersTable({ filteredUsers, userRoles }: UsersTableProps) {
                   {user.plan_started_at 
                     ? format(new Date(user.plan_started_at), 'MMM d, yyyy')
                     : 'N/A'}
+                </TableCell>
+                <TableCell>
+                  {user.last_sign_in_at 
+                    ? format(new Date(user.last_sign_in_at), 'MMM d, yyyy HH:mm')
+                    : 'Never'}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">

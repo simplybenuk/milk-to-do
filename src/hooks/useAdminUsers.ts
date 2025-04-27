@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -10,6 +9,7 @@ export interface UserProfile {
   plan_name: string | null;
   plan_started_at: string | null;
   avatar_url: string | null;
+  last_sign_in_at: string | null;
 }
 
 export interface UserRoles {
@@ -45,8 +45,8 @@ export function useAdminUsers() {
           return;
         }
         
-        // Get emails for all users using the admin RPC function
-        const { data: userData, error: userError } = await supabase.rpc('get_user_emails');
+        // Get emails and last sign in time for all users using the admin RPC function
+        const { data: userData, error: userError } = await supabase.rpc('get_user_emails_and_activity');
         
         if (userError) {
           console.error('Error fetching user emails:', userError);
@@ -60,14 +60,18 @@ export function useAdminUsers() {
         await fetchUserRoles();
         
         // Combine profile data with email data
-        const emailMap: Record<string, string> = userData?.reduce((acc: Record<string, string>, user: any) => {
-          acc[user.id] = user.email;
+        const emailMap: Record<string, { email: string, last_sign_in_at: string | null }> = userData?.reduce((acc: Record<string, any>, user: any) => {
+          acc[user.id] = {
+            email: user.email,
+            last_sign_in_at: user.last_sign_in_at
+          };
           return acc;
         }, {}) || {};
         
         const formattedUsers = profilesData?.map((profile: any) => ({
           id: profile.id,
-          email: emailMap[profile.id] || 'Unknown',
+          email: emailMap[profile.id]?.email || 'Unknown',
+          last_sign_in_at: emailMap[profile.id]?.last_sign_in_at || null,
           username: profile.username,
           plan_name: profile.plans?.name || 'No Plan',
           plan_started_at: profile.plan_started_at,
