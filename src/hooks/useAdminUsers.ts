@@ -60,15 +60,15 @@ export function useAdminUsers() {
         await fetchUserRoles();
         
         // Combine profile data with email data
-        const emailMap: Record<string, { email: string, last_sign_in_at: string | null }> = userData?.reduce((acc: Record<string, any>, user: any) => {
+        const emailMap: Record<string, { email: string, last_sign_in_at: string | null }> = (userData || []).reduce((acc, user) => {
           acc[user.id] = {
             email: user.email,
             last_sign_in_at: user.last_sign_in_at
           };
           return acc;
-        }, {}) || {};
+        }, {});
         
-        const formattedUsers = profilesData?.map((profile: any) => ({
+        const formattedUsers = (profilesData || []).map((profile: any) => ({
           id: profile.id,
           email: emailMap[profile.id]?.email || 'Unknown',
           last_sign_in_at: emailMap[profile.id]?.last_sign_in_at || null,
@@ -76,7 +76,7 @@ export function useAdminUsers() {
           plan_name: profile.plans?.name || 'No Plan',
           plan_started_at: profile.plan_started_at,
           avatar_url: profile.avatar_url
-        })) || [];
+        }));
         
         setUsers(formattedUsers);
       } catch (error) {

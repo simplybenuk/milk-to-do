@@ -324,6 +324,14 @@ export type Database = {
           email: string
         }[]
       }
+      get_user_emails_and_activity: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          last_sign_in_at: string
+        }[]
+      }
       increment: {
         Args: { row_id: string }
         Returns: number

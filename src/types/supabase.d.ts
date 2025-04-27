@@ -1,4 +1,3 @@
-
 // Additional types for Supabase RPC functions
 declare module '@supabase/supabase-js' {
   interface SupabaseClient {
@@ -37,5 +36,17 @@ declare module '@supabase/supabase-js' {
         p_tag_id: string
       }
     ): Promise<{ data: T; error: Error | null }>;
+    
+    rpc<T = any>(
+      fn: 'get_user_emails_and_activity',
+      params?: {}
+    ): Promise<{ 
+      data: { 
+        id: string, 
+        email: string, 
+        last_sign_in_at: string | null 
+      }[] | null; 
+      error: Error | null 
+    }>;
   }
 }
