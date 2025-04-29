@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Priority } from '@/types/task';
 
@@ -6,6 +5,23 @@ export const updateTaskInDB = async (
   id: string,
   updates: { title?: string; priority?: Priority; tags?: string[] }
 ): Promise<void> => {
+  // Get user subscription status first
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select(`
+      plan_id,
+      plans(can_edit_tasks)
+    `)
+    .eq('id', (await supabase.auth.getUser()).data.user?.id || '')
+    .single();
+
+  const isPro = profile?.plans?.can_edit_tasks === true;
+
+  // If the user is not Pro, remove tags from updates
+  if (!isPro && updates.tags) {
+    delete updates.tags;
+  }
+
   const { error } = await supabase
     .from('tasks')
     .update(updates)
@@ -13,7 +29,7 @@ export const updateTaskInDB = async (
 
   if (error) throw error;
   
-  if (updates.tags) {
+  if (updates.tags && isPro) {
     await updateTaskTags(id, updates.tags);
   }
 };

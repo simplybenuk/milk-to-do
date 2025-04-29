@@ -8,6 +8,8 @@ import { TagBadge } from './TagBadge';
 import useTagStore from '@/stores/useTagStore';
 import { Tag } from '@/types/tag';
 import { cn } from '@/lib/utils';
+import { useSubscription } from '@/hooks/useSubscription';
+import { toast } from 'sonner';
 
 interface TagSelectorProps {
   selectedTags: string[];
@@ -29,6 +31,7 @@ export function TagSelector({
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const { tags, createTag, fetchTags, isLoading } = useTagStore();
+  const { isPro } = useSubscription();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -37,6 +40,11 @@ export function TagSelector({
 
   const handleCreateTag = async () => {
     if (!inputValue.trim()) return;
+    
+    if (!isPro) {
+      toast.error("Tags creation is a Pro feature. Please upgrade to access this feature.");
+      return;
+    }
     
     const newTag = await createTag(inputValue.trim());
     if (newTag && taskId) {
@@ -49,6 +57,23 @@ export function TagSelector({
     if (e.key === 'Enter' && inputValue) {
       e.preventDefault();
       handleCreateTag();
+    }
+  };
+
+  const handleSelectTag = (tagId: string) => {
+    if (!isPro && !isFilterMode) {
+      toast.error("Tags are a Pro feature. Please upgrade to access this feature.");
+      return;
+    }
+    
+    const isSelected = selectedTags.includes(tagId);
+    if (isSelected) {
+      onDeselectTag(tagId);
+    } else {
+      onSelectTag(tagId);
+    }
+    if (!isFilterMode) {
+      setOpen(false);
     }
   };
 
@@ -112,16 +137,7 @@ export function TagSelector({
                   return (
                     <CommandItem
                       key={tag.id}
-                      onSelect={() => {
-                        if (isSelected) {
-                          onDeselectTag(tag.id);
-                        } else {
-                          onSelectTag(tag.id);
-                        }
-                        if (!isFilterMode) {
-                          setOpen(false);
-                        }
-                      }}
+                      onSelect={() => handleSelectTag(tag.id)}
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <div

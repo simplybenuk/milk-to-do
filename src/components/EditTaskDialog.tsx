@@ -4,9 +4,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Priority, Task } from '@/types/task';
 import { useToast } from '@/hooks/use-toast';
-import { Tag as TagIcon, Plus } from 'lucide-react';  // Added Plus import here
+import { Plus } from 'lucide-react';
 import { TagBadge } from '@/components/TagBadge';
 import useTagStore from '@/stores/useTagStore';
+import { useSubscription } from '@/hooks/useSubscription';
+import { toast } from 'sonner';
 
 interface EditTaskDialogProps {
   task: Task | null;
@@ -16,13 +18,14 @@ interface EditTaskDialogProps {
 }
 
 export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDialogProps) {
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { tags, fetchTags, createTag } = useTagStore();
   const [newTagName, setNewTagName] = useState('');
   const [isCreatingNewTag, setIsCreatingNewTag] = useState(false);
+  const { isPro } = useSubscription();
 
   useEffect(() => {
     fetchTags();
@@ -42,15 +45,18 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
     if (!task || !title.trim()) return;
     
     try {
-      await onEdit(task.id, title.trim(), priority, selectedTags);
+      // Only use tags if user has Pro subscription
+      const tagsToUse = isPro ? selectedTags : task.tags || [];
+      
+      await onEdit(task.id, title.trim(), priority, tagsToUse);
       onOpenChange(false);
-      toast({
+      uiToast({
         title: 'Task updated',
         description: 'Your task has been updated successfully.',
       });
     } catch (error) {
       console.error('Error updating task:', error);
-      toast({
+      uiToast({
         title: 'Failed to update task',
         description: 'There was an error updating your task.',
         variant: 'destructive',
@@ -59,6 +65,11 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
   };
 
   const handleTagClick = (tagId: string) => {
+    if (!isPro) {
+      toast.error("Tags are a Pro feature. Please upgrade to access this feature.");
+      return;
+    }
+    
     if (selectedTags.includes(tagId)) {
       setSelectedTags(selectedTags.filter(id => id !== tagId));
     } else {
@@ -67,7 +78,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
   };
 
   const handleCreateNewTag = async () => {
-    if (!newTagName.trim()) return;
+    if (!newTagName.trim() || !isPro) return;
     
     const newTag = await createTag(newTagName.trim());
     if (newTag) {
@@ -104,56 +115,58 @@ export function EditTaskDialog({ task, open, onOpenChange, onEdit }: EditTaskDia
             ))}
           </div>
           
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Tags</label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {tags.map((tag) => (
-                <TagBadge
-                  key={tag.id}
-                  name={tag.name}
-                  interactive
-                  selected={selectedTags.includes(tag.id)}
-                  onClick={() => handleTagClick(tag.id)}
-                  onRemove={
-                    selectedTags.includes(tag.id)
-                      ? () => setSelectedTags(selectedTags.filter(id => id !== tag.id))
-                      : undefined
-                  }
-                />
-              ))}
-              {!isCreatingNewTag ? (
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 px-2 opacity-70 hover:opacity-100"
-                  onClick={() => setIsCreatingNewTag(true)}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  New tag
-                </Button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="text" 
-                    value={newTagName}
-                    onChange={(e) => setNewTagName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateNewTag()}
-                    placeholder="Tag name" 
-                    className="border rounded px-2 py-1 text-sm w-32"
+          {isPro && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tags</label>
+              <div className="flex flex-wrap gap-2 items-center">
+                {tags.map((tag) => (
+                  <TagBadge
+                    key={tag.id}
+                    name={tag.name}
+                    interactive
+                    selected={selectedTags.includes(tag.id)}
+                    onClick={() => handleTagClick(tag.id)}
+                    onRemove={
+                      selectedTags.includes(tag.id)
+                        ? () => setSelectedTags(selectedTags.filter(id => id !== tag.id))
+                        : undefined
+                    }
                   />
+                ))}
+                {!isCreatingNewTag ? (
                   <Button 
                     type="button" 
+                    variant="ghost" 
                     size="sm" 
-                    onClick={handleCreateNewTag}
-                    disabled={!newTagName.trim()}
+                    className="h-8 px-2 opacity-70 hover:opacity-100"
+                    onClick={() => setIsCreatingNewTag(true)}
                   >
-                    Add
+                    <Plus className="h-4 w-4 mr-1" />
+                    New tag
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      value={newTagName}
+                      onChange={(e) => setNewTagName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleCreateNewTag()}
+                      placeholder="Tag name" 
+                      className="border rounded px-2 py-1 text-sm w-32"
+                    />
+                    <Button 
+                      type="button" 
+                      size="sm" 
+                      onClick={handleCreateNewTag}
+                      disabled={!newTagName.trim()}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           
           <Button type="submit" className="w-full">
             Save Changes

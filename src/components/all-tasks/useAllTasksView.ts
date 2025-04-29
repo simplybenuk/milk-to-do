@@ -3,22 +3,24 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import useTaskStore from '@/stores/useTaskStore';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export function useAllTasksView() {
   const { tasks } = useTaskStore();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
+  const { isPro } = useSubscription();
   
-  // Filter tasks by tags
-  const selectedTagIds = searchParams.get('tags')?.split(',') || [];
+  // Filter tasks by tags only if Pro user
+  const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];
   
   // Get all open tasks, excluding expired ones
   const openTasks = tasks.filter(task => 
     task.status === 'open' && 
     // Ensure expiry_date is valid and greater than or equal to the current date
     new Date(task.expiry_date) >= new Date() &&
-    // Filter by selected tags if any
+    // Filter by selected tags if any and if Pro user
     (selectedTagIds.length === 0 || 
       task.tags?.some(tagId => selectedTagIds.includes(tagId)))
   );

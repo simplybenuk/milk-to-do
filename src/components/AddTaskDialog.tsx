@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Priority } from '@/types/task';
 import { Plus, Tag as TagIcon } from 'lucide-react';
 import { TagBadge } from '@/components/TagBadge';
 import useTagStore from '@/stores/useTagStore';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface AddTaskDialogProps {
   onAddTask: (title: string, priority: Priority, expiryDate: Date, tagIds?: string[]) => void;
@@ -18,6 +20,7 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   const { tags, fetchTags, createTag } = useTagStore();
   const [newTagName, setNewTagName] = useState('');
   const [isCreatingNewTag, setIsCreatingNewTag] = useState(false);
+  const { isPro } = useSubscription();
 
   useEffect(() => {
     fetchTags();
@@ -29,7 +32,10 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
     
     const expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     
-    onAddTask(title.trim(), priority, expiryDate, selectedTags);
+    // Only pass tags if user has Pro subscription
+    const tagsToUse = isPro ? selectedTags : [];
+    
+    onAddTask(title.trim(), priority, expiryDate, tagsToUse);
     setTitle("");
     setPriority("medium");
     setSelectedTags([]);
@@ -37,6 +43,8 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   };
 
   const handleTagClick = (tagId: string) => {
+    if (!isPro) return;
+    
     if (selectedTags.includes(tagId)) {
       setSelectedTags(selectedTags.filter(id => id !== tagId));
     } else {
@@ -45,7 +53,7 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
   };
 
   const handleCreateNewTag = async () => {
-    if (!newTagName.trim()) return;
+    if (!newTagName.trim() || !isPro) return;
     
     const newTag = await createTag(newTagName.trim());
     if (newTag) {
@@ -89,56 +97,58 @@ export function AddTaskDialog({ onAddTask }: AddTaskDialogProps) {
             ))}
           </div>
           
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Tags</label>
-            <div className="flex flex-wrap gap-2 items-center">
-              {tags.map((tag) => (
-                <TagBadge
-                  key={tag.id}
-                  name={tag.name}
-                  interactive
-                  selected={selectedTags.includes(tag.id)}
-                  onClick={() => handleTagClick(tag.id)}
-                  onRemove={
-                    selectedTags.includes(tag.id)
-                      ? () => setSelectedTags(selectedTags.filter(id => id !== tag.id))
-                      : undefined
-                  }
-                />
-              ))}
-              {!isCreatingNewTag ? (
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 px-2 opacity-70 hover:opacity-100"
-                  onClick={() => setIsCreatingNewTag(true)}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  New tag
-                </Button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="text" 
-                    value={newTagName}
-                    onChange={(e) => setNewTagName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateNewTag()}
-                    placeholder="Tag name" 
-                    className="border rounded px-2 py-1 text-sm w-32"
+          {isPro && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tags</label>
+              <div className="flex flex-wrap gap-2 items-center">
+                {tags.map((tag) => (
+                  <TagBadge
+                    key={tag.id}
+                    name={tag.name}
+                    interactive
+                    selected={selectedTags.includes(tag.id)}
+                    onClick={() => handleTagClick(tag.id)}
+                    onRemove={
+                      selectedTags.includes(tag.id)
+                        ? () => setSelectedTags(selectedTags.filter(id => id !== tag.id))
+                        : undefined
+                    }
                   />
+                ))}
+                {!isCreatingNewTag ? (
                   <Button 
                     type="button" 
+                    variant="ghost" 
                     size="sm" 
-                    onClick={handleCreateNewTag}
-                    disabled={!newTagName.trim()}
+                    className="h-8 px-2 opacity-70 hover:opacity-100"
+                    onClick={() => setIsCreatingNewTag(true)}
                   >
-                    Add
+                    <Plus className="h-4 w-4 mr-1" />
+                    New tag
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      value={newTagName}
+                      onChange={(e) => setNewTagName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleCreateNewTag()}
+                      placeholder="Tag name" 
+                      className="border rounded px-2 py-1 text-sm w-32"
+                    />
+                    <Button 
+                      type="button" 
+                      size="sm" 
+                      onClick={handleCreateNewTag}
+                      disabled={!newTagName.trim()}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           
           <Button type="submit" className="w-full">
             Add Task

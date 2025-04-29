@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { TagBadge } from '@/components/TagBadge';
 import useTagStore from '@/stores/useTagStore';
 import { Tag } from '@/types/tag';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface TaskTagsProps {
   taskId: string;
@@ -14,6 +15,7 @@ interface TaskTagsProps {
 export function TaskTags({ taskId, tags = [], onRemoveTag, className = '' }: TaskTagsProps) {
   const [taskTags, setTaskTags] = useState<Tag[]>([]);
   const { tags: allTags, fetchTags } = useTagStore();
+  const { isPro } = useSubscription();
   
   useEffect(() => {
     fetchTags();
@@ -28,7 +30,7 @@ export function TaskTags({ taskId, tags = [], onRemoveTag, className = '' }: Tas
     }
   }, [allTags, tags]);
 
-  if (!taskTags.length) return null;
+  if (!taskTags.length || !isPro) return null;
   
   return (
     <div className={`flex flex-wrap gap-1.5 ${className}`}>
