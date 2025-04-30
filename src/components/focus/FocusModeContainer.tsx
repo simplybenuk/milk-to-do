@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FocusModePage } from './FocusModePage';
 import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 import { useTaskNavigation } from '@/hooks/useTaskNavigation';
@@ -26,6 +26,8 @@ export function FocusModeContainer({
   setShowExitConfirm,
   confirmExitFocusMode
 }: FocusModeContainerProps) {
+  const [selectedTagIds, setSelectedTagIdsState] = useState<string[] | undefined>(undefined);
+  
   // Initialize focus mode handlers
   const { 
     handleEnterFocusMode, 
@@ -53,8 +55,14 @@ export function FocusModeContainer({
     handleComplete,
     handleSkip,
     handleReturnToTop,
-    isProcessing
+    isProcessing,
+    setSelectedTagIds
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
+  
+  const handleTagSelection = (tags?: string[]) => {
+    setSelectedTagIdsState(tags);
+    setSelectedTagIds(tags);
+  };
 
   // If not in focus mode, only show the enter focus mode button
   if (!inFocusMode && currentView === 'all') {
@@ -68,7 +76,10 @@ export function FocusModeContainer({
         onSkip={() => {}}
         onReturnToTop={() => {}}
         onExitFocusMode={() => {}}
-        onEnterFocusMode={handleEnterFocusMode}
+        onEnterFocusMode={(tags) => {
+          handleTagSelection(tags);
+          handleEnterFocusMode();
+        }}
         inFocusMode={false}
         currentView={currentView}
       />
@@ -89,6 +100,7 @@ export function FocusModeContainer({
           totalTasks={focusTaskOrder.length}
           inFocusMode={inFocusMode}
           onExitFocusMode={handleExitFocusMode}
+          selectedTagIds={selectedTagIds}
         />
         
         <FocusExitConfirmDialog

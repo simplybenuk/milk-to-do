@@ -7,6 +7,7 @@ export function useFocusTasks(inFocusMode: boolean) {
   const { getSortedTasksForFocusMode } = useTaskStore();
   const [focusTaskOrder, setFocusTaskOrder] = useState<Task[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[] | undefined>(undefined);
   
   // Get tasks and initialize focus mode session if needed
   useEffect(() => {
@@ -18,21 +19,36 @@ export function useFocusTasks(inFocusMode: boolean) {
       const sortedTasks = getSortedTasksForFocusMode();
       
       // Filter out any expired tasks
-      const validTasks = sortedTasks.filter(task => 
+      let validTasks = sortedTasks.filter(task => 
         new Date(task.expiry_date) >= currentDate
       );
       
-      console.log('Initializing focus tasks with', validTasks.length, 'tasks');
+      // Filter by selected tags if any are specified
+      if (selectedTagIds && selectedTagIds.length > 0) {
+        validTasks = validTasks.filter(task => {
+          // If task has no tags but selectedTagIds exist, filter it out
+          if (!task.tags || task.tags.length === 0) {
+            return false;
+          }
+          
+          // Check if any of the task's tags are in the selected tags
+          return task.tags.some(tagId => selectedTagIds.includes(tagId));
+        });
+      }
+      
+      console.log('Initializing focus tasks with', validTasks.length, 'tasks', 
+                  selectedTagIds ? `filtered by ${selectedTagIds.length} tags` : 'unfiltered');
       setFocusTaskOrder(validTasks);
       setCurrentIndex(0);
     }
-  }, [inFocusMode, getSortedTasksForFocusMode]);
+  }, [inFocusMode, getSortedTasksForFocusMode, selectedTagIds]);
   
   // Reset focus session when leaving focus mode
   useEffect(() => {
     if (!inFocusMode) {
       setFocusTaskOrder([]);
       setCurrentIndex(0);
+      setSelectedTagIds(undefined);
     }
   }, [inFocusMode]);
   
@@ -60,6 +76,7 @@ export function useFocusTasks(inFocusMode: boolean) {
     currentTask,
     currentIndex,
     moveToNextTask,
-    returnToTop
+    returnToTop,
+    setSelectedTagIds
   };
 }

@@ -7,6 +7,7 @@ import { AppView } from '@/hooks/useAppView';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FocusTagInfo } from '@/components/focus/FocusTagInfo';
 
 interface MainContentProps {
   currentView: AppView;
@@ -18,6 +19,7 @@ interface MainContentProps {
   totalTasks: number;
   inFocusMode: boolean;
   onExitFocusMode?: () => void;
+  selectedTagIds?: string[];
 }
 
 export function MainContent({
@@ -29,7 +31,8 @@ export function MainContent({
   currentIndex,
   totalTasks,
   inFocusMode,
-  onExitFocusMode
+  onExitFocusMode,
+  selectedTagIds
 }: MainContentProps) {
   // Card classes to make it pop in focus mode
   const cardClasses = cn(
@@ -56,7 +59,9 @@ export function MainContent({
       return <TaskStats />;
     default:
       return (
-        <div className="min-h-[400px] flex items-center justify-center w-full">
+        <div className="min-h-[400px] flex flex-col items-center justify-center w-full">
+          {inFocusMode && <FocusTagInfo selectedTagIds={selectedTagIds} />}
+          
           <div className={cardClasses}>
             {currentTask ? (
               <CurrentTask
@@ -75,7 +80,9 @@ export function MainContent({
                 {inFocusMode && (
                   <>
                     <p className="text-milk-500 mt-4">
-                      Add tasks from the All Tasks view to start your focus session.
+                      {selectedTagIds && selectedTagIds.length > 0 
+                        ? 'No tasks match your selected tags. Try selecting different tags.' 
+                        : 'Add tasks from the All Tasks view to start your focus session.'}
                     </p>
                     {onExitFocusMode && (
                       <Button 

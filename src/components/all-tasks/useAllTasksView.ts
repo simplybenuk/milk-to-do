@@ -16,14 +16,21 @@ export function useAllTasksView() {
   const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];
   
   // Get all open tasks, excluding expired ones
-  const openTasks = tasks.filter(task => 
-    task.status === 'open' && 
-    // Ensure expiry_date is valid and greater than or equal to the current date
-    new Date(task.expiry_date) >= new Date() &&
-    // Filter by selected tags if any and if Pro user
-    (selectedTagIds.length === 0 || 
-      task.tags?.some(tagId => selectedTagIds.includes(tagId)))
-  );
+  const openTasks = tasks.filter(task => {
+    // Basic conditions for open tasks
+    const isOpenAndNotExpired = 
+      task.status === 'open' && 
+      new Date(task.expiry_date) >= new Date();
+    
+    // If no tag filters or not Pro, just return basic condition
+    if (!isPro || selectedTagIds.length === 0) {
+      return isOpenAndNotExpired;
+    }
+    
+    // If Pro and tags selected, filter by tags
+    return isOpenAndNotExpired && 
+      (task.tags?.some(tagId => selectedTagIds.includes(tagId)));
+  });
   
   // Get relevant parents for the filtered open tasks
   const relevantParents = tasks.filter(task => 
