@@ -3,7 +3,7 @@ import { AppView } from '@/hooks/useAppView';
 import { AllTasksList } from '@/components/all-tasks';
 import { ClosedTasksList } from '@/components/ClosedTasksList';
 import { MainContent } from '@/components/MainContent';
-import { TaskStats } from '@/components/TaskStats';
+import { TaskStats } from '@/components/stats';
 
 interface ViewContentProps {
   currentView: AppView;
