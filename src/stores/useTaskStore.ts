@@ -6,7 +6,8 @@ import { Priority } from '@/types/task';
 import {
   incrementSkipCountInDB,
   updateLastSkippedSessionInDB,
-  updateTaskPriorityInDB
+  updateTaskPriorityInDB,
+  refreshTaskExpiryInDB
 } from './actions/taskActions';
 import { getFocusModeActions } from './actions/tasks/focusModeActions';
 import { getDecayActions } from './actions/tasks/decayActions';
@@ -60,6 +61,26 @@ const useTaskStore = create<TaskStore>((set, get) => {
       } catch (error) {
         console.error('Error updating task priority:', error);
         setState({ error: 'Failed to update task priority' });
+      }
+    },
+    
+    // Refresh task expiry date
+    refreshTaskExpiry: async (id: string) => {
+      try {
+        await refreshTaskExpiryInDB(id);
+        const newExpiryDate = new Date();
+        newExpiryDate.setDate(newExpiryDate.getDate() + 30);
+        
+        set(state => ({
+          tasks: state.tasks.map(task =>
+            task.id === id ? { ...task, expiry_date: newExpiryDate } : task
+          ),
+        }));
+        
+        await get().fetchTasks();
+      } catch (error) {
+        console.error('Error refreshing task expiry date:', error);
+        setState({ error: 'Failed to refresh task expiry date' });
       }
     },
 

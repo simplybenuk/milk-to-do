@@ -12,6 +12,8 @@ import { TaskActionButtons } from './TaskActionButtons';
 import { TaskMenu } from './buttons/TaskMenu';
 import { TaskTags } from './TaskTags';
 import useTagStore from '@/stores/useTagStore';
+import useTaskStore from '@/stores/useTaskStore';
+import { toast } from '@/hooks/use-toast';
 
 interface TaskItemProps {
   task: Task;
@@ -43,6 +45,7 @@ export function TaskItem({
   const [isCompleting, setIsCompleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { removeTagFromTask } = useTagStore();
+  const { refreshTaskExpiry } = useTaskStore();
 
   // Get child tasks if this is a parent task
   const childTasks = task.child_task_ids?.length > 0 && allTasks?.length > 0
@@ -79,6 +82,23 @@ export function TaskItem({
     removeTagFromTask(task.id, tagId);
   };
 
+  const handleRefreshTask = async (taskId: string) => {
+    try {
+      await refreshTaskExpiry(taskId);
+      toast({
+        title: "Task refreshed",
+        description: "Task expiry date extended by 30 days.",
+      });
+    } catch (error) {
+      console.error('Error refreshing task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh task.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <>
       <div
@@ -100,6 +120,7 @@ export function TaskItem({
             task={task}
             onEdit={onEdit}
             onDelete={() => setShowDeleteDialog(true)}
+            onRefresh={handleRefreshTask}
             showMenuButton={!inFocusMode}
           />
         </div>

@@ -1,5 +1,5 @@
 
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ interface TaskMenuProps {
   task: Task;
   onEdit?: (task: Task) => void;
   onDelete?: () => void;
+  onRefresh?: (taskId: string) => void;
   showMenuButton?: boolean;
 }
 
@@ -20,10 +21,11 @@ export function TaskMenu({
   task, 
   onEdit, 
   onDelete,
+  onRefresh,
   showMenuButton = true
 }: TaskMenuProps) {
   // If there are no actions available or menu button is hidden, don't render anything
-  if ((!onEdit && !onDelete) || !showMenuButton) {
+  if ((!onEdit && !onDelete && !onRefresh) || !showMenuButton) {
     return null;
   }
 
@@ -40,6 +42,15 @@ export function TaskMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {onRefresh && task.status === 'open' && (
+          <DropdownMenuItem 
+            onClick={() => onRefresh(task.id)}
+            className="text-purple-500 hover:text-purple-700 flex items-center"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh task
+          </DropdownMenuItem>
+        )}
         {onEdit && (
           <DropdownMenuItem onClick={() => onEdit(task)}>
             Edit task

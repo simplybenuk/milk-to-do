@@ -13,6 +13,7 @@ export interface TaskStore {
   deleteTask: (id: string) => Promise<void>;
   updateTaskPriority: (id: string, priority: Priority) => Promise<void>;
   incrementSkipCount: (id: string) => Promise<void>;
+  refreshTaskExpiry: (id: string) => Promise<void>;
   decaySkipCounts: () => Promise<void>;
   checkAndApplyDecay: () => Promise<void>;
   getTasksByPriority: () => Task[];
