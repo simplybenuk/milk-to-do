@@ -1,7 +1,6 @@
-
 import { AllTasksList } from '@/components/all-tasks';
 import { ClosedTasksList } from '@/components/ClosedTasksList';
-import { TaskStats } from '@/components/TaskStats';
+import { TaskStats } from '@/components/stats';
 import { CurrentTask } from '@/components/CurrentTask';
 import { AppView } from '@/hooks/useAppView';
 import { Button } from '@/components/ui/button';
