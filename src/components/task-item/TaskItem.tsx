@@ -2,15 +2,12 @@
 import { useState } from 'react';
 import { Task } from '@/types/task';
 import { cn } from '@/lib/utils';
-import { differenceInDays } from 'date-fns';
-import { TextWithLinks } from './TextWithLinks';
 import { ChildTasksList } from './ChildTasksList';
 import { DeleteTaskDialog } from './DeleteTaskDialog';
-import { TaskMetadata } from './TaskMetadata';
-import { ParentTaskLink } from './ParentTaskLink';
+import { TaskContent } from './TaskContent';
 import { TaskActionButtons } from './TaskActionButtons';
 import { TaskMenu } from './buttons/TaskMenu';
-import { TaskTags } from './TaskTags';
+import { getTaskAgeClass } from './TaskAgeUtils';
 import useTagStore from '@/stores/useTagStore';
 import useTaskStore from '@/stores/useTaskStore';
 import { toast } from '@/hooks/use-toast';
@@ -62,22 +59,6 @@ export function TaskItem({
     : undefined;
   const parentTitle = parentTask?.title;
 
-  // Calculate age-based classes
-  const ageInDays = differenceInDays(new Date(), new Date(task.created_at));
-  const daysUntilExpiry = differenceInDays(new Date(task.expiry_date), new Date());
-  
-  const getTaskAgeClass = () => {
-    // If task has been refreshed recently (more than 25 days left), consider it fresh
-    if (daysUntilExpiry >= 25) {
-      return "task-fresh";
-    }
-    
-    if (daysUntilExpiry < 0) return "task-expired";
-    if (ageInDays >= 21) return "task-sour";
-    if (ageInDays >= 8) return "task-spoiling"; 
-    return "task-fresh";
-  };
-
   const handleComplete = (id: string) => {
     setIsCompleting(true);
     onComplete(id);
@@ -113,7 +94,7 @@ export function TaskItem({
           isCompleting && "animate-task-complete",
           task.status === 'closed' && "opacity-50",
           // Add age-based color classes when task is open
-          task.status === 'open' && getTaskAgeClass(),
+          task.status === 'open' && getTaskAgeClass(task),
           // Add a soft purple background for parent tasks
           isParentTask && "bg-[#F1F0FB]"
         )}
@@ -130,32 +111,14 @@ export function TaskItem({
           />
         </div>
 
-        <div className="flex-1 min-w-0 overflow-hidden break-words mb-2 w-full">
-          {/* Parent task link with added props */}
-          <ParentTaskLink 
-            parentId={parentId} 
-            onViewParent={onViewParent} 
-            inFocusMode={inFocusMode}
-            parentTitle={parentTitle}
-          />
-          
-          <h3 className="text-lg sm:text-xl font-medium mb-2 sm:mb-4 break-words pr-8 w-full">
-            <TextWithLinks text={task.title} />
-          </h3>
-          
-          {/* Task tags - moved to a more prominent position */}
-          {task.tags && task.tags.length > 0 && (
-            <TaskTags 
-              taskId={task.id} 
-              tags={task.tags} 
-              onRemoveTag={!inFocusMode ? handleRemoveTag : undefined}
-              className="mb-3 w-full"
-            />
-          )}
-          
-          {/* Task metadata section */}
-          <TaskMetadata task={task} />
-        </div>
+        <TaskContent 
+          task={task}
+          parentId={parentId}
+          parentTitle={parentTitle}
+          onViewParent={onViewParent}
+          handleRemoveTag={handleRemoveTag}
+          inFocusMode={inFocusMode}
+        />
         
         {/* Action buttons - positioned before child tasks list if parent task */}
         {!isParentTask && (
