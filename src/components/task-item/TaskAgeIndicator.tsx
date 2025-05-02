@@ -1,6 +1,6 @@
 
 import { differenceInDays } from 'date-fns';
-import { Clock, Hourglass } from 'lucide-react';
+import { Clock, Hourglass, RefreshCw } from 'lucide-react';
 
 interface TaskAgeIndicatorProps {
   createdAt: Date;
@@ -14,9 +14,14 @@ export function TaskAgeIndicator({ createdAt, expiryDate }: TaskAgeIndicatorProp
   let status: 'fresh' | 'spoiling' | 'sour' | 'expired';
   let label: string;
   
+  // Always prioritize expiry date check first
   if (daysUntilExpiry < 0) {
     status = 'expired';
     label = 'Expired';
+  } else if (daysUntilExpiry >= 25) {
+    // If expiry date is recently refreshed (>25 days remaining)
+    status = 'fresh';
+    label = 'Fresh';
   } else if (ageInDays >= 21) {
     status = 'sour';
     label = 'Sour';

@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { TaskStore } from './types/taskStore.types';
 import { TaskStoreState } from './types/taskStoreState.types';
 import { Priority } from '@/types/task';
+import { addDays } from 'date-fns';
 import {
   incrementSkipCountInDB,
   updateLastSkippedSessionInDB,
@@ -68,12 +69,16 @@ const useTaskStore = create<TaskStore>((set, get) => {
     refreshTaskExpiry: async (id: string) => {
       try {
         await refreshTaskExpiryInDB(id);
-        const newExpiryDate = new Date();
-        newExpiryDate.setDate(newExpiryDate.getDate() + 30);
+        const newExpiryDate = addDays(new Date(), 30);
         
         set(state => ({
           tasks: state.tasks.map(task =>
-            task.id === id ? { ...task, expiry_date: newExpiryDate } : task
+            task.id === id ? { 
+              ...task, 
+              expiry_date: newExpiryDate,
+              status: 'open',
+              skip_count: 0
+            } : task
           ),
         }));
         

@@ -67,6 +67,11 @@ export function TaskItem({
   const daysUntilExpiry = differenceInDays(new Date(task.expiry_date), new Date());
   
   const getTaskAgeClass = () => {
+    // If task has been refreshed recently (more than 25 days left), consider it fresh
+    if (daysUntilExpiry >= 25) {
+      return "task-fresh";
+    }
+    
     if (daysUntilExpiry < 0) return "task-expired";
     if (ageInDays >= 21) return "task-sour";
     if (ageInDays >= 8) return "task-spoiling"; 
