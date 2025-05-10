@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
 import { Scissors } from 'lucide-react';
-import useTaskStore from '@/stores/useTaskStore';
+import useTaskStore from '@/stores/taskStore';
 import { useToast } from '@/hooks/use-toast';
 
 interface SplitTaskDialogProps {

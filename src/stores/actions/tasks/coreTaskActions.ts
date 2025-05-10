@@ -1,6 +1,5 @@
 
 import { Task, Priority, ClosedStatusReason } from '@/types/task';
-import { TaskStoreState } from '../../types/taskStoreState.types';
 import { 
   addTaskToDB, 
   updateTaskInDB, 
@@ -10,22 +9,18 @@ import {
 } from '../taskActions';
 import { supabase } from '@/integrations/supabase/client';
 
-export const getCoreTaskActions = (
-  setState: (newState: Partial<TaskStoreState>) => void,
-  set: (fn: (state: { tasks: Task[] }) => { tasks: Task[] }) => void,
-  get: () => { tasks: Task[]; fetchTasks: () => Promise<void> }
-) => ({
+export const getCoreTaskActions = (set, get) => ({
   fetchTasks: async () => {
-    setState({ isLoading: true, error: null });
+    set({ isLoading: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
       const tasks = await fetchTasksFromDB(user.id);
-      setState({ tasks, isLoading: false });
+      set({ tasks, isLoading: false });
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      setState({ error: 'Failed to fetch tasks', isLoading: false });
+      set({ error: 'Failed to fetch tasks', isLoading: false });
     }
   },
 
@@ -38,7 +33,7 @@ export const getCoreTaskActions = (
       await get().fetchTasks();
     } catch (error) {
       console.error('Error adding task:', error);
-      setState({ error: 'Failed to add task' });
+      set({ error: 'Failed to add task' });
     }
   },
 
@@ -55,11 +50,12 @@ export const getCoreTaskActions = (
       await get().fetchTasks();
     } catch (error) {
       console.error('Error editing task:', error);
-      setState({ error: 'Failed to edit task' });
+      set({ error: 'Failed to edit task' });
     }
   },
 
-  completeTask: async (id: string, reason: ClosedStatusReason = 'complete') => {
+  // This is now the "core" complete task that is called by the wrapped completeTask in parentTaskActions
+  coreCompleteTask: async (id: string, reason: ClosedStatusReason = 'complete') => {
     try {
       await completeTaskInDB(id, reason);
       set(state => ({
@@ -76,7 +72,7 @@ export const getCoreTaskActions = (
       }));
     } catch (error) {
       console.error('Error completing task:', error);
-      setState({ error: 'Failed to complete task' });
+      set({ error: 'Failed to complete task' });
     }
   },
 
@@ -88,7 +84,7 @@ export const getCoreTaskActions = (
       }));
     } catch (error) {
       console.error('Error deleting task:', error);
-      setState({ error: 'Failed to delete task' });
+      set({ error: 'Failed to delete task' });
     }
   }
 });
