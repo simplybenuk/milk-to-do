@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,7 @@ export function SplitTaskDialog({
   const [localParentTitle, setLocalParentTitle] = useState(parentTaskTitle);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { addTask, completeTask } = useTaskStore();
+  const { addTask, markTaskAsParent } = useTaskStore();
   const { toast } = useToast();
 
   // Update local state when props change to ensure we have the latest values
@@ -61,8 +60,8 @@ export function SplitTaskDialog({
       // Create the new split task as a child of the parent
       await addTask(title.trim(), priority, expiryDate, localParentId);
       
-      // Mark the parent task as a parent (closed with special status)
-      await completeTask(localParentId, 'parent');
+      // Mark the parent task as a parent (but keep it open)
+      await markTaskAsParent(localParentId);
       
       toast({
         title: "Task split successfully",

@@ -32,19 +32,24 @@ export function useAllTasksView() {
       (task.tags?.some(tagId => selectedTagIds.includes(tagId)));
   });
   
-  // Get relevant parents for the filtered open tasks
-  const relevantParents = tasks.filter(task => 
-    task.status === 'closed' && 
+  // Get parent tasks - these are tasks marked as parents but not necessarily closed
+  const parentTasks = tasks.filter(task => 
     task.closed_status === 'parent' &&
-    openTasks.some(childTask => childTask.parent_id === task.id)
+    task.status === 'open' && // Only include open parent tasks in the All Tasks view
+    task.child_task_ids?.length > 0 &&
+    // Only include parent tasks that have at least one open child
+    tasks.some(childTask => 
+      task.child_task_ids.includes(childTask.id) && 
+      childTask.status === 'open' &&
+      new Date(childTask.expiry_date) >= new Date()
+    )
   );
   
   // Include all tasks - both top-level and child tasks
-  // We're not filtering out child tasks anymore to ensure they show up
-  const topLevelOpenTasks = openTasks;
+  const topLevelOpenTasks = [...openTasks, ...parentTasks];
 
   const handleViewParent = (parentId: string) => {
-    const parentTask = [...openTasks, ...relevantParents].find(t => t.id === parentId);
+    const parentTask = [...openTasks, ...parentTasks].find(t => t.id === parentId);
     if (parentTask) {
       const parentElement = document.getElementById(`task-${parentId}`);
       if (parentElement) {
@@ -65,7 +70,7 @@ export function useAllTasksView() {
   return {
     openTasks,
     topLevelOpenTasks,
-    relevantParents,
+    parentTasks,
     focusParentId,
     setFocusParentId,
     handleViewParent

@@ -56,3 +56,67 @@ export const refreshAllParentTasksExpiry = async (tasks: Task[]): Promise<void> 
     await updateParentTaskExpiry(parentTask.id, childTasks);
   }
 };
+
+/**
+ * Checks if a parent task should be closed and closes it if all children are completed or expired
+ * @param parentId The ID of the parent task
+ * @param allTasks Array of all tasks
+ * @returns Boolean indicating if the parent was closed
+ */
+export const checkAndCloseParentTask = async (parentId: string, allTasks: Task[]): Promise<boolean> => {
+  // Find the parent task
+  const parentTask = allTasks.find(task => task.id === parentId && task.closed_status === 'parent');
+  if (!parentTask) return false;
+
+  // Find all child tasks for this parent
+  const childTasks = allTasks.filter(task => 
+    task.parent_id === parentId
+  );
+
+  // If there are no child tasks, we can close the parent
+  if (childTasks.length === 0) {
+    await closeParentTask(parentId);
+    return true;
+  }
+
+  // Check if all child tasks are closed or expired
+  const allChildrenClosedOrExpired = childTasks.every(task => {
+    if (task.status === 'closed') return true;
+    const isExpired = new Date(task.expiry_date) < new Date();
+    return isExpired;
+  });
+
+  // If all children are closed or expired, close the parent too
+  if (allChildrenClosedOrExpired) {
+    await closeParentTask(parentId);
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Closes a parent task when all its children are completed or expired
+ * @param parentId The ID of the parent task
+ */
+const closeParentTask = async (parentId: string): Promise<void> => {
+  try {
+    // Update the parent task status in the database
+    const { error } = await supabase
+      .from('tasks')
+      .update({
+        status: 'closed',
+        closed_status: 'complete',
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', parentId);
+
+    if (error) {
+      console.error('Error closing parent task:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Failed to close parent task:', error);
+    throw error;
+  }
+};
