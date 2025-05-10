@@ -50,9 +50,10 @@ export function FocusModeContainer({
     console.log("Focus mode session ended naturally");
     document.body.style.pointerEvents = "";
     
-    // Exit focus mode with a small delay
+    // Exit focus mode and return to All Tasks view
+    setInFocusMode(false);
     setTimeout(() => {
-      setInFocusMode(false);
+      setCurrentView('all'); // Go back to All Tasks view when focus mode ends naturally
     }, 50);
   };
   

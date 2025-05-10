@@ -44,8 +44,11 @@ export function useAppView(initialView: AppView = 'all') {
     
     // We'll set the view in a separate callback to ensure state batching
     setTimeout(() => {
+      // If there's a pending view, switch to it; otherwise, go back to 'all'
       if (pendingView) {
         setCurrentView(pendingView);
+      } else {
+        setCurrentView('all');
       }
       setPendingView(null);
       setShowExitConfirm(false);
