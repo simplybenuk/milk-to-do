@@ -8,7 +8,8 @@ import {
   incrementSkipCountInDB,
   updateLastSkippedSessionInDB,
   updateTaskPriorityInDB,
-  refreshTaskExpiryInDB
+  refreshTaskExpiryInDB,
+  markTaskAsParentInDB
 } from './actions/taskActions';
 import { getFocusModeActions } from './actions/tasks/focusModeActions';
 import { getDecayActions } from './actions/tasks/decayActions';
@@ -130,6 +131,27 @@ const useTaskStore = create<TaskStore>((set, get) => {
       } catch (error) {
         console.error('Error refreshing task expiry date:', error);
         setState({ error: 'Failed to refresh task expiry date' });
+      }
+    },
+
+    // Mark a task as a parent task
+    markTaskAsParent: async (id: string) => {
+      try {
+        await markTaskAsParentInDB(id);
+        
+        set(state => ({
+          tasks: state.tasks.map(task =>
+            task.id === id ? { 
+              ...task, 
+              closed_status: 'parent'
+            } : task
+          ),
+        }));
+        
+        await get().fetchTasks();
+      } catch (error) {
+        console.error('Error marking task as parent:', error);
+        setState({ error: 'Failed to mark task as parent' });
       }
     },
 

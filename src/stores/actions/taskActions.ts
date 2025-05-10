@@ -42,6 +42,18 @@ export const refreshTaskExpiryInDB = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
+// Add markTaskAsParentInDB function
+export const markTaskAsParentInDB = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from('tasks')
+    .update({ 
+      closed_status: 'parent',
+    })
+    .eq('id', id);
+
+  if (error) throw error;
+};
+
 // Re-export all individual action functions
 export * from './tasks/addTask';
 export * from './tasks/completeTask';
