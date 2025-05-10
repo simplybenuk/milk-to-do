@@ -9,7 +9,7 @@ import { UpgradeToProDialog } from '../UpgradeToProDialog';
 import { useSubscription } from '@/hooks/useSubscription';
 import { TaskTagFilter } from '../TaskTagFilter';
 import { TaskList } from './TaskList';
-import { useAllTasksView } from './useAllTasksView';
+import { useAllTasksView } from '@/hooks/useAllTasksView';
 
 export function AllTasksList() {
   const { deleteTask, completeTask, editTask, fetchTasks } = useTaskStore();
@@ -29,7 +29,6 @@ export function AllTasksList() {
     topLevelOpenTasks,
     relevantParents,
     focusParentId,
-    setFocusParentId,
     handleViewParent
   } = useAllTasksView();
 

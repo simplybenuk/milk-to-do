@@ -27,7 +27,7 @@ export function TaskList({
   const groupedTasks: Record<string, Task[]> = {};
   const parentTasks: Task[] = [];
   
-  // First, identify parent tasks and standalone tasks
+  // First, identify standalone tasks and group child tasks
   topLevelOpenTasks.forEach(task => {
     if (!task.parent_id) {
       parentTasks.push(task);
@@ -96,7 +96,7 @@ export function TaskList({
       
       {/* Display child tasks that aren't captured in parent views */}
       {topLevelOpenTasks
-        .filter(task => task.parent_id && !relevantParents.some(p => p.id === task.parent_id))
+        .filter(task => task.parent_id && !parentTasks.some(p => p.id === task.parent_id))
         .map((task) => (
           <div 
             key={task.id} 

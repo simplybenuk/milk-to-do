@@ -40,7 +40,7 @@ export function useAllTasksView() {
   );
   
   // Include all tasks - both top-level and child tasks
-  // This is the change: we're not filtering out child tasks anymore
+  // We're not filtering out child tasks anymore to ensure they show up
   const topLevelOpenTasks = openTasks;
 
   const handleViewParent = (parentId: string) => {
