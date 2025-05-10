@@ -17,7 +17,7 @@ export function useFocusModeHandlers(
     // Reset pointer events explicitly before entering focus mode
     document.body.style.pointerEvents = "";
     
-    // Change view first, let useAppView handle setting focus mode
+    // Just change view, the view handler will enable focus mode
     setCurrentView('main');
   }, [setCurrentView]);
 
@@ -43,7 +43,7 @@ export function useFocusModeHandlers(
     // Refresh tasks after a short delay to ensure state updates are complete
     setTimeout(() => {
       fetchTasks();
-    }, 300); // Increased delay for more reliable state updates
+    }, 300);
   }, [confirmExitFocusMode, fetchTasks]);
 
   return {

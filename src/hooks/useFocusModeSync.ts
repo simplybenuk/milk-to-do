@@ -4,33 +4,32 @@ import { AppView } from '@/hooks/useAppView';
 
 /**
  * Hook to synchronize focus mode state with the current view
- * This hook is now simplified to only handle one-way synchronization:
- * - disabling focus mode when leaving the main view
+ * This hook only monitors changes and doesn't update state directly
  */
 export function useFocusModeSync(
   currentView: AppView,
-  inFocusMode: boolean,
-  setInFocusMode: (value: boolean) => void
+  inFocusMode: boolean
 ) {
-  // Use refs to track previous values to avoid unnecessary state updates
+  // Use refs to track previous values to avoid unnecessary effects
   const prevViewRef = useRef<AppView>(currentView);
   const prevFocusModeRef = useRef<boolean>(inFocusMode);
   
-  // Effect to handle focus mode state changes based on view changes
+  // Effect to log focus mode state changes based on view changes
   useEffect(() => {
     // Only run effect if the view or focus mode state has actually changed
     if (prevViewRef.current !== currentView || prevFocusModeRef.current !== inFocusMode) {
-      // If changing away from main view and in focus mode, disable focus mode
-      if (currentView !== 'main' && inFocusMode) {
-        console.log('useFocusModeSync: Auto-disabling focus mode due to view change');
-        setInFocusMode(false);
-      }
+      console.log('Focus mode sync detected change:', { 
+        prevView: prevViewRef.current,
+        currentView,
+        prevFocusMode: prevFocusModeRef.current,
+        inFocusMode
+      });
       
       // Update the refs to the current values
       prevViewRef.current = currentView;
       prevFocusModeRef.current = inFocusMode;
     }
-  }, [currentView, inFocusMode, setInFocusMode]);
+  }, [currentView, inFocusMode]);
   
   // Cleanup on unmount
   useEffect(() => {

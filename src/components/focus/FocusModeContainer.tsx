@@ -6,6 +6,7 @@ import { useTaskNavigation } from '@/hooks/useTaskNavigation';
 import { useFocusModeHandlers } from '@/hooks/useFocusModeHandlers';
 import { AppView } from '@/hooks/useAppView';
 import { MainContent } from '@/components/MainContent';
+import { useFocusModeSync } from '@/hooks/useFocusModeSync';
 
 interface FocusModeContainerProps {
   currentView: AppView;
@@ -28,6 +29,9 @@ export function FocusModeContainer({
 }: FocusModeContainerProps) {
   const [selectedTagIds, setSelectedTagIdsState] = useState<string[] | undefined>(undefined);
   
+  // Monitor view and focus mode sync without updating state
+  useFocusModeSync(currentView, inFocusMode);
+  
   // Initialize focus mode handlers
   const { 
     handleEnterFocusMode, 
@@ -46,10 +50,10 @@ export function FocusModeContainer({
     console.log("Focus mode session ended naturally");
     document.body.style.pointerEvents = "";
     
-    // Use setTimeout to avoid state update during render
+    // Exit focus mode with a small delay
     setTimeout(() => {
       setInFocusMode(false);
-    }, 0);
+    }, 50);
   };
   
   const {
@@ -75,7 +79,7 @@ export function FocusModeContainer({
         document.body.style.pointerEvents = "";
         console.log("FocusModeContainer: Restored pointer events");
       }
-    }, 1000);
+    }, 5000); // Longer interval to reduce updates
     
     return () => {
       clearInterval(intervalId);

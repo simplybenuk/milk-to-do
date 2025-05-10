@@ -22,7 +22,7 @@ export function useBodyStyles() {
         resetPointerEvents();
         console.log('Restored pointer-events via interval check');
       }
-    }, 1000); // Check every second
+    }, 2000); // Check every 2 seconds to reduce update frequency
     
     // Listen for any page visibility changes to reset pointer events
     const handleVisibilityChange = () => {

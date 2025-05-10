@@ -32,8 +32,7 @@ export function useIndexPage() {
       currentView,
       inFocusMode
     });
-    // Don't include reactive state in dependencies for this initial setup
-  }, [loadTasks, resetPointerEvents]); 
+  }, []); // No dependencies for initial setup
   
   return {
     currentView,
