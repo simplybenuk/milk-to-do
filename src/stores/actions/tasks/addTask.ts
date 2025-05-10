@@ -1,7 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Priority, Task, TaskStatus } from '@/types/task';
 import { convertDatabaseDatesToDateObjects } from '../../utils/taskUtils';
+import { updateParentTaskExpiry } from '../../utils/parentTaskUtils';
 
 export const addTaskToDB = async (
   title: string,
@@ -32,7 +32,39 @@ export const addTaskToDB = async (
   if (error) throw error;
   
   if (parentId) {
-    await updateParentChildIds(parentId, data.id);
+    // Get parent task and its current child tasks
+    const { data: parentData, error: parentError } = await supabase
+      .from('tasks')
+      .select('child_task_ids')
+      .eq('id', parentId)
+      .single();
+      
+    if (!parentError && parentData) {
+      const updatedChildIds = [...(parentData.child_task_ids || []), data.id];
+      
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({ child_task_ids: updatedChildIds })
+        .eq('id', parentId);
+        
+      if (updateError) {
+        console.error('Error updating parent task child_task_ids:', updateError);
+      } else {
+        // Get all child tasks for the parent to update its expiry date
+        const { data: childTasks, error: childError } = await supabase
+          .from('tasks')
+          .select('*')
+          .in('id', updatedChildIds);
+        
+        if (!childError && childTasks) {
+          // Convert the database dates to JavaScript Date objects
+          const formattedChildTasks = childTasks.map(convertDatabaseDatesToDateObjects);
+          
+          // Update parent task's expiry date based on newest child task
+          await updateParentTaskExpiry(parentId, formattedChildTasks);
+        }
+      }
+    }
   }
   
   if (tagIds && tagIds.length > 0) {
@@ -40,25 +72,6 @@ export const addTaskToDB = async (
   }
   
   return convertDatabaseDatesToDateObjects(data);
-};
-
-const updateParentChildIds = async (parentId: string, newChildId: string) => {
-  const { data: parentTask, error: fetchError } = await supabase
-    .from('tasks')
-    .select('child_task_ids')
-    .eq('id', parentId)
-    .single();
-    
-  if (!fetchError && parentTask) {
-    const updatedChildIds = [...(parentTask.child_task_ids || []), newChildId];
-    
-    const { error: updateError } = await supabase
-      .from('tasks')
-      .update({ child_task_ids: updatedChildIds })
-      .eq('id', parentId);
-      
-    if (updateError) console.error('Error updating parent task child_task_ids:', updateError);
-  }
 };
 
 const createTaskTagRelations = async (taskId: string, tagIds: string[]) => {

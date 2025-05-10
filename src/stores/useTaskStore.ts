@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { TaskStore } from './types/taskStore.types';
 import { TaskStoreState } from './types/taskStoreState.types';
@@ -13,6 +12,7 @@ import {
 import { getFocusModeActions } from './actions/tasks/focusModeActions';
 import { getDecayActions } from './actions/tasks/decayActions';
 import { getCoreTaskActions } from './actions/tasks/coreTaskActions';
+import { refreshAllParentTasksExpiry } from './utils/parentTaskUtils';
 
 const useTaskStore = create<TaskStore>((set, get) => {
   const getState = (): TaskStoreState => ({
@@ -129,7 +129,21 @@ const useTaskStore = create<TaskStore>((set, get) => {
 
     // Focus mode and utility actions
     ...focusModeActions,
-    ...decayActions()
+    ...decayActions(),
+
+    // Add a new function to refresh all parent task expiry dates
+    refreshParentTasksExpiry: async () => {
+      try {
+        setState({ isLoading: true });
+        await refreshAllParentTasksExpiry(get().tasks);
+        await get().fetchTasks(); // Refresh tasks to get updated data
+      } catch (error) {
+        console.error('Error refreshing parent task expiry dates:', error);
+        setState({ error: 'Failed to refresh parent task expiry dates' });
+      } finally {
+        setState({ isLoading: false });
+      }
+    }
   };
 });
 
