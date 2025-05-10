@@ -44,6 +44,19 @@ export function useAllTasksView() {
       new Date(childTask.expiry_date) >= new Date()
     )
   );
+
+  // Find relevant parent tasks that are closed but have open children
+  const relevantParents = tasks.filter(task =>
+    task.closed_status === 'parent' &&
+    task.status === 'closed' && // These are closed parent tasks
+    task.child_task_ids?.length > 0 &&
+    // Only include if they have at least one open child
+    tasks.some(childTask =>
+      task.child_task_ids?.includes(childTask.id) &&
+      childTask.status === 'open' &&
+      new Date(childTask.expiry_date) >= new Date()
+    )
+  );
   
   // Include all tasks - both top-level and child tasks
   const topLevelOpenTasks = [...openTasks, ...parentTasks];
@@ -71,6 +84,7 @@ export function useAllTasksView() {
     openTasks,
     topLevelOpenTasks,
     parentTasks,
+    relevantParents, // Added this property to the return value
     focusParentId,
     setFocusParentId,
     handleViewParent

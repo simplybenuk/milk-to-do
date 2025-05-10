@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PaperclipIcon, Scissors } from 'lucide-react';
@@ -20,15 +21,18 @@ interface ChildTasksListProps {
 
 export function ChildTasksList({
   task,
-  childTasks,
+  childTasks = [], // Add default empty array
   onCreateChildTask,
   defaultOpen = false,
   onCompleteChildTask,
   onEditChildTask,
   onDeleteChildTask
 }: ChildTasksListProps) {
-  const openTasks = childTasks.filter(t => t.status === 'open');
-  const closedTasks = childTasks.filter(t => t.status === 'closed');
+  // Guard against undefined childTasks
+  const safeChildTasks = Array.isArray(childTasks) ? childTasks : [];
+  
+  const openTasks = safeChildTasks.filter(t => t.status === 'open');
+  const closedTasks = safeChildTasks.filter(t => t.status === 'closed');
   const [isCompleting, setIsCompleting] = useState<Record<string, boolean>>({});
 
   const handleCompleteChildTask = (id: string) => {

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
@@ -27,7 +26,7 @@ export function AllTasksList() {
   // Use our custom hook for task filtering and parent focusing
   const {
     topLevelOpenTasks,
-    relevantParents,
+    relevantParents, // Now properly included from the hook
     focusParentId,
     handleViewParent
   } = useAllTasksView();

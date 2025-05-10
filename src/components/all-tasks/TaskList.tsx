@@ -14,8 +14,8 @@ interface TaskListProps {
 }
 
 export function TaskList({
-  topLevelOpenTasks,
-  relevantParents,
+  topLevelOpenTasks = [], // Provide default empty array
+  relevantParents = [], // Provide default empty array
   focusParentId,
   onComplete,
   onDelete,
@@ -39,15 +39,19 @@ export function TaskList({
     }
   });
   
+  // Guard against undefined arrays with safe checks
+  const hasRelevantParents = Array.isArray(relevantParents) && relevantParents.length > 0;
+  const hasTopLevelTasks = Array.isArray(topLevelOpenTasks) && topLevelOpenTasks.length > 0;
+  
   // If no tasks to display, show empty state
-  if (topLevelOpenTasks.length === 0 && relevantParents.length === 0) {
+  if (!hasTopLevelTasks && !hasRelevantParents) {
     return <p className="text-center text-milk-500">No tasks available</p>;
   }
 
   return (
     <div className="w-full space-y-4">
       {/* Display relevant closed parent tasks first */}
-      {relevantParents.map((task) => (
+      {hasRelevantParents && relevantParents.map((task) => (
         <div 
           key={task.id} 
           id={`task-${task.id}`}
