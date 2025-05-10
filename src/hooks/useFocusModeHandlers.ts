@@ -16,6 +16,8 @@ export function useFocusModeHandlers(
     console.log('Entering focus mode');
     // Reset pointer events explicitly before entering focus mode
     document.body.style.pointerEvents = "";
+    
+    // Change view first, let useAppView handle setting focus mode
     setCurrentView('main');
   }, [setCurrentView]);
 
@@ -24,6 +26,8 @@ export function useFocusModeHandlers(
     console.log('Initiating focus mode exit');
     // Make sure pointer events are enabled when trying to exit
     document.body.style.pointerEvents = "";
+    
+    // Simply show the confirmation dialog
     setShowExitConfirm(true);
   }, [setShowExitConfirm]);
 
@@ -33,7 +37,8 @@ export function useFocusModeHandlers(
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
     
-    // Process the exit confirmation first
+    // Let the parent component handle the state changes
+    // This avoids creating unnecessary dependencies
     confirmExitFocusMode();
     
     // Refresh tasks after a short delay to ensure state updates are complete

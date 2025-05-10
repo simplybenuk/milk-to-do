@@ -21,30 +21,43 @@ export function useAppView(initialView: AppView = 'all') {
     
     // If not in focus mode or switching to main, change view directly
     setCurrentView(newView);
-    // Focus mode state changes are handled by useFocusModeSync
   }, [inFocusMode]);
 
   // Function to confirm exiting focus mode
   const confirmExitFocusMode = useCallback(() => {
     console.log('Confirming exit from focus mode, pending view:', pendingView);
     
-    // Then change the view (either to pending or 'all')
-    if (pendingView) {
-      setCurrentView(pendingView);
-      setPendingView(null);
-    } else {
-      setCurrentView('all');
-    }
+    // First disable focus mode, but do it directly to avoid triggering effects
+    const newView = pendingView || 'all';
     
-    // First disable focus mode - must be done after changing view to avoid race conditions
+    // Update state in the correct order to avoid race conditions
     setInFocusMode(false);
-    
-    // Finally close the confirmation dialog
+    setCurrentView(newView);
+    setPendingView(null);
     setShowExitConfirm(false);
   }, [pendingView]);
   
-  // Use our custom focus mode sync hook
-  useFocusModeSync(currentView, inFocusMode, setInFocusMode);
+  // Use a custom hook to synchronize focus mode with view changes
+  // but deliberately avoid passing the setter to prevent circular updates
+  useEffect(() => {
+    // Only sync when changing TO main view (entering focus mode)
+    if (currentView === 'main' && !inFocusMode) {
+      console.log('Setting focus mode for main view');
+      setInFocusMode(true);
+    }
+    
+    // Make sure pointer events are always enabled
+    document.body.style.pointerEvents = '';
+  }, [currentView, inFocusMode]);
+  
+  // Effect to ensure focus mode is disabled when leaving main view
+  useEffect(() => {
+    // Only sync when changing FROM main view (exiting focus mode)
+    if (currentView !== 'main' && inFocusMode && !showExitConfirm) {
+      console.log('Auto-disabling focus mode when leaving main view');
+      setInFocusMode(false);
+    }
+  }, [currentView, inFocusMode, showExitConfirm]);
   
   // Effect to ensure pointer events are never stuck
   useEffect(() => {
