@@ -42,10 +42,14 @@ export function FocusModeContainer({
   
   // Set up task navigation and handle focus mode end
   const handleFocusEnd = () => {
-    setInFocusMode(false);
-    
-    // Ensure interactivity is restored immediately
+    // Safely exit focus mode
+    console.log("Focus mode session ended naturally");
     document.body.style.pointerEvents = "";
+    
+    // Use setTimeout to avoid state update during render
+    setTimeout(() => {
+      setInFocusMode(false);
+    }, 0);
   };
   
   const {
@@ -63,6 +67,21 @@ export function FocusModeContainer({
     setSelectedTagIdsState(tags);
     setSelectedTagIds(tags);
   };
+
+  // Reset pointer events if they get stuck
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = "";
+        console.log("FocusModeContainer: Restored pointer events");
+      }
+    }, 1000);
+    
+    return () => {
+      clearInterval(intervalId);
+      document.body.style.pointerEvents = "";
+    };
+  }, []);
 
   // If not in focus mode, only show the enter focus mode button
   if (!inFocusMode && currentView === 'all') {

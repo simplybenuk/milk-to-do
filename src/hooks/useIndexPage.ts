@@ -32,7 +32,8 @@ export function useIndexPage() {
       currentView,
       inFocusMode
     });
-  }, [loadTasks, resetPointerEvents]); // Do not include state that would cause re-renders
+    // Don't include reactive state in dependencies for this initial setup
+  }, [loadTasks, resetPointerEvents]); 
   
   return {
     currentView,

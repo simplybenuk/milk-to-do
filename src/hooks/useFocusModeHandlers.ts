@@ -37,14 +37,13 @@ export function useFocusModeHandlers(
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
     
-    // Let the parent component handle the state changes
-    // This avoids creating unnecessary dependencies
+    // Let the confirmation handler handle the state changes
     confirmExitFocusMode();
     
     // Refresh tasks after a short delay to ensure state updates are complete
     setTimeout(() => {
       fetchTasks();
-    }, 100);
+    }, 300); // Increased delay for more reliable state updates
   }, [confirmExitFocusMode, fetchTasks]);
 
   return {

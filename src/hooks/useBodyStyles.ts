@@ -22,11 +22,21 @@ export function useBodyStyles() {
         resetPointerEvents();
         console.log('Restored pointer-events via interval check');
       }
-    }, 2000);
+    }, 1000); // Check every second
+    
+    // Listen for any page visibility changes to reset pointer events
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        resetPointerEvents();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     // Cleanup on unmount
     return () => {
       clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       resetPointerEvents();
       console.log('Body styles cleanup completed');
     };
