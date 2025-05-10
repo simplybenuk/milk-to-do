@@ -24,8 +24,8 @@ const Index = () => {
   const addTask = useTaskStore(state => state.addTask);
   
   // Create a memoized handler for adding tasks
-  const handleAddTask = useCallback((title: string, priority: string, expiryDate: Date, parentId?: string, tagIds?: string[]) => {
-    addTask(title, priority, expiryDate, parentId, tagIds);
+  const handleAddTask = useCallback((title: string, priority: "high" | "medium" | "low", expiryDate: Date, tagIds?: string[]) => {
+    addTask(title, priority, expiryDate, undefined, tagIds);
   }, [addTask]);
 
   return (

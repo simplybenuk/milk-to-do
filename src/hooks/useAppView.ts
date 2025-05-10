@@ -21,14 +21,12 @@ export function useAppView(initialView: AppView = 'all') {
     
     // If not in focus mode or switching to main, change view directly
     setCurrentView(newView);
-    // We'll let useFocusModeSync handle the focus mode changes
+    // Focus mode state changes are handled by useFocusModeSync
   }, [inFocusMode]);
 
   // Function to confirm exiting focus mode
   const confirmExitFocusMode = useCallback(() => {
     console.log('Confirming exit from focus mode, pending view:', pendingView);
-    // First disable focus mode
-    setInFocusMode(false);
     
     // Then change the view (either to pending or 'all')
     if (pendingView) {
@@ -37,6 +35,9 @@ export function useAppView(initialView: AppView = 'all') {
     } else {
       setCurrentView('all');
     }
+    
+    // First disable focus mode - must be done after changing view to avoid race conditions
+    setInFocusMode(false);
     
     // Finally close the confirmation dialog
     setShowExitConfirm(false);

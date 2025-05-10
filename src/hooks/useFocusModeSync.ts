@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppView } from '@/hooks/useAppView';
 
 /**
@@ -10,23 +10,31 @@ export function useFocusModeSync(
   inFocusMode: boolean,
   setInFocusMode: (value: boolean) => void
 ) {
-  // Effect to ensure focus mode state is synced with current view
-  // but only trigger when currentView changes, not when inFocusMode changes
+  // Use refs to track previous values to avoid unnecessary state updates
+  const prevViewRef = useRef<AppView>(currentView);
+  
+  // Effect to handle focus mode state changes based on view changes
   useEffect(() => {
-    if (currentView === 'main' && !inFocusMode) {
-      console.log('Syncing focus mode: enabling for main view');
-      setInFocusMode(true);
-      // Make sure pointer events are enabled when entering focus mode
-      document.body.style.pointerEvents = "";
+    // Only run effect if the view has actually changed
+    if (prevViewRef.current !== currentView) {
+      console.log(`View changed from ${prevViewRef.current} to ${currentView}`);
+      
+      // If changing to main view and not already in focus mode
+      if (currentView === 'main' && !inFocusMode) {
+        console.log('Syncing focus mode: enabling for main view');
+        setInFocusMode(true);
+      }
+      // If changing away from main view and in focus mode
+      else if (currentView !== 'main' && inFocusMode) {
+        console.log('Auto-disabling focus mode due to view change');
+        setInFocusMode(false);
+      }
+      
+      // Update the ref to the current view
+      prevViewRef.current = currentView;
     }
-  }, [currentView, setInFocusMode]); // Remove inFocusMode from dependencies
-
-  // Effect to ensure focus mode is disabled when not in main view
-  // but only trigger when currentView changes, not when inFocusMode changes
-  useEffect(() => {
-    if (currentView !== 'main' && inFocusMode) {
-      console.log('Auto-disabling focus mode due to view change');
-      setInFocusMode(false);
-    }
-  }, [currentView, setInFocusMode]); // Remove inFocusMode from dependencies
+    
+    // Make sure pointer events are always enabled
+    document.body.style.pointerEvents = "";
+  }, [currentView, inFocusMode, setInFocusMode]);
 }

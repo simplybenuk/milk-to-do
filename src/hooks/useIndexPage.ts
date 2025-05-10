@@ -25,14 +25,14 @@ export function useIndexPage() {
     console.log('Index component mounted, fetching tasks...');
     loadTasks();
     
-    console.log('App state:', { 
+    // Ensure pointer events are enabled
+    resetPointerEvents();
+    
+    console.log('App state initialized:', { 
       currentView,
       inFocusMode
     });
-  }, [loadTasks]); // Remove currentView and inFocusMode from dependencies
-  
-  // We'll remove this effect since useFocusModeSync now handles this logic
-  // This avoids duplicate state updates that cause the infinite loop
+  }, [loadTasks, resetPointerEvents]); // Do not include state that would cause re-renders
   
   return {
     currentView,
