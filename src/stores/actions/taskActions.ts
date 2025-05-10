@@ -42,13 +42,28 @@ export const refreshTaskExpiryInDB = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
-// Add markTaskAsParentInDB function
+// Fix markTaskAsParentInDB function
 export const markTaskAsParentInDB = async (id: string): Promise<void> => {
+  // First, check if the task is already closed
+  const { data: taskData, error: fetchError } = await supabase
+    .from('tasks')
+    .select('status')
+    .eq('id', id)
+    .single();
+    
+  if (fetchError) throw fetchError;
+  
+  const updates: any = { closed_status: 'parent' };
+  
+  // Only update status to 'closed' if it's not already closed
+  // This avoids violating the valid_closed_status constraint
+  if (taskData.status === 'open') {
+    updates.status = 'closed';
+  }
+  
   const { error } = await supabase
     .from('tasks')
-    .update({ 
-      closed_status: 'parent',
-    })
+    .update(updates)
     .eq('id', id);
 
   if (error) throw error;

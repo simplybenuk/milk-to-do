@@ -1,16 +1,22 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import useTaskStore from '@/stores/useTaskStore';
 import { useSubscription } from '@/hooks/useSubscription';
 
 export function useAllTasksView() {
-  const { tasks } = useTaskStore();
+  const { tasks, fetchTasks } = useTaskStore();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
   const { isPro } = useSubscription();
+  
+  // Add effect to refresh tasks when component is mounted
+  useEffect(() => {
+    // Refresh tasks to ensure we have the latest data including newly created child tasks
+    fetchTasks();
+  }, [fetchTasks]);
   
   // Filter tasks by tags only if Pro user
   const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];
@@ -57,7 +63,7 @@ export function useAllTasksView() {
   ];
 
   const handleViewParent = (parentId: string) => {
-    const parentTask = [...openTasks, ...parentTasks].find(t => t.id === parentId);
+    const parentTask = tasks.find(t => t.id === parentId);
     if (parentTask) {
       const parentElement = document.getElementById(`task-${parentId}`);
       if (parentElement) {

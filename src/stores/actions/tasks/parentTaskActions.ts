@@ -1,6 +1,7 @@
 
 import { refreshAllParentTasksExpiry, checkAndCloseParentTask } from '../../utils/parentTaskUtils';
 import { markTaskAsParentInDB } from '../taskActions';
+import { supabase } from '@/integrations/supabase/client';
 
 export const getParentTaskActions = (set, get) => ({
   // After completing a task, also check if we need to close its parent
@@ -46,24 +47,69 @@ export const getParentTaskActions = (set, get) => ({
     }
   },
   
-  // Mark a task as a parent task
+  // Mark a task as a parent task and handle child task associations
   markTaskAsParent: async (id: string) => {
     try {
+      // First mark the task as a parent in the database
       await markTaskAsParentInDB(id);
       
+      // Update the local state to reflect the change
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id ? { 
             ...task, 
-            closed_status: 'parent'
+            closed_status: 'parent',
+            // Only set status to 'closed' if it's not already closed
+            ...(task.status === 'open' ? { status: 'closed' } : {})
           } : task
         ),
       }));
       
-      await get().fetchTasks();
     } catch (error) {
       console.error('Error marking task as parent:', error);
       set({ error: 'Failed to mark task as parent' });
+    }
+  },
+  
+  // Add child task ID to parent's child_task_ids array
+  updateParentWithChild: async (parentId: string, childId: string) => {
+    try {
+      // First get the parent task to check its current child_task_ids
+      const { data: parentTask, error: fetchError } = await supabase
+        .from('tasks')
+        .select('child_task_ids')
+        .eq('id', parentId)
+        .single();
+        
+      if (fetchError) throw fetchError;
+      
+      // Create new array with the child ID added
+      const updatedChildIds = [...(parentTask.child_task_ids || [])];
+      if (!updatedChildIds.includes(childId)) {
+        updatedChildIds.push(childId);
+      }
+      
+      // Update the parent task with the new child_task_ids array
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({ child_task_ids: updatedChildIds })
+        .eq('id', parentId);
+        
+      if (updateError) throw updateError;
+      
+      // Update the local state to reflect this change
+      set(state => ({
+        tasks: state.tasks.map(task =>
+          task.id === parentId ? { 
+            ...task, 
+            child_task_ids: updatedChildIds
+          } : task
+        ),
+      }));
+      
+    } catch (error) {
+      console.error('Error updating parent with child ID:', error);
+      set({ error: 'Failed to update parent-child relationship' });
     }
   },
 

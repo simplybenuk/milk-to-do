@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +27,7 @@ export function AllTasksList() {
   // Use our custom hook for task filtering and parent focusing
   const {
     topLevelOpenTasks,
-    relevantParents, // Now properly included from the hook
+    relevantParents,
     focusParentId,
     handleViewParent
   } = useAllTasksView();
@@ -72,6 +73,7 @@ export function AllTasksList() {
 
   const handleSplitComplete = async () => {
     console.log("Split completed, refreshing tasks");
+    // Make sure to fetch the latest tasks after creating a split task
     await fetchTasks();
   };
 

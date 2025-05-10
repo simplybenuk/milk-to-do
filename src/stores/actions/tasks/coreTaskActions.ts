@@ -29,7 +29,48 @@ export const getCoreTaskActions = (set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user logged in');
 
-      await addTaskToDB(title, priority, expiryDate, user.id, parentId, tagIds);
+      // Add the task to the database
+      const newTaskId = await addTaskToDB(title, priority, expiryDate, user.id, parentId, tagIds);
+      
+      // If this is a child task, update the parent task's child_task_ids array
+      if (parentId && newTaskId) {
+        try {
+          // Fetch current parent task to get its child_task_ids
+          const { data: parentTask, error: fetchError } = await supabase
+            .from('tasks')
+            .select('child_task_ids')
+            .eq('id', parentId)
+            .single();
+            
+          if (fetchError) throw fetchError;
+          
+          // Update parent task's child_task_ids array
+          const updatedChildIds = [...(parentTask.child_task_ids || [])];
+          if (!updatedChildIds.includes(newTaskId)) {
+            updatedChildIds.push(newTaskId);
+          }
+          
+          const { error: updateError } = await supabase
+            .from('tasks')
+            .update({ child_task_ids: updatedChildIds })
+            .eq('id', parentId);
+            
+          if (updateError) throw updateError;
+          
+          // Also make sure the parent is marked correctly
+          const { error: parentError } = await supabase
+            .from('tasks')
+            .update({ closed_status: 'parent' })
+            .eq('id', parentId);
+            
+          if (parentError) throw parentError;
+          
+        } catch (error) {
+          console.error('Error updating parent task child_task_ids:', error);
+        }
+      }
+      
+      // Reload tasks to get the latest state including the new task and updated relationships
       await get().fetchTasks();
     } catch (error) {
       console.error('Error adding task:', error);
