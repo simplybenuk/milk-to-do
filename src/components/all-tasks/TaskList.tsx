@@ -23,6 +23,22 @@ export function TaskList({
   onCreateChildTask,
   onEdit
 }: TaskListProps) {
+  // Group the tasks by parent_id
+  const groupedTasks: Record<string, Task[]> = {};
+  const parentTasks: Task[] = [];
+  
+  // First, identify parent tasks and standalone tasks
+  topLevelOpenTasks.forEach(task => {
+    if (!task.parent_id) {
+      parentTasks.push(task);
+    } else {
+      if (!groupedTasks[task.parent_id]) {
+        groupedTasks[task.parent_id] = [];
+      }
+      groupedTasks[task.parent_id].push(task);
+    }
+  });
+  
   // If no tasks to display, show empty state
   if (topLevelOpenTasks.length === 0 && relevantParents.length === 0) {
     return <p className="text-center text-milk-500">No tasks available</p>;
@@ -44,7 +60,7 @@ export function TaskList({
             onComplete={onComplete}
             onDelete={onDelete}
             showCompleteButton={false}
-            allTasks={[...topLevelOpenTasks, ...relevantParents]}
+            allTasks={topLevelOpenTasks}
             onViewParent={onViewParent}
             onCreateChildTask={onCreateChildTask}
             onEdit={onEdit}
@@ -54,8 +70,8 @@ export function TaskList({
         </div>
       ))}
       
-      {/* Display open top-level tasks (excluding child tasks) */}
-      {topLevelOpenTasks.map((task) => (
+      {/* Display standalone parent tasks with their children */}
+      {parentTasks.map((task) => (
         <div 
           key={task.id} 
           id={`task-${task.id}`}
@@ -68,7 +84,7 @@ export function TaskList({
             onComplete={onComplete}
             onDelete={onDelete}
             showCompleteButton={true}
-            allTasks={[...topLevelOpenTasks, ...relevantParents]}
+            allTasks={topLevelOpenTasks}
             onViewParent={onViewParent}
             onCreateChildTask={onCreateChildTask}
             onEdit={onEdit}
@@ -77,6 +93,30 @@ export function TaskList({
           />
         </div>
       ))}
+      
+      {/* Display child tasks that aren't captured in parent views */}
+      {topLevelOpenTasks
+        .filter(task => task.parent_id && !relevantParents.some(p => p.id === task.parent_id))
+        .map((task) => (
+          <div 
+            key={task.id} 
+            id={`task-${task.id}`}
+            className="transition-all duration-500 w-full ml-4 border-l-2 border-indigo-100 pl-3"
+          >
+            <TaskItem
+              task={task}
+              onComplete={onComplete}
+              onDelete={onDelete}
+              showCompleteButton={true}
+              allTasks={topLevelOpenTasks}
+              onViewParent={onViewParent}
+              onCreateChildTask={onCreateChildTask}
+              onEdit={onEdit}
+              alwaysShowChildren={true}
+              inFocusMode={false}
+            />
+          </div>
+        ))}
       
       {/* Add bottom padding to prevent overlap with floating add button on mobile */}
       <div className="h-24 md:h-20" />
