@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import useTaskStore from '@/stores/taskStore';
+import useTaskStore from '@/stores/useTaskStore';
 import { useSubscription } from '@/hooks/useSubscription';
 
 export function useAllTasksView() {

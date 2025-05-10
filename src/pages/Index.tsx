@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import { AddTaskDialog } from '@/components/AddTaskDialog';
 import { TaskHeader } from '@/components/TaskHeader';
@@ -9,7 +9,7 @@ import { ViewContent } from '@/components/ViewContent';
 import { useIndexPage } from '@/hooks/useIndexPage';
 
 const Index = () => {
-  // Use our new hook for page initialization and state management
+  // Use our hook for page initialization and state management
   const {
     currentView,
     setCurrentView,
@@ -19,6 +19,14 @@ const Index = () => {
     setShowExitConfirm,
     confirmExitFocusMode
   } = useIndexPage();
+
+  // Extract addTask from the store only once
+  const addTask = useTaskStore(state => state.addTask);
+  
+  // Create a memoized handler for adding tasks
+  const handleAddTask = useCallback((title: string, priority: string, expiryDate: Date, parentId?: string, tagIds?: string[]) => {
+    addTask(title, priority, expiryDate, parentId, tagIds);
+  }, [addTask]);
 
   return (
     <PageContainer inFocusMode={inFocusMode}>
@@ -48,10 +56,7 @@ const Index = () => {
         
         {/* Only show the AddTaskDialog when not in focus mode */}
         {!inFocusMode && (
-          <AddTaskDialog onAddTask={(title, priority, expiryDate, tagIds) => {
-            const { addTask } = useTaskStore.getState();
-            addTask(title, priority, expiryDate, undefined, tagIds);
-          }} />
+          <AddTaskDialog onAddTask={handleAddTask} />
         )}
       </div>
     </PageContainer>

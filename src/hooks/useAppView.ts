@@ -21,10 +21,7 @@ export function useAppView(initialView: AppView = 'all') {
     
     // If not in focus mode or switching to main, change view directly
     setCurrentView(newView);
-    if (newView !== 'main') {
-      console.log('Exiting focus mode due to view change to:', newView);
-      setInFocusMode(false);
-    }
+    // We'll let useFocusModeSync handle the focus mode changes
   }, [inFocusMode]);
 
   // Function to confirm exiting focus mode

@@ -11,19 +11,22 @@ export function useFocusModeSync(
   setInFocusMode: (value: boolean) => void
 ) {
   // Effect to ensure focus mode state is synced with current view
+  // but only trigger when currentView changes, not when inFocusMode changes
   useEffect(() => {
     if (currentView === 'main' && !inFocusMode) {
+      console.log('Syncing focus mode: enabling for main view');
       setInFocusMode(true);
       // Make sure pointer events are enabled when entering focus mode
       document.body.style.pointerEvents = "";
     }
-  }, [currentView, inFocusMode, setInFocusMode]);
+  }, [currentView, setInFocusMode]); // Remove inFocusMode from dependencies
 
   // Effect to ensure focus mode is disabled when not in main view
+  // but only trigger when currentView changes, not when inFocusMode changes
   useEffect(() => {
     if (currentView !== 'main' && inFocusMode) {
       console.log('Auto-disabling focus mode due to view change');
       setInFocusMode(false);
     }
-  }, [currentView, inFocusMode, setInFocusMode]);
+  }, [currentView, setInFocusMode]); // Remove inFocusMode from dependencies
 }

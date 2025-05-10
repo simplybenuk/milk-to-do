@@ -20,7 +20,7 @@ export function useIndexPage() {
     confirmExitFocusMode
   } = useAppView('all');
   
-  // Initial data fetching
+  // Initial data fetching - only run once on mount
   useEffect(() => {
     console.log('Index component mounted, fetching tasks...');
     loadTasks();
@@ -29,16 +29,10 @@ export function useIndexPage() {
       currentView,
       inFocusMode
     });
-  }, [loadTasks, currentView, inFocusMode]);
-
-  // Enter focus mode when explicitly switching to main view
-  useEffect(() => {
-    if (currentView === 'main' && !inFocusMode) {
-      setInFocusMode(true);
-      // Make sure pointer events are enabled when entering focus mode
-      resetPointerEvents();
-    }
-  }, [currentView, inFocusMode, setInFocusMode, resetPointerEvents]);
+  }, [loadTasks]); // Remove currentView and inFocusMode from dependencies
+  
+  // We'll remove this effect since useFocusModeSync now handles this logic
+  // This avoids duplicate state updates that cause the infinite loop
   
   return {
     currentView,
