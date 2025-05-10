@@ -28,7 +28,7 @@ export function SplitTaskDialog({
   const [localParentTitle, setLocalParentTitle] = useState(parentTaskTitle);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { addTask } = useTaskStore();
+  const { addTask, markTaskAsParent } = useTaskStore();
   const { toast } = useToast();
 
   // Update local state when props change to ensure we have the latest values
@@ -58,7 +58,10 @@ export function SplitTaskDialog({
         expiryDate
       });
       
-      // Create the new split task as a child of the parent
+      // First ensure the parent task is marked as a parent
+      await markTaskAsParent(localParentId);
+      
+      // Then create the new split task as a child of the parent
       await addTask(title.trim(), priority, expiryDate, localParentId);
       
       toast({

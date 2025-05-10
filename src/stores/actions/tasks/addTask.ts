@@ -43,36 +43,50 @@ export const addTaskToDB = async (
     if (!parentError && parentData) {
       const updatedChildIds = [...(parentData.child_task_ids || []), data.id];
       
-      const updateData: any = { 
+      // Create update data object
+      const updateData = { 
         child_task_ids: updatedChildIds 
       };
       
-      // If this is the first child task, set the parent's closed_status to 'parent'
+      // Only set closed_status if it's not already set
+      // This prevents overriding existing valid values
       if (!parentData.closed_status) {
-        updateData.closed_status = 'parent';
+        // Update parent task with child IDs and mark as parent
+        const { error: updateError } = await supabase
+          .from('tasks')
+          .update({
+            child_task_ids: updatedChildIds,
+            closed_status: 'parent'
+          })
+          .eq('id', parentId);
+          
+        if (updateError) {
+          console.error('Error updating parent task child_task_ids:', updateError);
+        }
+      } else {
+        // Only update the child_task_ids array
+        const { error: updateError } = await supabase
+          .from('tasks')
+          .update({ child_task_ids: updatedChildIds })
+          .eq('id', parentId);
+          
+        if (updateError) {
+          console.error('Error updating parent task child_task_ids:', updateError);
+        }
       }
       
-      const { error: updateError } = await supabase
+      // Get all child tasks for the parent to update its expiry date
+      const { data: childTasks, error: childError } = await supabase
         .from('tasks')
-        .update(updateData)
-        .eq('id', parentId);
+        .select('*')
+        .in('id', updatedChildIds);
+      
+      if (!childError && childTasks) {
+        // Convert the database dates to JavaScript Date objects
+        const formattedChildTasks = childTasks.map(convertDatabaseDatesToDateObjects);
         
-      if (updateError) {
-        console.error('Error updating parent task child_task_ids:', updateError);
-      } else {
-        // Get all child tasks for the parent to update its expiry date
-        const { data: childTasks, error: childError } = await supabase
-          .from('tasks')
-          .select('*')
-          .in('id', updatedChildIds);
-        
-        if (!childError && childTasks) {
-          // Convert the database dates to JavaScript Date objects
-          const formattedChildTasks = childTasks.map(convertDatabaseDatesToDateObjects);
-          
-          // Update parent task's expiry date based on newest child task
-          await updateParentTaskExpiry(parentId, formattedChildTasks);
-        }
+        // Update parent task's expiry date based on newest child task
+        await updateParentTaskExpiry(parentId, formattedChildTasks);
       }
     }
   }
