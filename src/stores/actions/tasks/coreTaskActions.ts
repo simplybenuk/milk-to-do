@@ -1,4 +1,3 @@
-
 import { Task, Priority, ClosedStatusReason } from '@/types/task';
 import { 
   addTaskToDB, 
@@ -72,9 +71,13 @@ export const getCoreTaskActions = (set, get) => ({
       
       // Reload tasks to get the latest state including the new task and updated relationships
       await get().fetchTasks();
+      
+      // Return the new task ID to match the type signature
+      return newTaskId;
     } catch (error) {
       console.error('Error adding task:', error);
       set({ error: 'Failed to add task' });
+      return null; // Return null in case of error to match the type signature
     }
   },
 
