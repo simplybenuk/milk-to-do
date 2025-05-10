@@ -1,5 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
+import { useFocusModeSync } from './useFocusModeSync';
 
 export type AppView = 'main' | 'all' | 'closed' | 'stats';
 
@@ -44,13 +45,8 @@ export function useAppView(initialView: AppView = 'all') {
     setShowExitConfirm(false);
   }, [pendingView]);
   
-  // Effect to ensure focus mode state is synced with current view
-  useEffect(() => {
-    if (currentView !== 'main' && inFocusMode) {
-      console.log('Auto-disabling focus mode due to view change');
-      setInFocusMode(false);
-    }
-  }, [currentView, inFocusMode]);
+  // Use our custom focus mode sync hook
+  useFocusModeSync(currentView, inFocusMode, setInFocusMode);
   
   // Effect to ensure pointer events are never stuck
   useEffect(() => {
