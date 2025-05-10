@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Priority } from '@/types/task';
 import { Scissors } from 'lucide-react';
-import useTaskStore from '@/stores/taskStore';
+import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 
 interface SplitTaskDialogProps {
@@ -28,7 +28,7 @@ export function SplitTaskDialog({
   const [localParentTitle, setLocalParentTitle] = useState(parentTaskTitle);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { addTask, markTaskAsParent, fetchTasks } = useTaskStore();
+  const { addTask, markTaskAsParent, updateParentWithChild, fetchTasks } = useTaskStore();
   const { toast } = useToast();
 
   // Update local state when props change to ensure we have the latest values
@@ -36,6 +36,8 @@ export function SplitTaskDialog({
     if (open) {
       setLocalParentId(parentTaskId);
       setLocalParentTitle(parentTaskTitle);
+      setTitle(""); // Clear title when dialog is opened
+      setPriority("medium"); // Reset priority
       console.log("SplitTaskDialog opened with parent:", parentTaskId, parentTaskTitle);
     }
   }, [open, parentTaskId, parentTaskTitle]);
@@ -62,7 +64,12 @@ export function SplitTaskDialog({
       await markTaskAsParent(localParentId);
       
       // Then create the new split task as a child of the parent
-      await addTask(title.trim(), priority, expiryDate, localParentId);
+      const childId = await addTask(title.trim(), priority, expiryDate, localParentId);
+      
+      // Make sure to update the parent with the child ID
+      if (childId) {
+        await updateParentWithChild(localParentId, childId);
+      }
       
       // Make sure to refresh tasks to update the UI with the new child task
       await fetchTasks();

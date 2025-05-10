@@ -5,6 +5,7 @@ import { TaskItem } from '../task-item';
 interface TaskListProps {
   topLevelOpenTasks: Task[];
   relevantParents: Task[];
+  childTasks: Task[]; // Add childTasks as a prop
   focusParentId: string | null;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
@@ -14,8 +15,9 @@ interface TaskListProps {
 }
 
 export function TaskList({
-  topLevelOpenTasks = [], // Provide default empty array
-  relevantParents = [], // Provide default empty array
+  topLevelOpenTasks = [],
+  relevantParents = [],
+  childTasks = [], // Provide default empty array
   focusParentId,
   onComplete,
   onDelete,
@@ -23,30 +25,41 @@ export function TaskList({
   onCreateChildTask,
   onEdit
 }: TaskListProps) {
-  // Group the tasks by parent_id
-  const groupedTasks: Record<string, Task[]> = {};
-  const parentTasks: Task[] = [];
+  // Group child tasks by parent_id for easier rendering
+  const groupedChildTasks: Record<string, Task[]> = {};
   
-  // First, identify standalone tasks and group child tasks
-  topLevelOpenTasks.forEach(task => {
-    if (!task.parent_id) {
-      parentTasks.push(task);
-    } else {
-      if (!groupedTasks[task.parent_id]) {
-        groupedTasks[task.parent_id] = [];
+  childTasks.forEach(task => {
+    if (task.parent_id) {
+      if (!groupedChildTasks[task.parent_id]) {
+        groupedChildTasks[task.parent_id] = [];
       }
-      groupedTasks[task.parent_id].push(task);
+      groupedChildTasks[task.parent_id].push(task);
     }
   });
   
   // Guard against undefined arrays with safe checks
   const hasRelevantParents = Array.isArray(relevantParents) && relevantParents.length > 0;
   const hasTopLevelTasks = Array.isArray(topLevelOpenTasks) && topLevelOpenTasks.length > 0;
+  const hasChildTasks = Array.isArray(childTasks) && childTasks.length > 0;
   
   // If no tasks to display, show empty state
-  if (!hasTopLevelTasks && !hasRelevantParents) {
+  if (!hasTopLevelTasks && !hasRelevantParents && !hasChildTasks) {
     return <p className="text-center text-milk-500">No tasks available</p>;
   }
+
+  // Helper function to check if a task is being displayed as a child under its parent
+  const isDisplayedUnderParent = (task: Task) => {
+    if (!task.parent_id) return false;
+    
+    // Check if the parent is in relevantParents or topLevelOpenTasks
+    const parentInRelevant = relevantParents.some(p => p.id === task.parent_id);
+    const parentInTopLevel = topLevelOpenTasks.some(p => p.id === task.parent_id);
+    
+    return parentInRelevant || parentInTopLevel;
+  };
+
+  // Find orphaned child tasks (those whose parents are not in the current view)
+  const orphanedChildTasks = childTasks.filter(task => !isDisplayedUnderParent(task));
 
   return (
     <div className="w-full space-y-4">
@@ -64,7 +77,7 @@ export function TaskList({
             onComplete={onComplete}
             onDelete={onDelete}
             showCompleteButton={false}
-            allTasks={topLevelOpenTasks}
+            allTasks={[...topLevelOpenTasks, ...childTasks]}
             onViewParent={onViewParent}
             onCreateChildTask={onCreateChildTask}
             onEdit={onEdit}
@@ -75,7 +88,7 @@ export function TaskList({
       ))}
       
       {/* Display standalone parent tasks with their children */}
-      {parentTasks.map((task) => (
+      {topLevelOpenTasks.map((task) => (
         <div 
           key={task.id} 
           id={`task-${task.id}`}
@@ -88,7 +101,7 @@ export function TaskList({
             onComplete={onComplete}
             onDelete={onDelete}
             showCompleteButton={true}
-            allTasks={topLevelOpenTasks}
+            allTasks={[...topLevelOpenTasks, ...childTasks]}
             onViewParent={onViewParent}
             onCreateChildTask={onCreateChildTask}
             onEdit={onEdit}
@@ -98,29 +111,27 @@ export function TaskList({
         </div>
       ))}
       
-      {/* Display child tasks that aren't captured in parent views */}
-      {topLevelOpenTasks
-        .filter(task => task.parent_id && !parentTasks.some(p => p.id === task.parent_id))
-        .map((task) => (
-          <div 
-            key={task.id} 
-            id={`task-${task.id}`}
-            className="transition-all duration-500 w-full ml-4 border-l-2 border-indigo-100 pl-3"
-          >
-            <TaskItem
-              task={task}
-              onComplete={onComplete}
-              onDelete={onDelete}
-              showCompleteButton={true}
-              allTasks={topLevelOpenTasks}
-              onViewParent={onViewParent}
-              onCreateChildTask={onCreateChildTask}
-              onEdit={onEdit}
-              alwaysShowChildren={true}
-              inFocusMode={false}
-            />
-          </div>
-        ))}
+      {/* Display orphaned child tasks (child tasks whose parents are not displayed) */}
+      {orphanedChildTasks.map((task) => (
+        <div 
+          key={task.id} 
+          id={`task-${task.id}`}
+          className="transition-all duration-500 w-full ml-4 border-l-2 border-indigo-100 pl-3"
+        >
+          <TaskItem
+            task={task}
+            onComplete={onComplete}
+            onDelete={onDelete}
+            showCompleteButton={true}
+            allTasks={[...topLevelOpenTasks, ...childTasks]}
+            onViewParent={onViewParent}
+            onCreateChildTask={onCreateChildTask}
+            onEdit={onEdit}
+            alwaysShowChildren={true}
+            inFocusMode={false}
+          />
+        </div>
+      ))}
       
       {/* Add bottom padding to prevent overlap with floating add button on mobile */}
       <div className="h-24 md:h-20" />

@@ -21,7 +21,7 @@ export function useAllTasksView() {
   // Filter tasks by tags only if Pro user
   const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];
   
-  // Get all open tasks, excluding expired ones
+  // Get all open tasks, excluding expired ones, including child tasks
   const openTasks = tasks.filter(task => {
     // Basic conditions for open tasks
     const isOpenAndNotExpired = 
@@ -56,11 +56,14 @@ export function useAllTasksView() {
   // Find open parent tasks for direct inclusion in the main list
   const openParentTasks = parentTasks.filter(task => task.status === 'open');
   
-  // Include all top-level tasks and parent tasks
+  // Include all top-level tasks (non-child tasks) and open parent tasks
   const topLevelOpenTasks = [
     ...openTasks.filter(task => !task.parent_id), // Only non-child tasks
     ...openParentTasks // Open parent tasks
   ];
+
+  // Get child tasks for display on the all tasks screen
+  const childTasks = openTasks.filter(task => task.parent_id);
 
   const handleViewParent = (parentId: string) => {
     const parentTask = tasks.find(t => t.id === parentId);
@@ -86,6 +89,7 @@ export function useAllTasksView() {
     topLevelOpenTasks,
     parentTasks,
     relevantParents,
+    childTasks, // Expose child tasks explicitly
     focusParentId,
     setFocusParentId,
     handleViewParent

@@ -107,6 +107,8 @@ export const getParentTaskActions = (set, get) => ({
         ),
       }));
       
+      console.log(`Added child ${childId} to parent ${parentId}`);
+      
     } catch (error) {
       console.error('Error updating parent with child ID:', error);
       set({ error: 'Failed to update parent-child relationship' });

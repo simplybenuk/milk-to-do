@@ -28,6 +28,7 @@ export function AllTasksList() {
   const {
     topLevelOpenTasks,
     relevantParents,
+    childTasks,
     focusParentId,
     handleViewParent
   } = useAllTasksView();
@@ -85,6 +86,7 @@ export function AllTasksList() {
       <TaskList 
         topLevelOpenTasks={topLevelOpenTasks}
         relevantParents={relevantParents}
+        childTasks={childTasks}
         focusParentId={focusParentId}
         onComplete={handleComplete}
         onDelete={handleDelete}
