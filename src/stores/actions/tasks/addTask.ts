@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Priority, Task, TaskStatus } from '@/types/task';
 import { convertDatabaseDatesToDateObjects } from '../../utils/taskUtils';
@@ -35,16 +36,25 @@ export const addTaskToDB = async (
     // Get parent task and its current child tasks
     const { data: parentData, error: parentError } = await supabase
       .from('tasks')
-      .select('child_task_ids')
+      .select('child_task_ids, status, closed_status')
       .eq('id', parentId)
       .single();
       
     if (!parentError && parentData) {
       const updatedChildIds = [...(parentData.child_task_ids || []), data.id];
       
+      const updateData: any = { 
+        child_task_ids: updatedChildIds 
+      };
+      
+      // If this is the first child task, set the parent's closed_status to 'parent'
+      if (!parentData.closed_status) {
+        updateData.closed_status = 'parent';
+      }
+      
       const { error: updateError } = await supabase
         .from('tasks')
-        .update({ child_task_ids: updatedChildIds })
+        .update(updateData)
         .eq('id', parentId);
         
       if (updateError) {

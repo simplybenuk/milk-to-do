@@ -32,7 +32,7 @@ export function useAllTasksView() {
       (task.tags?.some(tagId => selectedTagIds.includes(tagId)));
   });
   
-  // Get parent tasks - these are tasks marked as parents but not necessarily closed
+  // Get parent tasks - both open parents and those marked as parents
   const parentTasks = tasks.filter(task => 
     task.closed_status === 'parent' &&
     task.status === 'open' && // Only include open parent tasks in the All Tasks view
@@ -62,7 +62,7 @@ export function useAllTasksView() {
   const topLevelOpenTasks = [...openTasks, ...parentTasks];
 
   const handleViewParent = (parentId: string) => {
-    const parentTask = [...openTasks, ...parentTasks].find(t => t.id === parentId);
+    const parentTask = [...openTasks, ...parentTasks, ...relevantParents].find(t => t.id === parentId);
     if (parentTask) {
       const parentElement = document.getElementById(`task-${parentId}`);
       if (parentElement) {
@@ -84,7 +84,7 @@ export function useAllTasksView() {
     openTasks,
     topLevelOpenTasks,
     parentTasks,
-    relevantParents, // Added this property to the return value
+    relevantParents,
     focusParentId,
     setFocusParentId,
     handleViewParent

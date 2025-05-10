@@ -8,8 +8,7 @@ import {
   incrementSkipCountInDB,
   updateLastSkippedSessionInDB,
   updateTaskPriorityInDB,
-  refreshTaskExpiryInDB,
-  markTaskAsParentInDB
+  refreshTaskExpiryInDB
 } from './actions/taskActions';
 import { getFocusModeActions } from './actions/tasks/focusModeActions';
 import { getDecayActions } from './actions/tasks/decayActions';
@@ -50,22 +49,6 @@ const useTaskStore = create<TaskStore>((set, get) => {
 
     // Core task operations
     ...coreActions,
-
-    // Mark task as parent without closing it
-    markTaskAsParent: async (id: string) => {
-      try {
-        await markTaskAsParentInDB(id);
-        set(state => ({
-          tasks: state.tasks.map(task =>
-            task.id === id ? { ...task, closed_status: 'parent' } : task
-          ),
-        }));
-        await get().fetchTasks();
-      } catch (error) {
-        console.error('Error marking task as parent:', error);
-        setState({ error: 'Failed to mark task as parent' });
-      }
-    },
 
     // After completing a task, also check if we need to close its parent
     completeTask: async (id: string, reason = 'complete') => {
