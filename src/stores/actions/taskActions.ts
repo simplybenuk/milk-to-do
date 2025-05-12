@@ -13,10 +13,11 @@ export const updateTaskPriorityInDB = async (id: string, priority: Priority): Pr
 };
 
 // Export incrementSkipCountInDB function
-export const incrementSkipCountInDB = async (id: string): Promise<void> => {
-  const { error } = await supabase.rpc('increment', { row_id: id });
+export const incrementSkipCountInDB = async (id: string): Promise<number> => {
+  const { data, error } = await supabase.rpc('increment', { row_id: id });
   
   if (error) throw error;
+  return data || 0; // Return the new skip count
 };
 
 // Export updateLastSkippedSessionInDB function

@@ -1,11 +1,12 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-export const incrementSkipCountInDB = async (id: string): Promise<void> => {
-  const { error } = await supabase
+export const incrementSkipCountInDB = async (id: string): Promise<number> => {
+  const { data, error } = await supabase
     .rpc('increment', { row_id: id });
 
   if (error) throw error;
+  return data || 0; // Return the new skip count
 };
 
 export const updateLastSkippedSessionInDB = async (id: string, sessionId: string): Promise<void> => {
