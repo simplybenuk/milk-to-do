@@ -1,3 +1,4 @@
+
 import { Task, Priority, ClosedStatusReason } from '@/types/task';
 import { 
   addTaskToDB, 
@@ -7,6 +8,7 @@ import {
   fetchTasksFromDB 
 } from '../taskActions';
 import { supabase } from '@/integrations/supabase/client';
+import { syncTagsToChildTasks } from './syncTaskTags';
 
 export const getCoreTaskActions = (set, get) => ({
   fetchTasks: async () => {
@@ -83,7 +85,10 @@ export const getCoreTaskActions = (set, get) => ({
 
   editTask: async (id: string, title: string, priority: Priority, tagIds?: string[]) => {
     try {
+      // Update the task in the database
       await updateTaskInDB(id, { title, priority, tags: tagIds || [] });
+      
+      // Update the local state
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id
@@ -91,6 +96,16 @@ export const getCoreTaskActions = (set, get) => ({
             : task
         ),
       }));
+      
+      // Check if this is a parent task
+      const task = get().tasks.find(t => t.id === id);
+      
+      // If it's a parent task and has child tasks, sync the tags
+      if (task?.child_task_ids?.length > 0 && tagIds) {
+        await syncTagsToChildTasks(id, tagIds);
+      }
+      
+      // Refresh tasks to get the updated state
       await get().fetchTasks();
     } catch (error) {
       console.error('Error editing task:', error);

@@ -27,8 +27,9 @@ export function SplitTaskDialog({
   const [localParentId, setLocalParentId] = useState(parentTaskId);
   const [localParentTitle, setLocalParentTitle] = useState(parentTaskTitle);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [parentTags, setParentTags] = useState<string[]>([]);
   
-  const { addTask, markTaskAsParent, updateParentWithChild, fetchTasks } = useTaskStore();
+  const { addTask, markTaskAsParent, updateParentWithChild, fetchTasks, tasks } = useTaskStore();
   const { toast } = useToast();
 
   // Update local state when props change to ensure we have the latest values
@@ -38,9 +39,16 @@ export function SplitTaskDialog({
       setLocalParentTitle(parentTaskTitle);
       setTitle(""); // Clear title when dialog is opened
       setPriority("medium"); // Reset priority
+      
+      // Find parent task in the tasks store to get its tags
+      const parentTask = tasks.find(task => task.id === parentTaskId);
+      if (parentTask) {
+        setParentTags(parentTask.tags || []);
+      }
+      
       console.log("SplitTaskDialog opened with parent:", parentTaskId, parentTaskTitle);
     }
-  }, [open, parentTaskId, parentTaskTitle]);
+  }, [open, parentTaskId, parentTaskTitle, tasks]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,14 +65,16 @@ export function SplitTaskDialog({
         title: title.trim(),
         priority,
         parentId: localParentId,
-        expiryDate
+        expiryDate,
+        tags: parentTags
       });
       
       // First ensure the parent task is marked as a parent
       await markTaskAsParent(localParentId);
       
       // Then create the new split task as a child of the parent
-      const childId = await addTask(title.trim(), priority, expiryDate, localParentId);
+      // Pass along the parent's tags to the child task
+      const childId = await addTask(title.trim(), priority, expiryDate, localParentId, parentTags);
       
       // Make sure to update the parent with the child ID
       if (childId) {
