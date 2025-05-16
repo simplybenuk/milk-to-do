@@ -65,7 +65,8 @@ export function FocusModeContainer({
     handleSkip,
     handleReturnToTop,
     isProcessing,
-    setSelectedTagIds
+    setSelectedTagIds,
+    noTasksAvailable
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
   
   const handleTagSelection = (tags?: string[]) => {
@@ -125,6 +126,7 @@ export function FocusModeContainer({
           inFocusMode={inFocusMode}
           onExitFocusMode={handleExitFocusMode}
           selectedTagIds={selectedTagIds}
+          noTasksAvailable={noTasksAvailable}
         />
         
         <FocusExitConfirmDialog

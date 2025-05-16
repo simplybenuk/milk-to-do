@@ -1,3 +1,4 @@
+
 import { AllTasksList } from '@/components/all-tasks';
 import { ClosedTasksList } from '@/components/ClosedTasksList';
 import { TaskStats } from '@/components/stats';
@@ -19,6 +20,7 @@ interface MainContentProps {
   inFocusMode: boolean;
   onExitFocusMode?: () => void;
   selectedTagIds?: string[];
+  noTasksAvailable?: boolean;
 }
 
 export function MainContent({
@@ -31,7 +33,8 @@ export function MainContent({
   totalTasks,
   inFocusMode,
   onExitFocusMode,
-  selectedTagIds
+  selectedTagIds,
+  noTasksAvailable = false
 }: MainContentProps) {
   // Card classes to make it pop in focus mode
   const cardClasses = cn(
@@ -62,7 +65,7 @@ export function MainContent({
           {inFocusMode && <FocusTagInfo selectedTagIds={selectedTagIds} />}
           
           <div className={cardClasses}>
-            {currentTask ? (
+            {currentTask && !noTasksAvailable ? (
               <CurrentTask
                 task={currentTask}
                 onComplete={onComplete}
@@ -75,13 +78,31 @@ export function MainContent({
               />
             ) : (
               <div className="text-center py-12 bg-white rounded-lg shadow-lg">
-                <p className="text-milk-500">No tasks available for focus mode.</p>
+                {noTasksAvailable ? (
+                  <div className="flex flex-col items-center space-y-4">
+                    <p className="text-milk-500 font-medium">All tasks have been processed!</p>
+                    <p className="text-milk-500 text-sm">You've completed or skipped all tasks for this session.</p>
+                    {totalTasks > 0 && (
+                      <Button 
+                        onClick={onReturnToTop}
+                        variant="outline" 
+                        size="sm"
+                        className="mt-4"
+                      >
+                        Return to First Task
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-milk-500">No tasks available for focus mode.</p>
+                )}
+                
                 {inFocusMode && (
                   <>
                     <p className="text-milk-500 mt-4">
-                      {selectedTagIds && selectedTagIds.length > 0 
+                      {selectedTagIds && selectedTagIds.length > 0 && !noTasksAvailable
                         ? 'No tasks match your selected tags. Try selecting different tags.' 
-                        : 'Add tasks from the All Tasks view to start your focus session.'}
+                        : !noTasksAvailable && 'Add tasks from the All Tasks view to start your focus session.'}
                     </p>
                     {onExitFocusMode && (
                       <Button 

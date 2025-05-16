@@ -22,13 +22,13 @@ export function useTaskSkipAction(onFocusEnd: () => void) {
       // Move to next task if there is one
       const hasMoreTasks = moveToNextTask();
       if (!hasMoreTasks) {
-        // No more tasks, end focus mode
+        // No more tasks, show toast but don't exit focus mode
         toast({
-          description: "Focus session complete! All tasks have been processed.",
+          description: "You've processed all available tasks in this session.",
         });
-        setTimeout(() => {
-          onFocusEnd();
-        }, 500);
+        
+        // We no longer exit focus mode automatically when all tasks are done
+        // Instead, we'll show a message in the UI
       }
     } catch (error) {
       console.error('Error skipping task:', error);
@@ -40,7 +40,7 @@ export function useTaskSkipAction(onFocusEnd: () => void) {
     } finally {
       stopProcessing();
     }
-  }, [incrementSkipCount, toast, isProcessing, startProcessing, stopProcessing, onFocusEnd]);
+  }, [incrementSkipCount, toast, isProcessing, startProcessing, stopProcessing]);
   
   return {
     handleSkip,

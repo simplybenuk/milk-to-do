@@ -8,6 +8,7 @@ export function useFocusTasks(inFocusMode: boolean) {
   const [focusTaskOrder, setFocusTaskOrder] = useState<Task[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedTagIds, setSelectedTagIds] = useState<string[] | undefined>(undefined);
+  const [noTasksAvailable, setNoTasksAvailable] = useState(false);
   
   // Get tasks and initialize focus mode session if needed
   useEffect(() => {
@@ -40,6 +41,7 @@ export function useFocusTasks(inFocusMode: boolean) {
                   selectedTagIds ? `filtered by ${selectedTagIds.length} tags` : 'unfiltered');
       setFocusTaskOrder(validTasks);
       setCurrentIndex(0);
+      setNoTasksAvailable(validTasks.length === 0);
     }
   }, [inFocusMode, getSortedTasksForFocusMode, selectedTagIds]);
   
@@ -49,6 +51,7 @@ export function useFocusTasks(inFocusMode: boolean) {
       setFocusTaskOrder([]);
       setCurrentIndex(0);
       setSelectedTagIds(undefined);
+      setNoTasksAvailable(false);
     }
   }, [inFocusMode]);
   
@@ -63,12 +66,18 @@ export function useFocusTasks(inFocusMode: boolean) {
       setCurrentIndex(prevIndex => prevIndex + 1);
       return true;
     }
+    
+    // If we're at the end of the tasks, set the flag that no more tasks are available
+    setNoTasksAvailable(true);
     return false;
   };
   
   // Return to top task
   const returnToTop = () => {
-    setCurrentIndex(0);
+    if (focusTaskOrder.length > 0) {
+      setCurrentIndex(0);
+      setNoTasksAvailable(false);
+    }
   };
   
   return {
@@ -77,6 +86,7 @@ export function useFocusTasks(inFocusMode: boolean) {
     currentIndex,
     moveToNextTask,
     returnToTop,
-    setSelectedTagIds
+    setSelectedTagIds,
+    noTasksAvailable
   };
 }

@@ -11,7 +11,8 @@ export function useTaskNavigation(inFocusMode: boolean, onFocusEnd: () => void) 
     currentIndex,
     moveToNextTask,
     returnToTop,
-    setSelectedTagIds
+    setSelectedTagIds,
+    noTasksAvailable
   } = useFocusTasks(inFocusMode);
   
   const {
@@ -42,6 +43,7 @@ export function useTaskNavigation(inFocusMode: boolean, onFocusEnd: () => void) 
     handleSkip,
     handleReturnToTop,
     isProcessing,
-    setSelectedTagIds
+    setSelectedTagIds,
+    noTasksAvailable
   };
 }
