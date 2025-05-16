@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -6,6 +5,7 @@ import { Tag } from '@/types/tag';
 import useTagStore from '@/stores/useTagStore';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { CircleCheck } from 'lucide-react';
 
 interface FocusTagSelectorProps {
   selectedTags: string[];
@@ -20,7 +20,7 @@ export function FocusTagSelector({
 }: FocusTagSelectorProps) {
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const { tags, fetchTags } = useTagStore();
-  const [selectAll, setSelectAll] = useState(true);
+  const [isAllSelected, setIsAllSelected] = useState(true);
 
   useEffect(() => {
     fetchTags();
@@ -34,27 +34,37 @@ export function FocusTagSelector({
 
   useEffect(() => {
     // Initialize with all tags selected
-    if (selectAll && allTags.length > 0) {
+    if (isAllSelected && allTags.length > 0) {
       onTagsChange(allTags.map(tag => tag.id));
     }
-  }, [allTags, selectAll, onTagsChange]);
+  }, [allTags, isAllSelected, onTagsChange]);
 
   const handleTagToggle = (tagId: string) => {
+    // If "All Tags" is currently selected, deselect it and only select the clicked tag
+    if (isAllSelected || selectedTags.length === allTags.length) {
+      onTagsChange([tagId]);
+      setIsAllSelected(false);
+      return;
+    }
+    
+    // Otherwise toggle as normal
     const newSelectedTags = selectedTags.includes(tagId)
       ? selectedTags.filter(id => id !== tagId)
       : [...selectedTags, tagId];
     
     onTagsChange(newSelectedTags);
-    setSelectAll(newSelectedTags.length === allTags.length);
+    
+    // Update All Tags state
+    setIsAllSelected(newSelectedTags.length === allTags.length);
   };
 
   const handleSelectAll = () => {
-    if (!selectAll || selectedTags.length < allTags.length) {
+    if (!isAllSelected) {
       onTagsChange(allTags.map(tag => tag.id));
-      setSelectAll(true);
+      setIsAllSelected(true);
     } else {
       onTagsChange([]);
-      setSelectAll(false);
+      setIsAllSelected(false);
     }
   };
 
@@ -64,30 +74,41 @@ export function FocusTagSelector({
 
   return (
     <div className={cn("space-y-4", className)}>
-      <div className="flex items-center gap-2">
-        <Checkbox 
-          id="select-all-tags" 
-          checked={selectedTags.length === allTags.length} 
-          onCheckedChange={handleSelectAll}
-        />
-        <Label htmlFor="select-all-tags" className="text-sm font-medium cursor-pointer">
+      <div className="flex items-center gap-2 mb-2">
+        <Badge 
+          variant={isAllSelected ? "default" : "outline"}
+          className={cn(
+            "cursor-pointer px-3 py-1.5",
+            isAllSelected 
+              ? "bg-milk-500 hover:bg-milk-600" 
+              : "hover:bg-milk-100"
+          )}
+          onClick={handleSelectAll}
+        >
+          {isAllSelected && (
+            <CircleCheck className="h-4 w-4 mr-1" />
+          )}
           All Tags
-        </Label>
+        </Badge>
+        <span className="text-xs text-muted-foreground">(Default)</span>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {allTags.map(tag => (
           <Badge 
             key={tag.id}
-            variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+            variant={selectedTags.includes(tag.id) && !isAllSelected ? "default" : "outline"}
             className={cn(
               "cursor-pointer px-3 py-1",
-              selectedTags.includes(tag.id) 
+              selectedTags.includes(tag.id) && !isAllSelected
                 ? "bg-milk-500 hover:bg-milk-600" 
                 : "hover:bg-milk-100"
             )}
             onClick={() => handleTagToggle(tag.id)}
           >
+            {selectedTags.includes(tag.id) && !isAllSelected && (
+              <CircleCheck className="h-4 w-4 mr-1" />
+            )}
             {tag.name}
           </Badge>
         ))}
