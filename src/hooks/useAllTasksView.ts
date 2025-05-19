@@ -1,25 +1,80 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import useTaskStore from '@/stores/useTaskStore';
 import { useSubscription } from '@/hooks/useSubscription';
+import { FetchTasksOptions } from '@/stores/actions/tasks/fetchTasks';
 
 export function useAllTasksView() {
-  const { tasks, fetchTasks } = useTaskStore();
+  const { tasks, fetchTasks, isLoading, totalTaskCount } = useTaskStore();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
   const { isPro } = useSubscription();
+  const [page, setPage] = useState(0);
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
   
-  // Add effect to refresh tasks when component is mounted
-  useEffect(() => {
-    // Refresh tasks to ensure we have the latest data including newly created child tasks
-    fetchTasks();
-  }, [fetchTasks]);
-  
-  // Filter tasks by tags only if Pro user
+  // Get tag filters from URL
   const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];
+  
+  // Optimize task loading with pagination and filtering
+  const loadTasks = useCallback(async (refresh = false) => {
+    console.log('Loading tasks for all tasks view, refresh:', refresh);
+    
+    const options: FetchTasksOptions = {
+      // Only get open tasks for the main view
+      status: 'open',
+      // Use pagination
+      page: refresh ? 0 : page,
+      pageSize: 20, // Load 20 tasks at a time
+      // Apply tag filtering if user is Pro and has tags selected
+      tags: isPro && selectedTagIds.length > 0 ? selectedTagIds : undefined
+    };
+    
+    try {
+      await fetchTasks(options);
+      
+      if (refresh) {
+        setPage(0);
+      }
+      
+      setHasLoadedInitialData(true);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+      toast({
+        title: 'Error loading tasks',
+        description: 'Please try refreshing the page',
+        variant: 'destructive',
+      });
+    }
+  }, [fetchTasks, page, isPro, selectedTagIds, toast]);
+  
+  // Load more tasks when the user scrolls to the bottom
+  const loadMoreTasks = useCallback(() => {
+    setPage(prevPage => prevPage + 1);
+  }, []);
+  
+  // Load initial data
+  useEffect(() => {
+    if (!hasLoadedInitialData) {
+      loadTasks(true);
+    }
+  }, [loadTasks, hasLoadedInitialData]);
+  
+  // Load more data when page changes
+  useEffect(() => {
+    if (hasLoadedInitialData && page > 0) {
+      loadTasks();
+    }
+  }, [page, loadTasks, hasLoadedInitialData]);
+  
+  // Refresh when tag filters change
+  useEffect(() => {
+    if (hasLoadedInitialData) {
+      loadTasks(true);
+    }
+  }, [selectedTagIds, loadTasks, hasLoadedInitialData]);
   
   // Get all open tasks, excluding expired ones, including child tasks
   const openTasks = tasks.filter(task => {
@@ -89,9 +144,13 @@ export function useAllTasksView() {
     topLevelOpenTasks,
     parentTasks,
     relevantParents,
-    childTasks, // Expose child tasks explicitly
+    childTasks,
     focusParentId,
     setFocusParentId,
-    handleViewParent
+    handleViewParent,
+    isLoading,
+    hasMore: tasks.length < (totalTaskCount || 0),
+    loadMoreTasks,
+    refreshTasks: () => loadTasks(true)
   };
 }
