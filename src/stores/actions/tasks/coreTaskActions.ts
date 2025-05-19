@@ -6,7 +6,7 @@ import { fetchTasksFromDB, FetchTasksOptions } from './fetchTasks';
 import { supabase } from '@/integrations/supabase/client';
 
 export const getCoreTaskActions = (
-  set: StateCreator<TaskStore>['setState'],
+  set: (state: Partial<TaskStore> | ((state: TaskStore) => Partial<TaskStore>)) => void,
   get: () => TaskStore
 ) => {
   return {
