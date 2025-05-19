@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback, memo } from 'react';
 import { FocusModePage } from './FocusModePage';
 import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 import { useTaskNavigation } from '@/hooks/useTaskNavigation';
@@ -32,7 +32,7 @@ export function FocusModeContainer({
   // Monitor view and focus mode sync without updating state
   useFocusModeSync(currentView, inFocusMode);
   
-  // Initialize focus mode handlers
+  // Initialize focus mode handlers - memoize to prevent recreating on every render
   const { 
     handleEnterFocusMode, 
     handleExitFocusMode, 
@@ -44,18 +44,20 @@ export function FocusModeContainer({
     confirmExitFocusMode
   );
   
-  // Set up task navigation and handle focus mode end
-  const handleFocusEnd = () => {
+  // Memoize the focus end handler to prevent recreating on every render
+  const handleFocusEnd = useCallback(() => {
     // Safely exit focus mode
     console.log("Focus mode session ended naturally");
     document.body.style.pointerEvents = "";
     
     // Exit focus mode and return to All Tasks view
     setInFocusMode(false);
+    
+    // Use setTimeout to ensure state updates happen in separate batches
     setTimeout(() => {
       setCurrentView('all'); // Go back to All Tasks view when focus mode ends naturally
-    }, 50);
-  };
+    }, 100);
+  }, [setInFocusMode, setCurrentView]);
   
   const {
     currentTask,
@@ -69,10 +71,11 @@ export function FocusModeContainer({
     noTasksAvailable
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
   
-  const handleTagSelection = (tags?: string[]) => {
+  // Memoize tag selection handler to prevent recreating on every render
+  const handleTagSelection = useCallback((tags?: string[]) => {
     setSelectedTagIdsState(tags);
     setSelectedTagIds(tags);
-  };
+  }, [setSelectedTagIds]);
 
   // Reset pointer events if they get stuck - use a ref to avoid infinite renders
   const intervalRef = useRef<number | null>(null);

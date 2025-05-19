@@ -17,7 +17,10 @@ export function useFocusModeSync(
   // Effect to log focus mode state changes based on view changes
   useEffect(() => {
     // Only run effect if the view or focus mode state has actually changed
-    if (prevViewRef.current !== currentView || prevFocusModeRef.current !== inFocusMode) {
+    const viewChanged = prevViewRef.current !== currentView;
+    const focusModeChanged = prevFocusModeRef.current !== inFocusMode;
+    
+    if (viewChanged || focusModeChanged) {
       console.log('Focus mode sync detected change:', { 
         prevView: prevViewRef.current,
         currentView,
@@ -29,13 +32,11 @@ export function useFocusModeSync(
       prevViewRef.current = currentView;
       prevFocusModeRef.current = inFocusMode;
     }
-    // We need to include the dependencies to ensure the effect runs when they change
   }, [currentView, inFocusMode]);
   
-  // Cleanup on unmount
+  // Cleanup on unmount - ensure pointer events are enabled
   useEffect(() => {
     return () => {
-      // Make sure pointer events are always enabled when unmounting
       document.body.style.pointerEvents = "";
     };
   }, []);

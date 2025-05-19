@@ -1,10 +1,13 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Hook for managing body styles like pointer events
  */
 export function useBodyStyles() {
+  // Track if the interval is active to prevent duplicates
+  const intervalRef = useRef<number | null>(null);
+  
   const resetPointerEvents = () => {
     document.body.style.pointerEvents = "";
   };
@@ -16,13 +19,15 @@ export function useBodyStyles() {
     console.log('Body styles initialized');
     
     // Set up an interval to periodically check and fix pointer-events
-    // This is a failsafe in case other mechanisms fail
-    const intervalId = setInterval(() => {
-      if (document.body.style.pointerEvents === 'none') {
-        resetPointerEvents();
-        console.log('Restored pointer-events via interval check');
-      }
-    }, 2000); // Check every 2 seconds to reduce update frequency
+    // Only if not already set up
+    if (intervalRef.current === null) {
+      intervalRef.current = window.setInterval(() => {
+        if (document.body.style.pointerEvents === 'none') {
+          resetPointerEvents();
+          console.log('Restored pointer-events via interval check');
+        }
+      }, 5000);
+    }
     
     // Listen for any page visibility changes to reset pointer events
     const handleVisibilityChange = () => {
@@ -35,7 +40,10 @@ export function useBodyStyles() {
     
     // Cleanup on unmount
     return () => {
-      clearInterval(intervalId);
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       resetPointerEvents();
       console.log('Body styles cleanup completed');
