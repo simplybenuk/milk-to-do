@@ -24,21 +24,27 @@ export function FocusExitConfirmDialog({
 }: FocusExitConfirmDialogProps) {
   // Track previous open state to avoid unnecessary effects
   const prevOpenRef = useRef(open);
+  const confirmedRef = useRef(false);
   
   // Only log when dialog state changes to avoid excessive renders
   useEffect(() => {
     if (prevOpenRef.current !== open) {
       console.log("FocusExitConfirmDialog - Dialog state:", open);
       prevOpenRef.current = open;
+      
+      // Reset confirmed state when dialog opens/closes
+      if (!open) {
+        confirmedRef.current = false;
+      }
     }
-    
-    return () => {
-      console.log("FocusExitConfirmDialog - Cleanup");
-    };
   }, [open]);
 
   // Handle the confirm action - ensuring pointer events are reset
   const handleConfirm = () => {
+    // Prevent multiple clicks
+    if (confirmedRef.current) return;
+    confirmedRef.current = true;
+    
     console.log("FocusExitConfirmDialog - Confirming exit");
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";

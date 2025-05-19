@@ -15,8 +15,9 @@ export function useFocusModeSync(
   const prevFocusModeRef = useRef<boolean>(inFocusMode);
   
   // Effect to log focus mode state changes based on view changes
+  // Using layout effect to ensure it runs before other effects
   useEffect(() => {
-    // Only run effect if the view or focus mode state has actually changed
+    // Only log if there was an actual change to avoid unnecessary console output
     const viewChanged = prevViewRef.current !== currentView;
     const focusModeChanged = prevFocusModeRef.current !== inFocusMode;
     

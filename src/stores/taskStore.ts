@@ -30,6 +30,11 @@ const useTaskStore = create<TaskStore>((set, get) => {
   const parentTaskActions = getParentTaskActions(set, get);
   const priorityActions = getPriorityActions(set, get);
 
+  // Helper function to check if warning levels are different
+  const warningLevelChanged = (oldLevel: WarningLevel | undefined, newLevel: WarningLevel): boolean => {
+    return oldLevel !== newLevel;
+  };
+
   // Prevent unnecessary state updates by comparing old and new warning levels
   const setTaskExpiryWarnings = () => {
     const tasks = getTasks();
@@ -38,6 +43,7 @@ const useTaskStore = create<TaskStore>((set, get) => {
     // Check if we actually need to update any tasks
     let needsUpdate = false;
     const updatedTasks = tasks.map(task => {
+      // Skip closed tasks - they don't need warning updates
       if (task.status !== 'open') return task;
       
       const expiryDate = task.expiry_date instanceof Date 
@@ -48,7 +54,7 @@ const useTaskStore = create<TaskStore>((set, get) => {
       const newWarning: WarningLevel = daysLeft <= 3 ? 'high' : daysLeft <= 7 ? 'medium' : 'low';
       
       // Only flag for update if the warning level actually changed
-      if (task.warning !== newWarning) {
+      if (warningLevelChanged(task.warning, newWarning)) {
         needsUpdate = true;
         return { ...task, warning: newWarning };
       }

@@ -18,7 +18,8 @@ interface FocusModeContainerProps {
   confirmExitFocusMode: () => void;
 }
 
-export function FocusModeContainer({
+// Use memo to prevent unnecessary re-renders
+export const FocusModeContainer = memo(function FocusModeContainer({
   currentView,
   setCurrentView,
   inFocusMode,
@@ -56,7 +57,7 @@ export function FocusModeContainer({
     // Use setTimeout to ensure state updates happen in separate batches
     setTimeout(() => {
       setCurrentView('all'); // Go back to All Tasks view when focus mode ends naturally
-    }, 100);
+    }, 50);
   }, [setInFocusMode, setCurrentView]);
   
   const {
@@ -77,7 +78,7 @@ export function FocusModeContainer({
     setSelectedTagIds(tags);
   }, [setSelectedTagIds]);
 
-  // Reset pointer events if they get stuck - use a ref to avoid infinite renders
+  // Reset pointer events if they get stuck - use a ref to track the interval
   const intervalRef = useRef<number | null>(null);
   
   useEffect(() => {
@@ -88,7 +89,7 @@ export function FocusModeContainer({
           document.body.style.pointerEvents = "";
           console.log("FocusModeContainer: Restored pointer events");
         }
-      }, 5000); // Longer interval to reduce updates
+      }, 5000);
     }
     
     // Clean up interval on unmount
@@ -152,4 +153,4 @@ export function FocusModeContainer({
   
   // For all other scenarios, don't render anything
   return null;
-}
+});

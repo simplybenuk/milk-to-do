@@ -40,14 +40,12 @@ export function useAppView(initialView: AppView = 'all') {
 
   // Log state changes for debugging but avoid infinite loops
   useEffect(() => {
-    // Only log if there was an actual change
-    if (prevViewRef.current !== currentView) {
-      console.log(`View changed from ${prevViewRef.current} to ${currentView}`);
+    // Only log if there was an actual change to avoid infinite effect loops
+    if (prevViewRef.current !== currentView || prevInFocusModeRef.current !== inFocusMode) {
+      console.log(`View/focus state update: view=${currentView}, focusMode=${inFocusMode}`);
+      
+      // Update refs after logging
       prevViewRef.current = currentView;
-    }
-    
-    if (prevInFocusModeRef.current !== inFocusMode) {
-      console.log(`Focus mode changed from ${prevInFocusModeRef.current} to ${inFocusMode}`);
       prevInFocusModeRef.current = inFocusMode;
     }
   }, [currentView, inFocusMode]);
@@ -56,22 +54,28 @@ export function useAppView(initialView: AppView = 'all') {
   const confirmExitFocusMode = useCallback(() => {
     console.log('Confirming exit from focus mode, pending view:', pendingView);
     
-    // First disable focus mode
-    setInFocusMode(false);
-    
-    // Reset dialog state
+    // Reset dialog state first
     setShowExitConfirm(false);
     
-    // Delay view change to avoid race conditions
+    // Disable focus mode
+    setInFocusMode(false);
+    
+    // Change view after a small delay to ensure state batching works correctly
     const targetView = pendingView || 'all';
-    setTimeout(() => {
-      setCurrentView(targetView);
+    
+    // Only set current view if it's different than the current one
+    if (currentView !== targetView) {
+      setTimeout(() => {
+        setCurrentView(targetView);
+        setPendingView(null);
+        
+        // Reset pointer events
+        document.body.style.pointerEvents = '';
+      }, 50);
+    } else {
       setPendingView(null);
-      
-      // Reset pointer events
-      document.body.style.pointerEvents = '';
-    }, 100);
-  }, [pendingView]);
+    }
+  }, [pendingView, currentView]);
   
   return {
     currentView,

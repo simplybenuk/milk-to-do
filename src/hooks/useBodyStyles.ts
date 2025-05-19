@@ -7,9 +7,14 @@ import { useEffect, useRef } from 'react';
 export function useBodyStyles() {
   // Track if the interval is active to prevent duplicates
   const intervalRef = useRef<number | null>(null);
+  const isRestoringRef = useRef<boolean>(false);
   
   const resetPointerEvents = () => {
-    document.body.style.pointerEvents = "";
+    // Prevent redundant style settings which can trigger updates
+    if (document.body.style.pointerEvents !== "") {
+      document.body.style.pointerEvents = "";
+      console.log('Reset pointer events');
+    }
   };
   
   // Set up cleanup and maintenance for pointer events
@@ -22,9 +27,14 @@ export function useBodyStyles() {
     // Only if not already set up
     if (intervalRef.current === null) {
       intervalRef.current = window.setInterval(() => {
-        if (document.body.style.pointerEvents === 'none') {
+        // Use ref to prevent multiple simultaneous resets
+        if (!isRestoringRef.current && document.body.style.pointerEvents === 'none') {
+          isRestoringRef.current = true;
           resetPointerEvents();
           console.log('Restored pointer-events via interval check');
+          setTimeout(() => {
+            isRestoringRef.current = false;
+          }, 100);
         }
       }, 5000);
     }
