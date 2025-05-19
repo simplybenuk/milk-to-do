@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { FocusModePage } from './FocusModePage';
 import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 import { useTaskNavigation } from '@/hooks/useTaskNavigation';
@@ -27,7 +27,7 @@ export function FocusModeContainer({
   setShowExitConfirm,
   confirmExitFocusMode
 }: FocusModeContainerProps) {
-  const [selectedTagIds, setSelectedTagIdsState] = useState<string[] | undefined>(undefined);
+  const [selectedTagIds, setSelectedTagIdsState] = React.useState<string[] | undefined>(undefined);
   
   // Monitor view and focus mode sync without updating state
   useFocusModeSync(currentView, inFocusMode);
@@ -45,7 +45,7 @@ export function FocusModeContainer({
   );
   
   // Set up task navigation and handle focus mode end
-  const handleFocusEnd = () => {
+  const handleFocusEnd = React.useCallback(() => {
     // Safely exit focus mode
     console.log("Focus mode session ended naturally");
     document.body.style.pointerEvents = "";
@@ -55,7 +55,7 @@ export function FocusModeContainer({
     setTimeout(() => {
       setCurrentView('all'); // Go back to All Tasks view when focus mode ends naturally
     }, 50);
-  };
+  }, [setInFocusMode, setCurrentView]);
   
   const {
     currentTask,
@@ -69,12 +69,12 @@ export function FocusModeContainer({
     noTasksAvailable
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
   
-  const handleTagSelection = (tags?: string[]) => {
+  const handleTagSelection = React.useCallback((tags?: string[]) => {
     setSelectedTagIdsState(tags);
     setSelectedTagIds(tags);
-  };
+  }, [setSelectedTagIds]);
 
-  // Reset pointer events if they get stuck
+  // Reset pointer events if they get stuck - use refs to avoid re-render issues
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (document.body.style.pointerEvents === 'none') {

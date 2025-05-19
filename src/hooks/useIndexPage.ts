@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useAppView } from '@/hooks/useAppView';
 import { useTaskDataFetching } from '@/hooks/useTaskDataFetching';
 import { useBodyStyles } from '@/hooks/useBodyStyles';
@@ -32,7 +32,7 @@ export function useIndexPage() {
       currentView,
       inFocusMode
     });
-  }, []); // No dependencies for initial setup
+  }, [loadTasks, resetPointerEvents]); // Include proper dependencies
   
   return {
     currentView,
