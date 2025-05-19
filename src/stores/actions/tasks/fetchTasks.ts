@@ -1,7 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Task } from '@/types/task';
 import { convertDatabaseDatesToDateObjects } from '../../utils/taskUtils';
-import { useCallback } from 'react';
 
 export const fetchTasksFromDB = async (userId: string): Promise<Task[]> => {
   const { data, error } = await supabase
@@ -15,7 +15,9 @@ export const fetchTasksFromDB = async (userId: string): Promise<Task[]> => {
 };
 
 export const createFetchTasksFunction = (set: any, get: any) => {
-  return useCallback(async () => {
+  // Instead of using useCallback, we'll create a regular memoized function
+  // that we'll only initialize once when the store is created
+  const fetchTasks = async () => {
     const state = get();
     if (state.isLoading) return; // Prevent multiple simultaneous fetches
     
@@ -40,5 +42,7 @@ export const createFetchTasksFunction = (set: any, get: any) => {
         error: error instanceof Error ? error.message : 'Failed to fetch tasks'
       });
     }
-  }, []);  // Empty dependency array means this won't change
+  };
+  
+  return fetchTasks;
 };
