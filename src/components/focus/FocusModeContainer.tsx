@@ -88,6 +88,7 @@ export function FocusModeContainer({
       }, 5000); // Longer interval to reduce updates
     }
     
+    // Clean up interval on unmount
     return () => {
       if (intervalRef.current !== null) {
         window.clearInterval(intervalRef.current);
@@ -95,7 +96,7 @@ export function FocusModeContainer({
       }
       document.body.style.pointerEvents = "";
     };
-  }, []);
+  }, []); // Empty dependency array to run only on mount/unmount
 
   // If not in focus mode, only show the enter focus mode button
   if (!inFocusMode && currentView === 'all') {

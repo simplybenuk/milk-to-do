@@ -40,8 +40,6 @@ export function FocusExitConfirmDialog({
     
     // First process the confirmation
     onConfirm();
-    
-    // Dialog will close automatically via state update
   };
 
   // Handle cancel action

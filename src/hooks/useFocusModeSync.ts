@@ -29,6 +29,7 @@ export function useFocusModeSync(
       prevViewRef.current = currentView;
       prevFocusModeRef.current = inFocusMode;
     }
+    // We need to include the dependencies to ensure the effect runs when they change
   }, [currentView, inFocusMode]);
   
   // Cleanup on unmount

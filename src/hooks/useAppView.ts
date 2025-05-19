@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export type AppView = 'main' | 'all' | 'closed' | 'stats';
 
@@ -8,6 +8,10 @@ export function useAppView(initialView: AppView = 'all') {
   const [inFocusMode, setInFocusMode] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [pendingView, setPendingView] = useState<AppView | null>(null);
+  
+  // Use refs to track previous values and prevent unnecessary effects
+  const prevViewRef = useRef<AppView>(initialView);
+  const prevInFocusModeRef = useRef<boolean>(false);
   
   // Function to handle view changes with focus mode confirmation
   const handleViewChange = useCallback((newView: AppView) => {
@@ -35,6 +39,19 @@ export function useAppView(initialView: AppView = 'all') {
     }
   }, [inFocusMode, currentView]);
 
+  // Monitor state changes to avoid infinite updates
+  useEffect(() => {
+    if (prevViewRef.current !== currentView) {
+      console.log(`View changed from ${prevViewRef.current} to ${currentView}`);
+      prevViewRef.current = currentView;
+    }
+    
+    if (prevInFocusModeRef.current !== inFocusMode) {
+      console.log(`Focus mode changed from ${prevInFocusModeRef.current} to ${inFocusMode}`);
+      prevInFocusModeRef.current = inFocusMode;
+    }
+  }, [currentView, inFocusMode]);
+
   // Function to confirm exiting focus mode
   const confirmExitFocusMode = useCallback(() => {
     console.log('Confirming exit from focus mode, pending view:', pendingView);
@@ -55,7 +72,7 @@ export function useAppView(initialView: AppView = 'all') {
       
       // Make sure pointer events are enabled
       document.body.style.pointerEvents = '';
-    }, 0);
+    }, 50); // Increased timeout to ensure state updates are processed
   }, [pendingView]);
   
   return {

@@ -34,7 +34,10 @@ export function useIndexPage() {
     
     // Ensure pointer events are enabled
     resetPointerEvents();
-  }, []); // No dependencies for initial setup
+    
+    // No dependencies for initial setup to ensure it runs only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); 
   
   return {
     currentView,
