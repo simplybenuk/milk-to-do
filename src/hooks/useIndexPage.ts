@@ -34,11 +34,6 @@ export function useIndexPage() {
     
     // Ensure pointer events are enabled
     resetPointerEvents();
-    
-    console.log('App state initialized:', { 
-      currentView,
-      inFocusMode
-    });
   }, []); // No dependencies for initial setup
   
   return {

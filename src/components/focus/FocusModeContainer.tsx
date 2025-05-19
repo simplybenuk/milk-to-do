@@ -29,10 +29,6 @@ export function FocusModeContainer({
 }: FocusModeContainerProps) {
   const [selectedTagIds, setSelectedTagIdsState] = useState<string[] | undefined>(undefined);
   
-  // Prevent infinite rerendering by tracking state changes
-  const prevInFocusMode = useRef(inFocusMode);
-  const prevCurrentView = useRef(currentView);
-  
   // Monitor view and focus mode sync without updating state
   useFocusModeSync(currentView, inFocusMode);
   
@@ -94,18 +90,12 @@ export function FocusModeContainer({
     
     return () => {
       if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current);
+        window.clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
       document.body.style.pointerEvents = "";
     };
   }, []);
-
-  // Track view and focus mode changes to prevent infinite loops
-  useEffect(() => {
-    prevInFocusMode.current = inFocusMode;
-    prevCurrentView.current = currentView;
-  }, [inFocusMode, currentView]);
 
   // If not in focus mode, only show the enter focus mode button
   if (!inFocusMode && currentView === 'all') {

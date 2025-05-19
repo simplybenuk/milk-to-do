@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import useTagStore from '@/stores/useTagStore';
@@ -5,7 +6,7 @@ import { Tag } from '@/types/tag';
 import { CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface StatsTagFilterProps {
+export interface StatsTagFilterProps {
   onSelectionChange: (tagIds: string[]) => void;
   selectedTagIds: string[];
 }
@@ -14,22 +15,26 @@ export function StatsTagFilter({ onSelectionChange, selectedTagIds }: StatsTagFi
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [isAllSelected, setIsAllSelected] = useState(true);
   const { tags, fetchTags } = useTagStore();
+  const [initialLoad, setInitialLoad] = useState(true);
 
+  // Fetch tags only once on mount
   useEffect(() => {
     fetchTags();
   }, [fetchTags]);
 
+  // Update local tags state when tags are loaded
   useEffect(() => {
     if (tags && tags.length > 0) {
       setAllTags(tags);
       
-      // If all is selected, set all tag IDs
-      if (isAllSelected) {
+      // Only set all tag IDs on initial load
+      if (initialLoad) {
         const allTagIds = tags.map(tag => tag.id);
         onSelectionChange(allTagIds);
+        setInitialLoad(false);
       }
     }
-  }, [tags, isAllSelected, onSelectionChange]);
+  }, [tags, initialLoad, onSelectionChange]);
 
   const handleTagToggle = (tagId: string) => {
     // If "All Tags" is currently selected, deselect it and only select the clicked tag

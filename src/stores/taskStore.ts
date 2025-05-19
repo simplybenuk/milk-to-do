@@ -37,9 +37,10 @@ const useTaskStore = create<TaskStore>((set, get) => {
     
     // Check if we actually need to update any tasks
     let needsUpdate = false;
+    let warningTasks = [...tasks];
     
     // Apply expiry warnings to tasks
-    const warningTasks = tasks.map(task => {
+    warningTasks = tasks.map(task => {
       if (task.status === 'open') {
         const expiryDate = task.expiry_date instanceof Date 
           ? task.expiry_date 

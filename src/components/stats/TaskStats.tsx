@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Task } from '@/types/task';
 import useTaskStore from '@/stores/useTaskStore';
 import { DailyActivityChart } from './DailyActivityChart';
@@ -16,11 +16,20 @@ export function TaskStats() {
   
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [initialFetchDone, setInitialFetchDone] = useState(false);
   
   // Fetch tasks on initial load
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    if (!initialFetchDone) {
+      fetchTasks();
+      setInitialFetchDone(true);
+    }
+  }, [fetchTasks, initialFetchDone]);
+  
+  // Create a memoized tag selection handler to prevent recreating on every render
+  const handleTagSelectionChange = useCallback((selectedTags: string[]) => {
+    setSelectedTagIds(selectedTags);
+  }, []);
   
   // Filter tasks based on selected tags
   useEffect(() => {
@@ -45,10 +54,6 @@ export function TaskStats() {
       setFilteredTasks(filtered);
     }
   }, [tasks, selectedTagIds]);
-  
-  const handleTagSelectionChange = (selectedTags: string[]) => {
-    setSelectedTagIds(selectedTags);
-  };
   
   if (isLoading) {
     return (
