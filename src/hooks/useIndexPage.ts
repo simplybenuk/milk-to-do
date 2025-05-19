@@ -32,7 +32,7 @@ export function useIndexPage() {
       currentView,
       inFocusMode
     });
-  }, []); // No dependencies for initial setup
+  }, []); // No dependency on loadTasks anymore
   
   return {
     currentView,

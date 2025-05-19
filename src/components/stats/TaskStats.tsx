@@ -19,9 +19,10 @@ export function TaskStats() {
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[] | undefined>(undefined);
   
+  // Only fetch tasks once on mount, no dependency on fetchTasks
   useEffect(() => {
     fetchTasks();
-  }, [fetchTasks]);
+  }, []); 
 
   // Filter tasks based on selected tags
   useEffect(() => {

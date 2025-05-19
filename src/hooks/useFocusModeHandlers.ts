@@ -31,7 +31,7 @@ export function useFocusModeHandlers(
     setShowExitConfirm(true);
   }, [setShowExitConfirm]);
 
-  // Handler for confirming exit
+  // Handler for confirming exit - removed fetchTasks from dependency array
   const handleConfirmExit = useCallback(() => {
     console.log('Confirming exit from focus mode');
     // Reset pointer events immediately
@@ -44,7 +44,7 @@ export function useFocusModeHandlers(
     setTimeout(() => {
       fetchTasks();
     }, 300);
-  }, [confirmExitFocusMode, fetchTasks]);
+  }, [confirmExitFocusMode]); // Removed fetchTasks from dependency
 
   return {
     handleEnterFocusMode,

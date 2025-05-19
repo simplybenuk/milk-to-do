@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -16,7 +15,7 @@ export function useAllTasksView() {
   useEffect(() => {
     // Refresh tasks to ensure we have the latest data including newly created child tasks
     fetchTasks();
-  }, [fetchTasks]);
+  }, []); // Removed fetchTasks from dependency array
   
   // Filter tasks by tags only if Pro user
   const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];

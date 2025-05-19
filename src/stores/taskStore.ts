@@ -6,6 +6,7 @@ import { getFocusModeActions } from './actions/tasks/focusModeActions';
 import { getDecayActions } from './actions/tasks/decayActions';
 import { getParentTaskActions } from './actions/tasks/parentTaskActions';
 import { getPriorityActions } from './actions/tasks/priorityActions';
+import { createFetchTasksFunction } from './actions/tasks/fetchTasks';
 
 /**
  * Central store for managing tasks in the application
@@ -22,6 +23,9 @@ const useTaskStore = create<TaskStore>((set, get) => {
     sessionId: crypto.randomUUID()
   };
 
+  // Create the memoized fetch tasks function
+  const fetchTasks = createFetchTasksFunction(set, get);
+
   // Initialize actions with proper dependencies
   const coreActions = getCoreTaskActions(set, get);
   const focusModeActions = getFocusModeActions(getTasks);
@@ -33,6 +37,9 @@ const useTaskStore = create<TaskStore>((set, get) => {
     // Initial state
     ...initialState,
 
+    // Add the memoized fetchTasks function
+    fetchTasks,
+    
     // Core task operations
     ...coreActions,
     
