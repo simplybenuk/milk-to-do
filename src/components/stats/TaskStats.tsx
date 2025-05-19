@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import {
   Card,
@@ -13,39 +13,15 @@ import { MonthlySummaryChart } from './MonthlySummaryChart';
 import { StatsCards } from './StatsCards';
 import { StatsTagFilter } from './StatsTagFilter';
 import { Task } from '@/types/task';
-import { FetchTasksOptions } from '@/stores/actions/tasks/fetchTasks';
 
 export function TaskStats() {
-  const { tasks, fetchTasks, isLoading } = useTaskStore();
+  const { tasks, fetchTasks } = useTaskStore();
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[] | undefined>(undefined);
-  const [dataFetched, setDataFetched] = useState(false);
   
-  // Fetch tasks with optimization - only fetch once and use filtering
-  const loadTasksForStats = useCallback(async () => {
-    console.log('Loading tasks for stats view');
-    
-    // Create options object for fetch
-    const options: FetchTasksOptions = {
-      // For stats, we need both open and closed tasks
-      // Use a reasonable limit to prevent loading too much data
-      limit: 1000,
-      // If tags are selected, filter by them
-      tags: selectedTagIds?.length ? selectedTagIds : undefined
-    };
-    
-    try {
-      await fetchTasks(options);
-      setDataFetched(true);
-    } catch (error) {
-      console.error('Error fetching tasks for stats:', error);
-    }
-  }, [fetchTasks, selectedTagIds]);
-
-  // Initial data load
   useEffect(() => {
-    loadTasksForStats();
-  }, [loadTasksForStats]);
+    fetchTasks();
+  }, [fetchTasks]);
 
   // Filter tasks based on selected tags
   useEffect(() => {
@@ -79,34 +55,7 @@ export function TaskStats() {
 
   const handleTagsChange = (tagIds: string[] | undefined) => {
     setSelectedTagIds(tagIds);
-    
-    // If the selection has changed significantly, refetch with new filter
-    if ((tagIds === undefined && selectedTagIds !== undefined) || 
-        (tagIds !== undefined && selectedTagIds === undefined) ||
-        (tagIds?.length === 0 && selectedTagIds?.length !== 0)) {
-      // Reset data fetched flag to trigger a re-fetch with the new filter
-      setDataFetched(false);
-    }
   };
-
-  if (isLoading && !dataFetched) {
-    return (
-      <div className="space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Task Completion Overview</CardTitle>
-            <CardDescription>Loading stats data...</CardDescription>
-          </CardHeader>
-          <CardContent className="h-40 flex items-center justify-center">
-            <div className="animate-pulse text-center">
-              <div className="h-4 bg-slate-200 rounded w-32 mb-4 mx-auto"></div>
-              <div className="h-4 bg-slate-200 rounded w-24 mx-auto"></div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (!tasks.length) {
     return (
@@ -130,7 +79,6 @@ export function TaskStats() {
       
       {filteredTasks.length > 0 ? (
         <>
-          <StatsCards tasks={filteredTasks} />
           <DailyActivityChart tasks={filteredTasks} />
           <MonthlySummaryChart tasks={filteredTasks} />
         </>
