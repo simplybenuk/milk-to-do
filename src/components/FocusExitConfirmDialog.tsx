@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 interface FocusExitConfirmDialogProps {
   open: boolean;
@@ -22,38 +22,29 @@ export function FocusExitConfirmDialog({
   onOpenChange,
   onConfirm,
 }: FocusExitConfirmDialogProps) {
-  // Track previous open state to avoid unnecessary effects
-  const prevOpenRef = useRef(open);
-  const confirmedRef = useRef(false);
-  
-  // Only log when dialog state changes to avoid excessive renders
+  // Reset pointer events when dialog state changes
   useEffect(() => {
-    if (prevOpenRef.current !== open) {
-      console.log("FocusExitConfirmDialog - Dialog state:", open);
-      prevOpenRef.current = open;
-      
-      // Reset confirmed state when dialog opens/closes
-      if (!open) {
-        confirmedRef.current = false;
-      }
-    }
+    // Only log, don't set pointer events here to avoid side effects
+    console.log("FocusExitConfirmDialog - Dialog state:", open);
+    
+    return () => {
+      console.log("FocusExitConfirmDialog - Cleanup");
+    };
   }, [open]);
 
-  // Handle the confirm action - ensuring pointer events are reset
+  // Handle the confirm action
   const handleConfirm = () => {
-    // Prevent multiple clicks
-    if (confirmedRef.current) return;
-    confirmedRef.current = true;
-    
     console.log("FocusExitConfirmDialog - Confirming exit");
     // Reset pointer events immediately
     document.body.style.pointerEvents = "";
     
-    // Execute the confirmation callback
+    // First process the confirmation
     onConfirm();
+    
+    // Dialog will close automatically via state update
   };
 
-  // Handle cancel action - ensuring pointer events are reset
+  // Handle cancel action
   const handleCancel = () => {
     console.log("FocusExitConfirmDialog - Cancelling exit");
     document.body.style.pointerEvents = "";

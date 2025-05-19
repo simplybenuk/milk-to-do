@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef, useCallback, memo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FocusModePage } from './FocusModePage';
 import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 import { useTaskNavigation } from '@/hooks/useTaskNavigation';
@@ -18,8 +18,7 @@ interface FocusModeContainerProps {
   confirmExitFocusMode: () => void;
 }
 
-// Use memo to prevent unnecessary re-renders
-export const FocusModeContainer = memo(function FocusModeContainer({
+export function FocusModeContainer({
   currentView,
   setCurrentView,
   inFocusMode,
@@ -33,7 +32,7 @@ export const FocusModeContainer = memo(function FocusModeContainer({
   // Monitor view and focus mode sync without updating state
   useFocusModeSync(currentView, inFocusMode);
   
-  // Initialize focus mode handlers - memoize to prevent recreating on every render
+  // Initialize focus mode handlers
   const { 
     handleEnterFocusMode, 
     handleExitFocusMode, 
@@ -45,20 +44,18 @@ export const FocusModeContainer = memo(function FocusModeContainer({
     confirmExitFocusMode
   );
   
-  // Memoize the focus end handler to prevent recreating on every render
-  const handleFocusEnd = useCallback(() => {
+  // Set up task navigation and handle focus mode end
+  const handleFocusEnd = () => {
     // Safely exit focus mode
     console.log("Focus mode session ended naturally");
     document.body.style.pointerEvents = "";
     
     // Exit focus mode and return to All Tasks view
     setInFocusMode(false);
-    
-    // Use setTimeout to ensure state updates happen in separate batches
     setTimeout(() => {
       setCurrentView('all'); // Go back to All Tasks view when focus mode ends naturally
     }, 50);
-  }, [setInFocusMode, setCurrentView]);
+  };
   
   const {
     currentTask,
@@ -72,35 +69,25 @@ export const FocusModeContainer = memo(function FocusModeContainer({
     noTasksAvailable
   } = useTaskNavigation(inFocusMode, handleFocusEnd);
   
-  // Memoize tag selection handler to prevent recreating on every render
-  const handleTagSelection = useCallback((tags?: string[]) => {
+  const handleTagSelection = (tags?: string[]) => {
     setSelectedTagIdsState(tags);
     setSelectedTagIds(tags);
-  }, [setSelectedTagIds]);
+  };
 
-  // Reset pointer events if they get stuck - use a ref to track the interval
-  const intervalRef = useRef<number | null>(null);
-  
+  // Reset pointer events if they get stuck
   useEffect(() => {
-    // Only set up the interval once, not on every render
-    if (intervalRef.current === null) {
-      intervalRef.current = window.setInterval(() => {
-        if (document.body.style.pointerEvents === 'none') {
-          document.body.style.pointerEvents = "";
-          console.log("FocusModeContainer: Restored pointer events");
-        }
-      }, 5000);
-    }
-    
-    // Clean up interval on unmount
-    return () => {
-      if (intervalRef.current !== null) {
-        window.clearInterval(intervalRef.current);
-        intervalRef.current = null;
+    const intervalId = setInterval(() => {
+      if (document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = "";
+        console.log("FocusModeContainer: Restored pointer events");
       }
+    }, 5000); // Longer interval to reduce updates
+    
+    return () => {
+      clearInterval(intervalId);
       document.body.style.pointerEvents = "";
     };
-  }, []); // Empty dependency array to run only on mount/unmount
+  }, []);
 
   // If not in focus mode, only show the enter focus mode button
   if (!inFocusMode && currentView === 'all') {
@@ -153,4 +140,4 @@ export const FocusModeContainer = memo(function FocusModeContainer({
   
   // For all other scenarios, don't render anything
   return null;
-});
+}

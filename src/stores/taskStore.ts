@@ -6,7 +6,6 @@ import { getFocusModeActions } from './actions/tasks/focusModeActions';
 import { getDecayActions } from './actions/tasks/decayActions';
 import { getParentTaskActions } from './actions/tasks/parentTaskActions';
 import { getPriorityActions } from './actions/tasks/priorityActions';
-import { Task, WarningLevel } from '@/types/task';
 
 /**
  * Central store for managing tasks in the application
@@ -30,44 +29,6 @@ const useTaskStore = create<TaskStore>((set, get) => {
   const parentTaskActions = getParentTaskActions(set, get);
   const priorityActions = getPriorityActions(set, get);
 
-  // Helper function to check if warning levels are different
-  const warningLevelChanged = (oldLevel: WarningLevel | undefined, newLevel: WarningLevel): boolean => {
-    return oldLevel !== newLevel;
-  };
-
-  // Prevent unnecessary state updates by comparing old and new warning levels
-  const setTaskExpiryWarnings = () => {
-    const tasks = getTasks();
-    const now = new Date();
-    
-    // Check if we actually need to update any tasks
-    let needsUpdate = false;
-    const updatedTasks = tasks.map(task => {
-      // Skip closed tasks - they don't need warning updates
-      if (task.status !== 'open') return task;
-      
-      const expiryDate = task.expiry_date instanceof Date 
-        ? task.expiry_date 
-        : new Date(task.expiry_date);
-        
-      const daysLeft = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      const newWarning: WarningLevel = daysLeft <= 3 ? 'high' : daysLeft <= 7 ? 'medium' : 'low';
-      
-      // Only flag for update if the warning level actually changed
-      if (warningLevelChanged(task.warning, newWarning)) {
-        needsUpdate = true;
-        return { ...task, warning: newWarning };
-      }
-      
-      return task;
-    });
-    
-    // Only update state if at least one task's warning level changed
-    if (needsUpdate) {
-      set({ tasks: updatedTasks });
-    }
-  };
-
   return {
     // Initial state
     ...initialState,
@@ -83,10 +44,7 @@ const useTaskStore = create<TaskStore>((set, get) => {
 
     // Focus mode and utility actions
     ...focusModeActions,
-    ...decayActions,
-    
-    // Add setTaskExpiryWarnings function
-    setTaskExpiryWarnings,
+    ...decayActions(),
   };
 });
 

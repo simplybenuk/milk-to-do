@@ -1,7 +1,15 @@
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
+import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Task } from '@/types/task';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { StatsCards } from './StatsCards';
 
 interface MonthlySummaryChartProps {
@@ -9,83 +17,99 @@ interface MonthlySummaryChartProps {
 }
 
 export function MonthlySummaryChart({ tasks }: MonthlySummaryChartProps) {
-  const chartData = useMemo(() => {
-    // Get dates for the last 3 months
-    const today = new Date();
-    const months = [];
-    
-    for (let i = 2; i >= 0; i--) {
-      const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      months.push({
-        month: monthDate.toLocaleString('default', { month: 'short' }),
-        year: monthDate.getFullYear(),
-        startDate: new Date(monthDate.getFullYear(), monthDate.getMonth(), 1),
-        endDate: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0),
+  // Monthly summary chart data (6 months)
+  const monthlySummaryData = useMemo(() => {
+    const now = new Date();
+    const data = [];
+
+    // Create data for the current month and previous 5 months
+    for (let i = 5; i >= 0; i--) {
+      const monthDate = subMonths(now, i);
+      const monthStart = startOfMonth(monthDate);
+      const monthEnd = endOfMonth(monthDate);
+      
+      // Format month name (e.g., Jan, Feb, etc.)
+      const monthStr = format(monthDate, 'MMM yy'); 
+      
+      // Count tasks created in this month
+      const newTasksCount = tasks.filter(task => 
+        task.created_at >= monthStart && 
+        task.created_at <= monthEnd
+      ).length;
+      
+      // Count tasks completed in this month
+      const completedCount = tasks.filter(task => 
+        task.completed_at && 
+        task.completed_at >= monthStart && 
+        task.completed_at <= monthEnd
+      ).length;
+      
+      // Count tasks expired in this month
+      const expiredCount = tasks.filter(task => 
+        task.expired_at && 
+        task.expired_at >= monthStart && 
+        task.expired_at <= monthEnd
+      ).length;
+      
+      data.push({
+        month: monthStr,
+        new: newTasksCount,
+        completed: completedCount,
+        expired: expiredCount
       });
     }
     
-    // Calculate stats for each month
-    return months.map(({ month, year, startDate, endDate }) => {
-      // Tasks created in this month
-      const created = tasks.filter(task => {
-        const taskDate = new Date(task.created_at);
-        return taskDate >= startDate && taskDate <= endDate;
-      }).length;
-      
-      // Tasks completed in this month
-      const completed = tasks.filter(task => {
-        if (!task.completed_at || task.closed_status !== 'complete') return false;
-        const completedDate = new Date(task.completed_at);
-        return completedDate >= startDate && completedDate <= endDate;
-      }).length;
-      
-      // Tasks expired in this month
-      const expired = tasks.filter(task => {
-        if (!task.expired_at || task.closed_status !== 'expired') return false;
-        const expiredDate = new Date(task.expired_at);
-        return expiredDate >= startDate && expiredDate <= endDate;
-      }).length;
-      
-      return {
-        name: `${month} ${year}`,
-        Created: created,
-        Completed: completed,
-        Expired: expired
-      };
-    });
+    return data;
   }, [tasks]);
   
+  // Calculate stats for the current month (for summary cards)
+  const currentMonthStats = useMemo(() => {
+    const now = new Date();
+    const monthStart = startOfMonth(now);
+    
+    const newTasksCount = tasks.filter(task => 
+      task.created_at >= monthStart
+    ).length;
+    
+    const completedCount = tasks.filter(task => 
+      task.completed_at && 
+      task.completed_at >= monthStart
+    ).length;
+    
+    const expiredCount = tasks.filter(task => 
+      task.expired_at && 
+      task.expired_at >= monthStart
+    ).length;
+    
+    return {
+      new: newTasksCount,
+      completed: completedCount,
+      expired: expiredCount,
+      activeTasks: tasks.filter(t => t.status === 'open').length
+    };
+  }, [tasks]);
+
   return (
-    <div>
-      <div className="flex flex-col md:flex-row">
-        <div className="w-full md:w-2/3 overflow-x-auto">
-          <BarChart
-            width={500}
-            height={300}
-            data={chartData}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Created" fill="#8884d8" />
-            <Bar dataKey="Completed" fill="#82ca9d" />
-            <Bar dataKey="Expired" fill="#ff8042" />
-          </BarChart>
+    <Card>
+      <CardHeader>
+        <CardTitle>Monthly Task Summary</CardTitle>
+        <CardDescription>Task creation, completion and expiry over the past 6 months</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={monthlySummaryData}>
+              <XAxis dataKey="month" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="new" fill="#3b82f6" name="New" />
+              <Bar dataKey="completed" fill="#22c55e" name="Completed" />
+              <Bar dataKey="expired" fill="#ef4444" name="Expired" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        
-        {/* Stats cards now correctly pass tasks as a prop */}
-        <div className="w-full md:w-1/3 mt-4 md:mt-0">
-          <StatsCards tasks={tasks} />
-        </div>
-      </div>
-    </div>
+        <StatsCards stats={currentMonthStats} />
+      </CardContent>
+    </Card>
   );
 }

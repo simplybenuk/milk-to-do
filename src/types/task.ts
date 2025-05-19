@@ -2,7 +2,6 @@
 export type Priority = "low" | "medium" | "high";
 export type TaskStatus = "open" | "closed";
 export type ClosedStatusReason = "expired" | "complete" | "parent";
-export type WarningLevel = "low" | "medium" | "high";
 
 export interface Task {
   id: string;
@@ -18,8 +17,7 @@ export interface Task {
   parent_id?: string;
   child_task_ids: string[];
   skip_count: number;
-  last_skipped_session?: string;
+  last_skipped_session?: string;  // Added this line
   tags: string[];
   priority_score: number;
-  warning?: WarningLevel; // Added warning property
 }

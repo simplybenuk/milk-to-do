@@ -1,20 +1,12 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 /**
  * Hook for managing body styles like pointer events
  */
 export function useBodyStyles() {
-  // Track if the interval is active to prevent duplicates
-  const intervalRef = useRef<number | null>(null);
-  const isRestoringRef = useRef<boolean>(false);
-  
   const resetPointerEvents = () => {
-    // Prevent redundant style settings which can trigger updates
-    if (document.body.style.pointerEvents !== "") {
-      document.body.style.pointerEvents = "";
-      console.log('Reset pointer events');
-    }
+    document.body.style.pointerEvents = "";
   };
   
   // Set up cleanup and maintenance for pointer events
@@ -24,20 +16,13 @@ export function useBodyStyles() {
     console.log('Body styles initialized');
     
     // Set up an interval to periodically check and fix pointer-events
-    // Only if not already set up
-    if (intervalRef.current === null) {
-      intervalRef.current = window.setInterval(() => {
-        // Use ref to prevent multiple simultaneous resets
-        if (!isRestoringRef.current && document.body.style.pointerEvents === 'none') {
-          isRestoringRef.current = true;
-          resetPointerEvents();
-          console.log('Restored pointer-events via interval check');
-          setTimeout(() => {
-            isRestoringRef.current = false;
-          }, 100);
-        }
-      }, 5000);
-    }
+    // This is a failsafe in case other mechanisms fail
+    const intervalId = setInterval(() => {
+      if (document.body.style.pointerEvents === 'none') {
+        resetPointerEvents();
+        console.log('Restored pointer-events via interval check');
+      }
+    }, 2000); // Check every 2 seconds to reduce update frequency
     
     // Listen for any page visibility changes to reset pointer events
     const handleVisibilityChange = () => {
@@ -50,10 +35,7 @@ export function useBodyStyles() {
     
     // Cleanup on unmount
     return () => {
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+      clearInterval(intervalId);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       resetPointerEvents();
       console.log('Body styles cleanup completed');
