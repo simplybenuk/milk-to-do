@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import useTaskStore from '@/stores/useTaskStore';
 import {
   Card,
@@ -53,9 +53,9 @@ export function TaskStats() {
     setFilteredTasks(filtered);
   }, [tasks, selectedTagIds]);
 
-  const handleTagsChange = useCallback((tagIds: string[] | undefined) => {
+  const handleTagsChange = (tagIds: string[] | undefined) => {
     setSelectedTagIds(tagIds);
-  }, []);
+  };
 
   if (!tasks.length) {
     return (

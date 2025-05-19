@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import useTaskStore from '@/stores/useTaskStore';
@@ -12,14 +12,14 @@ export function useAllTasksView() {
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
   const { isPro } = useSubscription();
   
-  // Add effect to refresh tasks when component is mounted - only once
+  // Add effect to refresh tasks when component is mounted
   useEffect(() => {
     // Refresh tasks to ensure we have the latest data including newly created child tasks
     fetchTasks();
   }, [fetchTasks]);
   
-  // Filter tasks by tags only if Pro user - memoize this value
-  const selectedTagIds = isPro ? searchParams.get('tags')?.split(',').filter(Boolean) || [] : [];
+  // Filter tasks by tags only if Pro user
+  const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];
   
   // Get all open tasks, excluding expired ones, including child tasks
   const openTasks = tasks.filter(task => {
@@ -65,7 +65,7 @@ export function useAllTasksView() {
   // Get child tasks for display on the all tasks screen
   const childTasks = openTasks.filter(task => task.parent_id);
 
-  const handleViewParent = useCallback((parentId: string) => {
+  const handleViewParent = (parentId: string) => {
     const parentTask = tasks.find(t => t.id === parentId);
     if (parentTask) {
       const parentElement = document.getElementById(`task-${parentId}`);
@@ -82,7 +82,7 @@ export function useAllTasksView() {
         variant: "destructive"
       });
     }
-  }, [tasks, toast]);
+  };
 
   return {
     openTasks,

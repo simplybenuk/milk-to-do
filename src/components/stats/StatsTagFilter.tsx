@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import useTagStore from '@/stores/useTagStore';
 import { Tag } from '@/types/tag';
@@ -20,26 +19,20 @@ export function StatsTagFilter({ onTagsChange }: StatsTagFilterProps) {
     fetchTags();
   }, [fetchTags]);
 
-  // Update available tags when store changes
   useEffect(() => {
     if (tags && tags.length > 0) {
       setAllTags(tags);
-    }
-  }, [tags]);
-
-  // Handle "All Tags" selection changes
-  useEffect(() => {
-    if (isAllSelected && allTags.length > 0) {
-      // Only update when necessary to avoid loops
-      if (selectedTags.length !== allTags.length) {
-        const allTagIds = allTags.map(tag => tag.id);
+      
+      // If all is selected, set all tag IDs
+      if (isAllSelected) {
+        const allTagIds = tags.map(tag => tag.id);
         setSelectedTags(allTagIds);
         onTagsChange(undefined); // undefined means all tags
       }
     }
-  }, [isAllSelected, allTags, selectedTags.length, onTagsChange]);
+  }, [tags, isAllSelected, onTagsChange]);
 
-  const handleTagToggle = useCallback((tagId: string) => {
+  const handleTagToggle = (tagId: string) => {
     // If "All Tags" is currently selected, deselect it and only select the clicked tag
     if (isAllSelected || selectedTags.length === allTags.length) {
       const newSelectedTags = [tagId];
@@ -62,9 +55,9 @@ export function StatsTagFilter({ onTagsChange }: StatsTagFilterProps) {
     if (newSelectedTags.length === allTags.length) {
       onTagsChange(undefined); // undefined means all tags
     }
-  }, [selectedTags, isAllSelected, allTags, onTagsChange]);
+  };
 
-  const handleSelectAll = useCallback(() => {
+  const handleSelectAll = () => {
     if (!isAllSelected) {
       setSelectedTags(allTags.map(tag => tag.id));
       setIsAllSelected(true);
@@ -74,7 +67,7 @@ export function StatsTagFilter({ onTagsChange }: StatsTagFilterProps) {
       setIsAllSelected(false);
       onTagsChange([]);
     }
-  }, [isAllSelected, allTags, onTagsChange]);
+  };
 
   if (!allTags || allTags.length === 0) {
     return null; // Don't show filter if there are no tags
