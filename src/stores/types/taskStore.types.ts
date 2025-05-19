@@ -1,5 +1,5 @@
 
-import { Task, Priority } from "@/types/task";
+import { Task, Priority, ClosedStatusReason } from "@/types/task";
 
 export interface TaskStore {
   // State
@@ -12,10 +12,11 @@ export interface TaskStore {
   // Core task operations
   fetchTasks: (options?: any) => Promise<Task[]>;
   fetchTasksByView: (viewName: string) => Promise<Task[]>;
-  addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string, tagIds?: string[]) => Promise<Task | null>;
+  addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string, tagIds?: string[]) => Promise<string | null>;
   completeTask: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
+  editTask: (id: string, title: string, priority: Priority, tagIds?: string[]) => Promise<void>;
   
   // Skip operations
   incrementSkipCount: (id: string) => Promise<number>;
@@ -24,10 +25,12 @@ export interface TaskStore {
   createChildTask: (parentId: string, title: string, priority: Priority, expiryDate: Date, tagIds?: string[]) => Promise<Task | null>;
   getChildTasks: (parentId: string) => Task[];
   markTaskAsParent: (id: string) => Promise<void>;
+  updateParentWithChild: (parentId: string, childId: string) => Promise<void>;
   
   // Priority operations
   updateTaskPriority: (id: string, priority: Priority) => Promise<void>;
-  refreshTaskExpiryDate: (id: string) => Promise<void>;
+  refreshTaskExpiry: (id: string) => Promise<void>;
+  refreshTaskExpiryDate: (id: string) => Promise<void>; // Alias for refreshTaskExpiry
   
   // Focus mode operations
   getSortedTasksForFocusMode: () => Task[];

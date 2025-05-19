@@ -10,9 +10,9 @@ import { getPriorityActions } from './actions/tasks/priorityActions';
 /**
  * Central store for managing tasks in the application
  */
-const useTaskStore = create<TaskStore>((set, get) => {
+const useTaskStore = create<TaskStore>((setState, getState) => {
   // Get tasks accessor function
-  const getTasks = () => get().tasks;
+  const getTasks = () => getState().tasks;
 
   // Initialize with defaults
   const initialState = {
@@ -23,11 +23,29 @@ const useTaskStore = create<TaskStore>((set, get) => {
   };
 
   // Initialize actions with proper dependencies
-  const coreActions = getCoreTaskActions(set, get);
+  const coreActions = getCoreTaskActions(setState, getState);
   const focusModeActions = getFocusModeActions(getTasks);
-  const decayActions = getDecayActions(getTasks, (tasks) => set({ tasks }));
-  const parentTaskActions = getParentTaskActions(set, get);
-  const priorityActions = getPriorityActions(set, get);
+  const decayActions = getDecayActions(getTasks, (tasks) => setState({ tasks }));
+  const parentTaskActions = getParentTaskActions(setState, getState);
+  const priorityActions = getPriorityActions(setState, getState);
+
+  // Add placeholder for setTaskExpiryWarnings
+  const setTaskExpiryWarnings = () => {
+    const tasks = getTasks();
+    // Apply expiry warnings to tasks
+    const now = new Date();
+    const warningTasks = tasks.map(task => {
+      if (task.status === 'open') {
+        const daysLeft = Math.floor((task.expiry_date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return {
+          ...task,
+          warning: daysLeft <= 3 ? 'high' : daysLeft <= 7 ? 'medium' : 'low'
+        };
+      }
+      return task;
+    });
+    setState({ tasks: warningTasks });
+  };
 
   return {
     // Initial state
@@ -44,7 +62,10 @@ const useTaskStore = create<TaskStore>((set, get) => {
 
     // Focus mode and utility actions
     ...focusModeActions,
-    ...decayActions(),
+    ...decayActions,
+    
+    // Add missing setTaskExpiryWarnings function
+    setTaskExpiryWarnings,
   };
 });
 

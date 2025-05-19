@@ -1,16 +1,51 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { Task } from '@/types/task';
 
 interface StatsCardsProps {
-  stats: {
-    new: number;
-    completed: number;
-    expired: number;
-    activeTasks: number;
-  };
+  tasks: Task[];
 }
 
-export function StatsCards({ stats }: StatsCardsProps) {
+export function StatsCards({ tasks }: StatsCardsProps) {
+  // Calculate statistics from tasks
+  const stats = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Filter tasks created this month
+    const newThisMonth = tasks.filter(task => 
+      new Date(task.created_at) >= startOfMonth
+    ).length;
+    
+    // Filter tasks completed this month
+    const completedThisMonth = tasks.filter(task => 
+      task.status === 'closed' && 
+      task.closed_status === 'complete' && 
+      task.completed_at && 
+      new Date(task.completed_at) >= startOfMonth
+    ).length;
+    
+    // Filter tasks expired this month
+    const expiredThisMonth = tasks.filter(task => 
+      task.status === 'closed' && 
+      task.closed_status === 'expired' && 
+      task.expired_at && 
+      new Date(task.expired_at) >= startOfMonth
+    ).length;
+    
+    // Count active tasks
+    const activeTasks = tasks.filter(task => 
+      task.status === 'open'
+    ).length;
+    
+    return {
+      new: newThisMonth,
+      completed: completedThisMonth,
+      expired: expiredThisMonth,
+      activeTasks
+    };
+  }, [tasks]);
+
   return (
     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
       <div className="rounded-lg bg-blue-50 p-4">

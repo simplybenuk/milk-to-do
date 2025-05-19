@@ -1,12 +1,13 @@
-import { StoreApi, GetState, SetState } from 'zustand';
-import { Task } from '@/types/task';
+
+import { StateCreator } from 'zustand';
+import { Task, Priority, ClosedStatusReason } from '@/types/task';
 import { TaskStore } from '../../types/taskStore.types';
-import { fetchTasksFromDB, FetchTasksOptions } from '../tasks/fetchTasks';
+import { fetchTasksFromDB, FetchTasksOptions } from './fetchTasks';
 import { supabase } from '@/integrations/supabase/client';
 
 export const getCoreTaskActions = (
-  set: SetState<TaskStore>,
-  get: GetState<TaskStore>
+  set: StateCreator<TaskStore>['setState'],
+  get: () => TaskStore
 ) => {
   return {
     fetchTasks: async (options?: FetchTasksOptions): Promise<Task[]> => {
@@ -92,13 +93,30 @@ export const getCoreTaskActions = (
       }
     },
     
-    addTask: async (title: string, priority: Priority, expiryDate: Date, parentId?: string, tagIds: string[] = []) => {
+    addTask: async (title: string, priority: Priority, expiryDate: Date, parentId?: string, tagIds: string[] = []): Promise<string | null> => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('No user logged in');
 
         // Add the task to the database
-        const newTaskId = await addTaskToDB(title, priority, expiryDate, user.id, parentId, tagIds);
+        const { data, error } = await supabase
+          .from('tasks')
+          .insert({
+            title,
+            priority,
+            expiry_date: expiryDate.toISOString(),
+            owner_id: user.id,
+            parent_id: parentId || null,
+            tags: tagIds,
+            status: 'open',
+            skip_count: 0,
+            child_task_ids: []
+          })
+          .select('id')
+          .single();
+          
+        if (error) throw error;
+        const newTaskId = data.id;
         
         // If this is a child task, update the parent task's child_task_ids array
         if (parentId && newTaskId) {
@@ -141,19 +159,28 @@ export const getCoreTaskActions = (
         // Reload tasks to get the latest state including the new task and updated relationships
         await get().fetchTasks();
         
-        // Return the new task ID to match the type signature
+        // Return the new task ID
         return newTaskId;
       } catch (error) {
         console.error('Error adding task:', error);
         set({ error: 'Failed to add task' });
-        return null; // Return null in case of error to match the type signature
+        return null;
       }
     },
     
     editTask: async (id: string, title: string, priority: Priority, tagIds?: string[]) => {
       try {
         // Update the task in the database
-        await updateTaskInDB(id, { title, priority, tags: tagIds || [] });
+        const { error } = await supabase
+          .from('tasks')
+          .update({ 
+            title, 
+            priority,
+            tags: tagIds || [] 
+          })
+          .eq('id', id);
+          
+        if (error) throw error;
         
         // Update the local state
         set(state => ({
@@ -169,6 +196,18 @@ export const getCoreTaskActions = (
         
         // If it's a parent task and has child tasks, sync the tags
         if (task?.child_task_ids?.length > 0 && tagIds) {
+          // Helper function to sync tags
+          const syncTagsToChildTasks = async (parentId: string, tagIds: string[]) => {
+            const children = get().tasks.filter(task => task.parent_id === parentId);
+            
+            for (const child of children) {
+              await supabase
+                .from('tasks')
+                .update({ tags: tagIds })
+                .eq('id', child.id);
+            }
+          };
+          
           await syncTagsToChildTasks(id, tagIds);
         }
         
@@ -180,9 +219,21 @@ export const getCoreTaskActions = (
       }
     },
     
-    coreCompleteTask: async (id: string, reason: ClosedStatusReason = 'complete') => {
+    completeTask: async (id: string, reason: ClosedStatusReason = 'complete') => {
       try {
-        await completeTaskInDB(id, reason);
+        // Update the task in the database to mark it as complete
+        const { error } = await supabase
+          .from('tasks')
+          .update({
+            status: 'closed',
+            closed_status: reason,
+            completed_at: reason === 'complete' ? new Date().toISOString() : null
+          })
+          .eq('id', id);
+          
+        if (error) throw error;
+        
+        // Update the local state
         set(state => ({
           tasks: state.tasks.map(task =>
             task.id === id
@@ -203,13 +254,91 @@ export const getCoreTaskActions = (
     
     deleteTask: async (id: string) => {
       try {
-        await deleteTaskFromDB(id);
+        // Delete the task from the database
+        const { error } = await supabase
+          .from('tasks')
+          .delete()
+          .eq('id', id);
+          
+        if (error) throw error;
+        
+        // Update the local state
         set(state => ({
           tasks: state.tasks.filter(task => task.id !== id),
         }));
       } catch (error) {
         console.error('Error deleting task:', error);
         set({ error: 'Failed to delete task' });
+      }
+    },
+    
+    updateTask: async (id: string, updates: Partial<Task>) => {
+      try {
+        // Update the task in the database
+        const { error } = await supabase
+          .from('tasks')
+          .update(updates)
+          .eq('id', id);
+          
+        if (error) throw error;
+        
+        // Update the local state
+        set(state => ({
+          tasks: state.tasks.map(task =>
+            task.id === id ? { ...task, ...updates } : task
+          ),
+        }));
+      } catch (error) {
+        console.error('Error updating task:', error);
+        set({ error: 'Failed to update task' });
+      }
+    },
+    
+    updateParentWithChild: async (parentId: string, childId: string) => {
+      try {
+        // Get current parent task
+        const { data: parentTask, error: fetchError } = await supabase
+          .from('tasks')
+          .select('child_task_ids')
+          .eq('id', parentId)
+          .single();
+          
+        if (fetchError) throw fetchError;
+        
+        // Update child_task_ids array
+        const updatedChildIds = [...(parentTask.child_task_ids || [])];
+        if (!updatedChildIds.includes(childId)) {
+          updatedChildIds.push(childId);
+        }
+        
+        // Update parent task
+        const { error: updateError } = await supabase
+          .from('tasks')
+          .update({ 
+            child_task_ids: updatedChildIds,
+            status: 'closed',
+            closed_status: 'parent'
+          })
+          .eq('id', parentId);
+          
+        if (updateError) throw updateError;
+        
+        // Update local state
+        set(state => ({
+          tasks: state.tasks.map(task =>
+            task.id === parentId 
+              ? { 
+                  ...task, 
+                  child_task_ids: updatedChildIds,
+                  status: 'closed',
+                  closed_status: 'parent'
+                }
+              : task
+          ),
+        }));
+      } catch (error) {
+        console.error('Error updating parent with child:', error);
+        set({ error: 'Failed to update parent with child' });
       }
     }
   };

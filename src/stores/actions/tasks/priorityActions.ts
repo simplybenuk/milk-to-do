@@ -3,7 +3,7 @@ import { Priority } from '@/types/task';
 import { addDays } from 'date-fns';
 import { 
   updateTaskPriorityInDB, 
-  refreshTaskExpiryInDB, 
+  refreshTaskExpiryInDB,
   incrementSkipCountInDB,
   updateLastSkippedSessionInDB
 } from '../taskActions';
@@ -47,6 +47,11 @@ export const getPriorityActions = (set, get) => ({
       console.error('Error refreshing task expiry date:', error);
       set({ error: 'Failed to refresh task expiry date' });
     }
+  },
+  
+  // Alias for refreshTaskExpiry for backward compatibility
+  refreshTaskExpiryDate: async (id: string) => {
+    return get().refreshTaskExpiry(id);
   },
 
   // Skip operations
