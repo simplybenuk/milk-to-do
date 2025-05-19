@@ -6,6 +6,7 @@ import { getFocusModeActions } from './actions/tasks/focusModeActions';
 import { getDecayActions } from './actions/tasks/decayActions';
 import { getParentTaskActions } from './actions/tasks/parentTaskActions';
 import { getPriorityActions } from './actions/tasks/priorityActions';
+import { Task, WarningLevel } from '@/types/task';
 
 /**
  * Central store for managing tasks in the application
@@ -45,7 +46,7 @@ const useTaskStore = create<TaskStore>((set, get) => {
           : new Date(task.expiry_date);
           
         const daysLeft = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        const newWarning = daysLeft <= 3 ? 'high' : daysLeft <= 7 ? 'medium' : 'low';
+        const newWarning: WarningLevel = daysLeft <= 3 ? 'high' : daysLeft <= 7 ? 'medium' : 'low';
         
         // Only update if the warning level actually changed
         if (task.warning !== newWarning) {

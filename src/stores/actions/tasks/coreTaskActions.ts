@@ -275,13 +275,24 @@ export const getCoreTaskActions = (
     updateTask: async (id: string, updates: Partial<Task>) => {
       try {
         // Convert Date objects to ISO strings for database storage
-        const dbUpdates = { ...updates };
-        if (updates.completed_at instanceof Date) {
-          dbUpdates.completed_at = updates.completed_at.toISOString();
-        }
-        if (updates.expiry_date instanceof Date) {
-          dbUpdates.expiry_date = updates.expiry_date.toISOString();
-        }
+        const dbUpdates: Record<string, any> = {};
+        
+        // Copy non-date properties as is
+        Object.keys(updates).forEach(key => {
+          const value = updates[key as keyof Partial<Task>];
+          
+          // Handle date conversions
+          if (key === 'completed_at' || key === 'expiry_date' || key === 'expired_at') {
+            if (value instanceof Date) {
+              dbUpdates[key] = value.toISOString();
+            } else if (value) {
+              dbUpdates[key] = value;
+            }
+          } else {
+            // For non-date properties, copy as is
+            dbUpdates[key] = value;
+          }
+        });
         
         // Update the task in the database
         const { error } = await supabase
@@ -291,7 +302,7 @@ export const getCoreTaskActions = (
           
         if (error) throw error;
         
-        // Update the local state
+        // Update the local state with the original updates (with Date objects intact)
         set(state => ({
           tasks: state.tasks.map(task =>
             task.id === id ? { ...task, ...updates } : task

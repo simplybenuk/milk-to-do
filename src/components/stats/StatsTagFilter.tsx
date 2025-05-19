@@ -6,12 +6,12 @@ import { CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StatsTagFilterProps {
-  onTagsChange: (tagIds: string[] | undefined) => void;
+  onSelectionChange: (tagIds: string[]) => void;
+  selectedTagIds: string[];
 }
 
-export function StatsTagFilter({ onTagsChange }: StatsTagFilterProps) {
+export function StatsTagFilter({ onSelectionChange, selectedTagIds }: StatsTagFilterProps) {
   const [allTags, setAllTags] = useState<Tag[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isAllSelected, setIsAllSelected] = useState(true);
   const { tags, fetchTags } = useTagStore();
 
@@ -26,46 +26,39 @@ export function StatsTagFilter({ onTagsChange }: StatsTagFilterProps) {
       // If all is selected, set all tag IDs
       if (isAllSelected) {
         const allTagIds = tags.map(tag => tag.id);
-        setSelectedTags(allTagIds);
-        onTagsChange(undefined); // undefined means all tags
+        onSelectionChange(allTagIds);
       }
     }
-  }, [tags, isAllSelected, onTagsChange]);
+  }, [tags, isAllSelected, onSelectionChange]);
 
   const handleTagToggle = (tagId: string) => {
     // If "All Tags" is currently selected, deselect it and only select the clicked tag
-    if (isAllSelected || selectedTags.length === allTags.length) {
+    if (isAllSelected || selectedTagIds.length === allTags.length) {
       const newSelectedTags = [tagId];
-      setSelectedTags(newSelectedTags);
       setIsAllSelected(false);
-      onTagsChange(newSelectedTags);
+      onSelectionChange(newSelectedTags);
       return;
     }
     
     // Otherwise toggle as normal
-    const newSelectedTags = selectedTags.includes(tagId)
-      ? selectedTags.filter(id => id !== tagId)
-      : [...selectedTags, tagId];
+    const newSelectedTags = selectedTagIds.includes(tagId)
+      ? selectedTagIds.filter(id => id !== tagId)
+      : [...selectedTagIds, tagId];
     
-    setSelectedTags(newSelectedTags);
-    onTagsChange(newSelectedTags);
+    onSelectionChange(newSelectedTags);
     
     // Update All Tags state if all tags are selected again
     setIsAllSelected(newSelectedTags.length === allTags.length);
-    if (newSelectedTags.length === allTags.length) {
-      onTagsChange(undefined); // undefined means all tags
-    }
   };
 
   const handleSelectAll = () => {
     if (!isAllSelected) {
-      setSelectedTags(allTags.map(tag => tag.id));
+      const allTagIds = allTags.map(tag => tag.id);
       setIsAllSelected(true);
-      onTagsChange(undefined); // undefined means all tags
+      onSelectionChange(allTagIds);
     } else {
-      setSelectedTags([]);
       setIsAllSelected(false);
-      onTagsChange([]);
+      onSelectionChange([]);
     }
   };
 
@@ -100,16 +93,16 @@ export function StatsTagFilter({ onTagsChange }: StatsTagFilterProps) {
         {allTags.map(tag => (
           <Badge 
             key={tag.id}
-            variant={selectedTags.includes(tag.id) && !isAllSelected ? "default" : "outline"}
+            variant={selectedTagIds.includes(tag.id) && !isAllSelected ? "default" : "outline"}
             className={cn(
               "cursor-pointer px-3 py-1",
-              selectedTags.includes(tag.id) && !isAllSelected
+              selectedTagIds.includes(tag.id) && !isAllSelected
                 ? "bg-milk-500 hover:bg-milk-600" 
                 : "hover:bg-milk-100"
             )}
             onClick={() => handleTagToggle(tag.id)}
           >
-            {selectedTags.includes(tag.id) && !isAllSelected && (
+            {selectedTagIds.includes(tag.id) && !isAllSelected && (
               <CircleCheck className="h-4 w-4 mr-1" />
             )}
             {tag.name}
