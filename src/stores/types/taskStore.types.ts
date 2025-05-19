@@ -13,13 +13,13 @@ export interface TaskStore {
   fetchTasks: (options?: any) => Promise<Task[]>;
   fetchTasksByView: (viewName: string) => Promise<Task[]>;
   addTask: (title: string, priority: Priority, expiryDate: Date, parentId?: string, tagIds?: string[]) => Promise<string | null>;
-  completeTask: (id: string) => Promise<void>;
+  completeTask: (id: string, reason?: ClosedStatusReason) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   editTask: (id: string, title: string, priority: Priority, tagIds?: string[]) => Promise<void>;
   
   // Skip operations
-  incrementSkipCount: (id: string) => Promise<number>;
+  incrementSkipCount: (id: string) => Promise<void>; // Changed return type to match implementation
   
   // Parent-child operations
   createChildTask: (parentId: string, title: string, priority: Priority, expiryDate: Date, tagIds?: string[]) => Promise<Task | null>;

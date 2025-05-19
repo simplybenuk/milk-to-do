@@ -10,9 +10,9 @@ import { getPriorityActions } from './actions/tasks/priorityActions';
 /**
  * Central store for managing tasks in the application
  */
-const useTaskStore = create<TaskStore>((setState, getState) => {
+const useTaskStore = create<TaskStore>((set, get) => {
   // Get tasks accessor function
-  const getTasks = () => getState().tasks;
+  const getTasks = () => get().tasks;
 
   // Initialize with defaults
   const initialState = {
@@ -23,28 +23,46 @@ const useTaskStore = create<TaskStore>((setState, getState) => {
   };
 
   // Initialize actions with proper dependencies
-  const coreActions = getCoreTaskActions(setState, getState);
+  const coreActions = getCoreTaskActions(set, get);
   const focusModeActions = getFocusModeActions(getTasks);
-  const decayActions = getDecayActions(getTasks, (tasks) => setState({ tasks }));
-  const parentTaskActions = getParentTaskActions(setState, getState);
-  const priorityActions = getPriorityActions(setState, getState);
+  const decayActions = getDecayActions(getTasks, (tasks) => set({ tasks }));
+  const parentTaskActions = getParentTaskActions(set, get);
+  const priorityActions = getPriorityActions(set, get);
 
-  // Add placeholder for setTaskExpiryWarnings
+  // Add setTaskExpiryWarnings with memoization to prevent infinite updates
   const setTaskExpiryWarnings = () => {
     const tasks = getTasks();
-    // Apply expiry warnings to tasks
     const now = new Date();
+    
+    // Check if we actually need to update any tasks
+    let needsUpdate = false;
+    
+    // Apply expiry warnings to tasks
     const warningTasks = tasks.map(task => {
       if (task.status === 'open') {
-        const daysLeft = Math.floor((task.expiry_date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        return {
-          ...task,
-          warning: daysLeft <= 3 ? 'high' : daysLeft <= 7 ? 'medium' : 'low'
-        };
+        const expiryDate = task.expiry_date instanceof Date 
+          ? task.expiry_date 
+          : new Date(task.expiry_date);
+          
+        const daysLeft = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const newWarning = daysLeft <= 3 ? 'high' : daysLeft <= 7 ? 'medium' : 'low';
+        
+        // Only update if the warning level actually changed
+        if (task.warning !== newWarning) {
+          needsUpdate = true;
+          return {
+            ...task,
+            warning: newWarning
+          };
+        }
       }
       return task;
     });
-    setState({ tasks: warningTasks });
+    
+    // Only update state if at least one task's warning level changed
+    if (needsUpdate) {
+      set({ tasks: warningTasks });
+    }
   };
 
   return {
@@ -64,7 +82,7 @@ const useTaskStore = create<TaskStore>((setState, getState) => {
     ...focusModeActions,
     ...decayActions,
     
-    // Add missing setTaskExpiryWarnings function
+    // Add setTaskExpiryWarnings function
     setTaskExpiryWarnings,
   };
 });

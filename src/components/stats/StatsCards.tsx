@@ -2,7 +2,8 @@
 import React, { useMemo } from 'react';
 import { Task } from '@/types/task';
 
-interface StatsCardsProps {
+// Update the interface to match how the component is being used
+export interface StatsCardsProps {
   tasks: Task[];
 }
 

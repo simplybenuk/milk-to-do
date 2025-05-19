@@ -50,6 +50,7 @@ export const getParentTaskActions = (set, get) => ({
       await get().markTaskAsParent(parentId);
       
       // Fetch the created child task
+      await get().fetchTasks();
       const childTask = get().tasks.find(task => task.id === childId);
       
       return childTask || null;
@@ -57,6 +58,55 @@ export const getParentTaskActions = (set, get) => ({
       console.error('Error creating child task:', error);
       set({ error: 'Failed to create child task' });
       return null;
+    }
+  },
+  
+  // Safely update parent with child
+  updateParentWithChild: async (parentId: string, childId: string): Promise<void> => {
+    try {
+      // Get current parent task
+      const { data: parentTask, error: fetchError } = await supabase
+        .from('tasks')
+        .select('child_task_ids')
+        .eq('id', parentId)
+        .single();
+        
+      if (fetchError) throw fetchError;
+      
+      // Update child_task_ids array
+      const updatedChildIds = [...(parentTask.child_task_ids || [])];
+      if (!updatedChildIds.includes(childId)) {
+        updatedChildIds.push(childId);
+      }
+      
+      // Update parent task
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({ 
+          child_task_ids: updatedChildIds,
+          status: 'closed',
+          closed_status: 'parent'
+        })
+        .eq('id', parentId);
+        
+      if (updateError) throw updateError;
+      
+      // Update local state
+      set(state => ({
+        tasks: state.tasks.map(task =>
+          task.id === parentId 
+            ? { 
+                ...task, 
+                child_task_ids: updatedChildIds,
+                status: 'closed',
+                closed_status: 'parent'
+              }
+            : task
+        ),
+      }));
+    } catch (error) {
+      console.error('Error updating parent with child:', error);
+      set({ error: 'Failed to update parent with child' });
     }
   }
 });

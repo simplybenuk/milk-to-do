@@ -17,6 +17,8 @@ export function useTaskSkipAction(onFocusEnd: () => void) {
     
     try {
       startProcessing();
+      
+      // Changed to match the return type in the TaskStore interface
       await incrementSkipCount(taskId);
       
       // Move to next task if there is one

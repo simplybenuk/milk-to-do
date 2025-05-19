@@ -274,10 +274,19 @@ export const getCoreTaskActions = (
     
     updateTask: async (id: string, updates: Partial<Task>) => {
       try {
+        // Convert Date objects to ISO strings for database storage
+        const dbUpdates = { ...updates };
+        if (updates.completed_at instanceof Date) {
+          dbUpdates.completed_at = updates.completed_at.toISOString();
+        }
+        if (updates.expiry_date instanceof Date) {
+          dbUpdates.expiry_date = updates.expiry_date.toISOString();
+        }
+        
         // Update the task in the database
         const { error } = await supabase
           .from('tasks')
-          .update(updates)
+          .update(dbUpdates)
           .eq('id', id);
           
         if (error) throw error;

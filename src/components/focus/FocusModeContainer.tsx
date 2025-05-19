@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FocusModePage } from './FocusModePage';
 import { FocusExitConfirmDialog } from '@/components/FocusExitConfirmDialog';
 import { useTaskNavigation } from '@/hooks/useTaskNavigation';
@@ -28,6 +28,10 @@ export function FocusModeContainer({
   confirmExitFocusMode
 }: FocusModeContainerProps) {
   const [selectedTagIds, setSelectedTagIdsState] = useState<string[] | undefined>(undefined);
+  
+  // Prevent infinite rerendering by tracking state changes
+  const prevInFocusMode = useRef(inFocusMode);
+  const prevCurrentView = useRef(currentView);
   
   // Monitor view and focus mode sync without updating state
   useFocusModeSync(currentView, inFocusMode);
@@ -74,20 +78,34 @@ export function FocusModeContainer({
     setSelectedTagIds(tags);
   };
 
-  // Reset pointer events if they get stuck
+  // Reset pointer events if they get stuck - use a ref to avoid infinite renders
+  const intervalRef = useRef<number | null>(null);
+  
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (document.body.style.pointerEvents === 'none') {
-        document.body.style.pointerEvents = "";
-        console.log("FocusModeContainer: Restored pointer events");
-      }
-    }, 5000); // Longer interval to reduce updates
+    // Only set up the interval once, not on every render
+    if (intervalRef.current === null) {
+      intervalRef.current = window.setInterval(() => {
+        if (document.body.style.pointerEvents === 'none') {
+          document.body.style.pointerEvents = "";
+          console.log("FocusModeContainer: Restored pointer events");
+        }
+      }, 5000); // Longer interval to reduce updates
+    }
     
     return () => {
-      clearInterval(intervalId);
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       document.body.style.pointerEvents = "";
     };
   }, []);
+
+  // Track view and focus mode changes to prevent infinite loops
+  useEffect(() => {
+    prevInFocusMode.current = inFocusMode;
+    prevCurrentView.current = currentView;
+  }, [inFocusMode, currentView]);
 
   // If not in focus mode, only show the enter focus mode button
   if (!inFocusMode && currentView === 'all') {

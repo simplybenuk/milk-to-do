@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAppView } from '@/hooks/useAppView';
 import { useTaskDataFetching } from '@/hooks/useTaskDataFetching';
 import { useBodyStyles } from '@/hooks/useBodyStyles';
@@ -20,10 +20,17 @@ export function useIndexPage() {
     confirmExitFocusMode
   } = useAppView('all');
   
+  // Use a ref to track if we've already loaded tasks
+  const initialLoadDone = useRef(false);
+  
   // Initial data fetching - only run once on mount
   useEffect(() => {
-    console.log('Index component mounted, fetching tasks...');
-    loadTasks();
+    // Only load tasks once when the component mounts
+    if (!initialLoadDone.current) {
+      console.log('Index component mounted, fetching tasks...');
+      loadTasks();
+      initialLoadDone.current = true;
+    }
     
     // Ensure pointer events are enabled
     resetPointerEvents();
