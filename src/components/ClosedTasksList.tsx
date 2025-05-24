@@ -5,6 +5,9 @@ import useTaskStore from '@/stores/useTaskStore';
 import { useToast } from '@/hooks/use-toast';
 import { ClosedStatusReason } from '@/types/task';
 import { SplitTaskDialog } from './SplitTaskDialog';
+import { TaskTagFilter } from './TaskTagFilter';
+import { useSearchParams } from 'react-router-dom';
+import { useSubscription } from '@/hooks/useSubscription';
 import {
   Select,
   SelectContent,
@@ -23,15 +26,27 @@ type FilterType = "all" | ClosedStatusReason;
 export function ClosedTasksList() {
   const { tasks, deleteTask } = useTaskStore();
   const { toast } = useToast();
+  const { isPro } = useSubscription();
+  const [searchParams] = useSearchParams();
   const [filter, setFilter] = useState<FilterType>("all");
   const [showSplitDialog, setShowSplitDialog] = useState(false);
   const [selectedParentTask, setSelectedParentTask] = useState<{ id: string, title: string } | null>(null);
   
+  // Get selected tag IDs from URL params (only if Pro user)
+  const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];
+  
   const closedTasks = tasks.filter(task => {
     if (task.status !== 'closed') return false;
     
-    if (filter === 'all') return true;
-    return task.closed_status === filter;
+    // Apply status filter
+    if (filter !== 'all' && task.closed_status !== filter) return false;
+    
+    // Apply tag filter (only if Pro user and tags are selected)
+    if (isPro && selectedTagIds.length > 0) {
+      return task.tags?.some(tagId => selectedTagIds.includes(tagId));
+    }
+    
+    return true;
   });
   
   const handleDelete = async (taskId: string) => {
@@ -58,6 +73,22 @@ export function ClosedTasksList() {
   };
 
   const getEmptyStateMessage = () => {
+    if (isPro && selectedTagIds.length > 0) {
+      const baseMessage = (() => {
+        switch (filter) {
+          case 'complete':
+            return "You haven't completed any tasks with the selected tags.";
+          case 'expired':
+            return "You don't have any expired tasks with the selected tags.";
+          case 'parent':
+            return "You haven't split any tasks with the selected tags into smaller ones yet.";
+          default:
+            return "You don't have any closed tasks with the selected tags.";
+        }
+      })();
+      return `${baseMessage} Try selecting different tags or "All Tags" to see more results.`;
+    }
+    
     switch (filter) {
       case 'complete':
         return "You haven't completed any tasks yet.";
@@ -72,6 +103,9 @@ export function ClosedTasksList() {
 
   return (
     <div className="space-y-6">
+      {/* Tag filter component */}
+      <TaskTagFilter />
+      
       <div className="flex justify-end mb-4">
         <Select
           value={filter}
