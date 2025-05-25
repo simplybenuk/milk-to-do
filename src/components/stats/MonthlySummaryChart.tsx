@@ -85,7 +85,15 @@ export function MonthlySummaryChart({ tasks }: MonthlySummaryChartProps) {
       new: newTasksCount,
       completed: completedCount,
       expired: expiredCount,
-      activeTasks: tasks.filter(t => t.status === 'open').length
+      activeTasks: tasks.filter(t => t.status === 'open').length,
+      // Add the missing all-time stats
+      totalCreated: tasks.length,
+      totalCompleted: tasks.filter(task => 
+        task.closed_status === 'complete'
+      ).length,
+      totalExpired: tasks.filter(task => 
+        task.closed_status === 'expired'
+      ).length,
     };
   }, [tasks]);
 
