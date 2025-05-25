@@ -58,6 +58,35 @@ export function TaskStats() {
     setSelectedTagIds(tagIds);
   };
 
+  // Calculate statistics
+  const calculateStats = (taskList: Task[]) => {
+    const now = new Date();
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    return {
+      // Monthly stats
+      new: taskList.filter(task => task.created_at >= oneMonthAgo).length,
+      completed: taskList.filter(task => 
+        task.completed_at && 
+        task.completed_at >= oneMonthAgo
+      ).length,
+      expired: taskList.filter(task => 
+        task.expired_at && 
+        task.expired_at >= oneMonthAgo
+      ).length,
+      activeTasks: taskList.filter(task => task.status === 'open').length,
+      
+      // All time stats
+      totalCreated: taskList.length,
+      totalCompleted: taskList.filter(task => 
+        task.closed_status === 'complete'
+      ).length,
+      totalExpired: taskList.filter(task => 
+        task.closed_status === 'expired'
+      ).length,
+    };
+  };
+
   if (!tasks.length) {
     return (
       <div className="space-y-8">
@@ -74,12 +103,15 @@ export function TaskStats() {
     );
   }
 
+  const stats = calculateStats(filteredTasks);
+
   return (
     <div className="space-y-8">
       <StatsTagFilter onTagsChange={handleTagsChange} />
       
       {filteredTasks.length > 0 ? (
         <>
+          <StatsCards stats={stats} />
           <DailyActivityChart tasks={filteredTasks} />
           <MonthlySummaryChart tasks={filteredTasks} />
         </>
