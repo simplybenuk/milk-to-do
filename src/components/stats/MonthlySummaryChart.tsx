@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Task } from '@/types/task';
-import { StatsCards } from './StatsCards';
 
 interface MonthlySummaryChartProps {
   tasks: Task[];
@@ -61,41 +60,6 @@ export function MonthlySummaryChart({ tasks }: MonthlySummaryChartProps) {
     
     return data;
   }, [tasks]);
-  
-  // Calculate stats for the current month (for summary cards)
-  const currentMonthStats = useMemo(() => {
-    const now = new Date();
-    const monthStart = startOfMonth(now);
-    
-    const newTasksCount = tasks.filter(task => 
-      task.created_at >= monthStart
-    ).length;
-    
-    const completedCount = tasks.filter(task => 
-      task.completed_at && 
-      task.completed_at >= monthStart
-    ).length;
-    
-    const expiredCount = tasks.filter(task => 
-      task.expired_at && 
-      task.expired_at >= monthStart
-    ).length;
-    
-    return {
-      new: newTasksCount,
-      completed: completedCount,
-      expired: expiredCount,
-      activeTasks: tasks.filter(t => t.status === 'open').length,
-      // Add the missing all-time stats
-      totalCreated: tasks.length,
-      totalCompleted: tasks.filter(task => 
-        task.closed_status === 'complete'
-      ).length,
-      totalExpired: tasks.filter(task => 
-        task.closed_status === 'expired'
-      ).length,
-    };
-  }, [tasks]);
 
   return (
     <Card>
@@ -116,7 +80,6 @@ export function MonthlySummaryChart({ tasks }: MonthlySummaryChartProps) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <StatsCards stats={currentMonthStats} />
       </CardContent>
     </Card>
   );
