@@ -10,6 +10,9 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { TaskTagFilter } from '../TaskTagFilter';
 import { TaskList } from './TaskList';
 import { useAllTasksView } from '@/hooks/useAllTasksView';
+import { exportTasksToMarkdown } from '@/utils/taskExport';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
 
 export function AllTasksList() {
   const { deleteTask, completeTask, editTask, fetchTasks } = useTaskStore();
@@ -26,6 +29,7 @@ export function AllTasksList() {
   
   // Use our custom hook for task filtering and parent focusing
   const {
+    openTasks,
     topLevelOpenTasks,
     relevantParents,
     childTasks,
@@ -78,10 +82,36 @@ export function AllTasksList() {
     await fetchTasks();
   };
 
+  const handleExportTasks = () => {
+    exportTasksToMarkdown(openTasks);
+    toast({
+      title: "Tasks exported",
+      description: "Your tasks have been exported to a markdown file.",
+    });
+  };
+
   return (
     <div className="w-full max-w-full space-y-4 px-2">
-      {/* Tag filter component */}
-      <TaskTagFilter />
+      {/* Tag filter and export button container */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex-1">
+          <TaskTagFilter />
+        </div>
+        
+        {/* Export button */}
+        <div className="flex justify-end">
+          <Button
+            onClick={handleExportTasks}
+            variant="outline"
+            size="sm"
+            disabled={openTasks.length === 0}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Export ({openTasks.length})
+          </Button>
+        </div>
+      </div>
       
       <TaskList 
         topLevelOpenTasks={topLevelOpenTasks}
