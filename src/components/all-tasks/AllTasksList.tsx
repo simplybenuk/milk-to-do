@@ -10,9 +10,15 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { TaskTagFilter } from '../TaskTagFilter';
 import { TaskList } from './TaskList';
 import { useAllTasksView } from '@/hooks/useAllTasksView';
-import { exportTasksToMarkdown } from '@/utils/taskExport';
+import { exportTasksToMarkdown, copyTasksToClipboard } from '@/utils/taskExport';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Download, Copy, ChevronDown } from 'lucide-react';
 
 export function AllTasksList() {
   const { deleteTask, completeTask, editTask, fetchTasks } = useTaskStore();
@@ -82,12 +88,28 @@ export function AllTasksList() {
     await fetchTasks();
   };
 
-  const handleExportTasks = () => {
+  const handleDownloadMarkdown = () => {
     exportTasksToMarkdown(openTasks);
     toast({
       title: "Tasks exported",
-      description: "Your tasks have been exported to a markdown file.",
+      description: "Your tasks have been downloaded as a markdown file.",
     });
+  };
+
+  const handleCopyToClipboard = async () => {
+    try {
+      await copyTasksToClipboard(openTasks);
+      toast({
+        title: "Tasks copied",
+        description: "Your tasks have been copied to clipboard as markdown.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy failed",
+        description: "Failed to copy tasks to clipboard. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -98,18 +120,31 @@ export function AllTasksList() {
           <TaskTagFilter />
         </div>
         
-        {/* Export button */}
+        {/* Export dropdown */}
         <div className="flex justify-end">
-          <Button
-            onClick={handleExportTasks}
-            variant="outline"
-            size="sm"
-            disabled={openTasks.length === 0}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Export ({openTasks.length})
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={openTasks.length === 0}
+                className="flex items-center gap-2"
+              >
+                Export ({openTasks.length})
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleCopyToClipboard}>
+                <Copy className="h-4 w-4 mr-2" />
+                Copy to Clipboard
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownloadMarkdown}>
+                <Download className="h-4 w-4 mr-2" />
+                Download Markdown
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       

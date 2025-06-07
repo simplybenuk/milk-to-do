@@ -13,6 +13,15 @@ export function exportTasksToMarkdown(tasks: Task[]): void {
   downloadMarkdownFile(markdown, 'sourlist-tasks.md');
 }
 
+export function copyTasksToClipboard(tasks: Task[]): Promise<void> {
+  if (tasks.length === 0) {
+    throw new Error('No tasks to copy');
+  }
+
+  const markdown = generateTasksMarkdown(tasks);
+  return navigator.clipboard.writeText(markdown);
+}
+
 function generateTasksMarkdown(tasks: Task[]): string {
   const header = `# SourList Tasks Export\n\nExported on: ${format(new Date(), 'PPP')}\nTotal tasks: ${tasks.length}\n\n`;
   
