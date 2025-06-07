@@ -1,6 +1,7 @@
 
 import { format } from 'date-fns';
 import { Task } from '@/types/task';
+import useTagStore from '@/stores/useTagStore';
 
 export function exportTasksToMarkdown(tasks: Task[]): void {
   if (tasks.length === 0) {
@@ -15,9 +16,20 @@ export function exportTasksToMarkdown(tasks: Task[]): void {
 function generateTasksMarkdown(tasks: Task[]): string {
   const header = `# SourList Tasks Export\n\nExported on: ${format(new Date(), 'PPP')}\nTotal tasks: ${tasks.length}\n\n`;
   
+  // Get all tags from the store to resolve tag IDs to names
+  const { tags } = useTagStore.getState();
+  
   const tasksList = tasks.map((task, index) => {
     const expiryDate = format(new Date(task.expiry_date), 'PPP');
     const priorityScore = Math.round(task.priority_score);
+    
+    // Convert tag IDs to tag names
+    const tagNames = task.tags && task.tags.length > 0 
+      ? task.tags.map(tagId => {
+          const tag = tags.find(t => t.id === tagId);
+          return tag ? tag.name : tagId; // Fallback to ID if tag not found
+        })
+      : [];
     
     return `## ${index + 1}. ${task.title}
 
@@ -25,7 +37,7 @@ function generateTasksMarkdown(tasks: Task[]): string {
 **Priority Level:** ${task.priority}  
 **Expires:** ${expiryDate}  
 **Status:** ${task.status}  
-${task.tags && task.tags.length > 0 ? `**Tags:** ${task.tags.join(', ')}  ` : ''}
+${tagNames.length > 0 ? `**Tags:** ${tagNames.join(', ')}  ` : ''}
 
 ---
 `;
