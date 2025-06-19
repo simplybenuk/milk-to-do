@@ -18,3 +18,5 @@ export { getTaskAgeClass } from './TaskAgeUtils';
 // Export button components
 export * from './buttons';
 
+// Export security utilities for use across the app
+export { sanitizeHtml, validateTaskTitle, validateTagName } from '../../utils/security';

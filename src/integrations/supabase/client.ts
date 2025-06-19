@@ -27,16 +27,40 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
         try {
           localStorage.setItem(key, value);
         } catch {
-          // Handle storage errors
+          // Handle storage errors silently
         }
       },
       removeItem: (key: string) => {
         try {
           localStorage.removeItem(key);
         } catch {
-          // Handle storage errors
+          // Handle storage errors silently
         }
       },
     },
   },
+  db: {
+    schema: 'public'
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'sourlist-app'
+    }
+  }
 });
+
+// Enhanced error handler for better security logging
+export const handleSupabaseError = (error: any, context: string) => {
+  console.error(`Supabase error in ${context}:`, error);
+  
+  // Don't expose sensitive error details to users
+  if (error?.message?.includes('Row Level Security')) {
+    return new Error('Access denied. Please check your permissions.');
+  }
+  
+  if (error?.message?.includes('violates')) {
+    return new Error('Invalid data provided. Please check your input.');
+  }
+  
+  return error;
+};

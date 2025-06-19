@@ -332,11 +332,22 @@ export type Database = {
           last_sign_in_at: string
         }[]
       }
+      get_user_plan_permissions: {
+        Args: { user_id: string }
+        Returns: {
+          can_edit_tasks: boolean
+          can_use_expiry: boolean
+        }[]
+      }
       increment: {
         Args: { row_id: string }
         Returns: number
       }
       is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_admin_user: {
         Args: { user_id: string }
         Returns: boolean
       }
