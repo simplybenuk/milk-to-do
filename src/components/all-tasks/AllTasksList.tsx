@@ -9,7 +9,9 @@ import { UpgradeToProDialog } from '../UpgradeToProDialog';
 import { useSubscription } from '@/hooks/useSubscription';
 import { TaskTagFilter } from '../TaskTagFilter';
 import { TaskList } from './TaskList';
+import { TaskPagination } from './TaskPagination';
 import { useAllTasksView } from '@/hooks/useAllTasksView';
+import { usePagination } from '@/hooks/usePagination';
 import { exportTasksToMarkdown, copyTasksToClipboard } from '@/utils/taskExport';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +21,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Download, Copy, ChevronDown } from 'lucide-react';
+
+const TASKS_PER_PAGE = 20;
 
 export function AllTasksList() {
   const { deleteTask, completeTask, editTask, fetchTasks } = useTaskStore();
@@ -42,6 +46,27 @@ export function AllTasksList() {
     focusParentId,
     handleViewParent
   } = useAllTasksView();
+
+  // Set up pagination for top-level tasks only
+  const {
+    currentPage,
+    totalPages,
+    startIndex,
+    endIndex,
+    goToPage,
+    hasNextPage,
+    hasPreviousPage,
+  } = usePagination({
+    totalItems: topLevelOpenTasks.length,
+    itemsPerPage: TASKS_PER_PAGE,
+  });
+
+  // Get paginated top-level tasks
+  const paginatedTopLevelTasks = topLevelOpenTasks.slice(startIndex, endIndex);
+
+  // Always show all relevant parents (closed parent tasks with open children)
+  // These are typically much fewer in number so pagination isn't needed
+  const allRelevantParents = relevantParents;
 
   const handleDelete = async (taskId: string) => {
     await deleteTask(taskId);
@@ -147,10 +172,18 @@ export function AllTasksList() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Show pagination summary */}
+      {totalPages > 1 && (
+        <div className="text-sm text-milk-500 text-center">
+          Showing {startIndex + 1}-{Math.min(endIndex, topLevelOpenTasks.length)} of {topLevelOpenTasks.length} tasks
+          {allRelevantParents.length > 0 && ` (plus ${allRelevantParents.length} parent tasks with open children)`}
+        </div>
+      )}
       
       <TaskList 
-        topLevelOpenTasks={topLevelOpenTasks}
-        relevantParents={relevantParents}
+        topLevelOpenTasks={paginatedTopLevelTasks}
+        relevantParents={allRelevantParents}
         childTasks={childTasks}
         focusParentId={focusParentId}
         onComplete={handleComplete}
@@ -159,6 +192,19 @@ export function AllTasksList() {
         onCreateChildTask={handleCreateChildTask}
         onEdit={handleEditTask}
       />
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center py-4">
+          <TaskPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+          />
+        </div>
+      )}
       
       {/* Split Task Dialog */}
       <SplitTaskDialog
