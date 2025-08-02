@@ -63,6 +63,22 @@ export function TaskStats() {
     const now = new Date();
     const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+    // Debug logging to understand the data
+    console.log('Task breakdown:', {
+      totalTasks: taskList.length,
+      statusBreakdown: taskList.reduce((acc, task) => {
+        acc[task.status] = (acc[task.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      closedStatusBreakdown: taskList.reduce((acc, task) => {
+        const status = task.closed_status || 'none';
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      expiredTasksWithDate: taskList.filter(task => task.expired_at).length,
+      expiredTasksByStatus: taskList.filter(task => task.closed_status === 'expired').length,
+    });
+
     return {
       // Monthly stats
       new: taskList.filter(task => task.created_at >= oneMonthAgo).length,
