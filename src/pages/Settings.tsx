@@ -2,6 +2,7 @@
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
 import { AnalyticsSettings } from '@/components/settings/AnalyticsSettings';
 import { SubscriptionSettings } from '@/components/settings/SubscriptionSettings';
+import { ThemeSettings } from '@/components/settings/ThemeSettings';
 
 const Settings = () => {
   return (
@@ -25,8 +26,9 @@ const Settings = () => {
             <div>
               <h3 className="text-lg font-medium text-gray-700">App Settings</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
-                More settings options coming soon.
+                Customize your app experience
               </p>
+              <ThemeSettings />
             </div>
           </div>
         </div>
