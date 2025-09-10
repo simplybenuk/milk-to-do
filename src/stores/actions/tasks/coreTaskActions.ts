@@ -85,26 +85,29 @@ export const getCoreTaskActions = (set, get) => ({
 
   editTask: async (id: string, title: string, priority: Priority, tagIds?: string[]) => {
     try {
+      // Find the current task to preserve existing tags when none are provided
+      const currentTask = get().tasks.find(t => t.id === id);
+
+      // Use provided tag IDs or fall back to the task's existing tags
+      const tagsToUpdate = tagIds ?? currentTask?.tags ?? [];
+
       // Update the task in the database
-      await updateTaskInDB(id, { title, priority, tags: tagIds || [] });
-      
+      await updateTaskInDB(id, { title, priority, tags: tagsToUpdate });
+
       // Update the local state
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id
-            ? { ...task, title, priority, tags: tagIds || task.tags }
+            ? { ...task, title, priority, tags: tagsToUpdate }
             : task
         ),
       }));
-      
-      // Check if this is a parent task
-      const task = get().tasks.find(t => t.id === id);
-      
-      // If it's a parent task and has child tasks, sync the tags
-      if (task?.child_task_ids?.length > 0 && tagIds) {
+
+      // If this is a parent task and tags were changed, sync them to children
+      if (currentTask?.child_task_ids?.length > 0 && tagIds) {
         await syncTagsToChildTasks(id, tagIds);
       }
-      
+
       // Refresh tasks to get the updated state
       await get().fetchTasks();
     } catch (error) {
