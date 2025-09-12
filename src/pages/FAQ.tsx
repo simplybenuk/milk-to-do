@@ -33,7 +33,7 @@ const FAQ = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-16 bg-milk-50">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 font-header">Frequently Asked Questions</h1>
           <p className="text-xl mb-8 max-w-2xl mx-auto text-milk-600">
@@ -46,7 +46,7 @@ const FAQ = () => {
       <section className="py-16">
         <div className="container mx-auto px-4 max-w-4xl">
           <Accordion type="single" collapsible className="space-y-4">
-            <AccordionItem value="item-1" className="border rounded-lg px-6 bg-white shadow-sm">
+            <AccordionItem value="item-1" className="border rounded-lg px-6 bg-card shadow-sm">
               <AccordionTrigger className="text-xl font-semibold py-4">
                 What is SourList and how does it work?
               </AccordionTrigger>
@@ -58,7 +58,7 @@ const FAQ = () => {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-2" className="border rounded-lg px-6 bg-white shadow-sm">
+            <AccordionItem value="item-2" className="border rounded-lg px-6 bg-card shadow-sm">
               <AccordionTrigger className="text-xl font-semibold py-4">
                 How does the task prioritization system work?
               </AccordionTrigger>
@@ -75,7 +75,7 @@ const FAQ = () => {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-3" className="border rounded-lg px-6 bg-white shadow-sm">
+            <AccordionItem value="item-3" className="border rounded-lg px-6 bg-card shadow-sm">
               <AccordionTrigger className="text-xl font-semibold py-4">
                 What is Focus Mode and how do I use it?
               </AccordionTrigger>
@@ -90,7 +90,7 @@ const FAQ = () => {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-4" className="border rounded-lg px-6 bg-white shadow-sm">
+            <AccordionItem value="item-4" className="border rounded-lg px-6 bg-card shadow-sm">
               <AccordionTrigger className="text-xl font-semibold py-4">
                 Can I change the expiry date for tasks?
               </AccordionTrigger>
@@ -99,7 +99,7 @@ const FAQ = () => {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-5" className="border rounded-lg px-6 bg-white shadow-sm">
+            <AccordionItem value="item-5" className="border rounded-lg px-6 bg-card shadow-sm">
               <AccordionTrigger className="text-xl font-semibold py-4">
                 How do I break down large tasks into smaller ones?
               </AccordionTrigger>
@@ -110,7 +110,7 @@ const FAQ = () => {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-6" className="border rounded-lg px-6 bg-white shadow-sm">
+            <AccordionItem value="item-6" className="border rounded-lg px-6 bg-card shadow-sm">
               <AccordionTrigger className="text-xl font-semibold py-4">
                 What happens when a task expires?
               </AccordionTrigger>
@@ -121,7 +121,7 @@ const FAQ = () => {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-7" className="border rounded-lg px-6 bg-white shadow-sm">
+            <AccordionItem value="item-7" className="border rounded-lg px-6 bg-card shadow-sm">
               <AccordionTrigger className="text-xl font-semibold py-4">
                 Is there a limit to how many tasks I can create?
               </AccordionTrigger>
@@ -131,7 +131,7 @@ const FAQ = () => {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-8" className="border rounded-lg px-6 bg-white shadow-sm">
+            <AccordionItem value="item-8" className="border rounded-lg px-6 bg-card shadow-sm">
               <AccordionTrigger className="text-xl font-semibold py-4">
                 Does SourList work offline?
               </AccordionTrigger>
@@ -158,7 +158,7 @@ const FAQ = () => {
       </section>
 
       {/* Footer (Same as Landing) */}
-      <footer className="bg-milk-800 text-white py-8">
+      <footer className="bg-foreground text-background py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">

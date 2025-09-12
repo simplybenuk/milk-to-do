@@ -37,7 +37,7 @@ const Features = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-16 bg-milk-50">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 font-header">All Features</h1>
           <p className="text-xl mb-8 max-w-2xl mx-auto text-milk-600">
@@ -116,12 +116,12 @@ const Features = () => {
       </section>
 
       {/* Additional Features */}
-      <section className="py-16 bg-milk-50">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-12 text-center font-header">More Features</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-card p-6 rounded-lg shadow-md">
               <CheckCircle className="w-10 h-10 text-emerald-500 mb-4" />
               <h3 className="text-xl font-bold mb-2">Task Tracking</h3>
               <p className="text-milk-600">
@@ -129,7 +129,7 @@ const Features = () => {
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-card p-6 rounded-lg shadow-md">
               <List className="w-10 h-10 text-emerald-500 mb-4" />
               <h3 className="text-xl font-bold mb-2">Limited Task View</h3>
               <p className="text-milk-600">
@@ -137,7 +137,7 @@ const Features = () => {
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-card p-6 rounded-lg shadow-md">
               <Calendar className="w-10 h-10 text-emerald-500 mb-4" />
               <h3 className="text-xl font-bold mb-2">Task Age Indicators</h3>
               <p className="text-milk-600">
@@ -162,7 +162,7 @@ const Features = () => {
       </section>
 
       {/* Footer (Same as Landing) */}
-      <footer className="bg-milk-800 text-white py-8">
+      <footer className="bg-foreground text-background py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">

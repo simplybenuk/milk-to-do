@@ -21,7 +21,7 @@ export function TaskNavigation({
   // Use better contrast for the task counter when in focus mode
   const counterClasses = cn(
     "font-header text-sm",
-    inFocusMode ? "text-white font-semibold bg-gray-800/50 px-3 py-1 rounded-full" : "text-milk-600"
+    inFocusMode ? "text-white font-semibold bg-gray-800/50 px-3 py-1 rounded-full" : "text-muted-foreground"
   );
 
   return (
@@ -32,7 +32,7 @@ export function TaskNavigation({
           onClick={onReturnToTop}
           variant="outline"
           size="sm"
-          className={inFocusMode ? "bg-white hover:bg-white/90 text-gray-800" : ""}
+          className={inFocusMode ? "bg-card hover:bg-card/90 text-foreground" : ""}
         >
           <ArrowUp className="mr-2 h-4 w-4" />
           Return to Top Priority

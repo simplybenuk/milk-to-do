@@ -27,7 +27,7 @@ const About = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-16 bg-milk-50">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 font-header">About SourList</h1>
           <p className="text-xl mb-8 max-w-2xl mx-auto text-milk-600">
@@ -103,7 +103,7 @@ const About = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-milk-800 text-white py-8">
+      <footer className="bg-foreground text-background py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">

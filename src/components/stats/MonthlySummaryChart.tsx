@@ -71,7 +71,7 @@ export function MonthlySummaryChart({ tasks }: MonthlySummaryChartProps) {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border rounded shadow-lg">
+        <div className="bg-card p-3 border rounded shadow-lg">
           <p className="font-medium">{String(label).replace(/[<>]/g, '')}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>

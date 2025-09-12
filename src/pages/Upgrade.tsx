@@ -83,7 +83,7 @@ const Upgrade = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-16 bg-milk-50">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 font-header">Upgrade to Pro</h1>
           <p className="text-xl mb-8 max-w-2xl mx-auto text-milk-600">

@@ -13,7 +13,7 @@ const Privacy = () => {
   }, [trackPageView]);
 
   return (
-    <div className="min-h-screen bg-milk-50 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Navigation */}
       <nav className="container mx-auto p-4 flex justify-between items-center">
         <Link to="/">
@@ -30,7 +30,7 @@ const Privacy = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 flex-grow">
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-8">
+        <div className="max-w-4xl mx-auto bg-card rounded-lg shadow-sm p-8">
           <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
           
           <section className="mb-8">
@@ -120,7 +120,7 @@ const Privacy = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-milk-800 text-white py-8 mt-auto">
+      <footer className="bg-foreground text-background py-8 mt-auto">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">

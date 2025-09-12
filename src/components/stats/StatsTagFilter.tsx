@@ -82,9 +82,9 @@ export function StatsTagFilter({ onTagsChange }: StatsTagFilterProps) {
           variant={isAllSelected ? "default" : "outline"}
           className={cn(
             "cursor-pointer px-3 py-1.5",
-            isAllSelected 
-              ? "bg-milk-500 hover:bg-milk-600" 
-              : "hover:bg-milk-100"
+            isAllSelected
+              ? "bg-secondary hover:bg-secondary/80"
+              : "hover:bg-muted"
           )}
           onClick={handleSelectAll}
         >
@@ -104,8 +104,8 @@ export function StatsTagFilter({ onTagsChange }: StatsTagFilterProps) {
             className={cn(
               "cursor-pointer px-3 py-1",
               selectedTags.includes(tag.id) && !isAllSelected
-                ? "bg-milk-500 hover:bg-milk-600" 
-                : "hover:bg-milk-100"
+                ? "bg-secondary hover:bg-secondary/80"
+                : "hover:bg-muted"
             )}
             onClick={() => handleTagToggle(tag.id)}
           >

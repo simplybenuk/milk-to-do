@@ -40,7 +40,7 @@ export function CurrentTask({
 
   if (!task && !viewingParent) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg shadow-lg">
+      <div className="text-center py-12 bg-card rounded-lg shadow-lg">
         <p className="text-milk-500">No task available. Try adding a new task!</p>
       </div>
     );
@@ -77,7 +77,7 @@ export function CurrentTask({
         inFocusMode={inFocusMode}
       />
       
-      <div className={`bg-white rounded-lg shadow-xl ${inFocusMode ? 'ring-4 ring-primary/20' : ''}`}>
+      <div className={`bg-card rounded-lg shadow-xl ${inFocusMode ? 'ring-4 ring-primary/20' : ''}`}>
         <TaskItem
           key={displayTask.id}
           task={displayTask}

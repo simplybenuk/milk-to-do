@@ -18,7 +18,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
     <div className="space-y-6">
       {/* Monthly Stats */}
       <div>
-        <h3 className="text-lg font-semibold text-milk-900 mb-4">This Month</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">This Month</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="rounded-lg bg-blue-50 p-4">
             <p className="text-sm font-medium text-blue-600">New This Month</p>
@@ -32,16 +32,16 @@ export function StatsCards({ stats }: StatsCardsProps) {
             <p className="text-sm font-medium text-red-600">Expired This Month</p>
             <p className="mt-2 text-3xl font-bold text-red-900">{stats.expired}</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-4">
-            <p className="text-sm font-medium text-gray-600">Total Active Tasks</p>
-            <p className="mt-2 text-3xl font-bold text-gray-900">{stats.activeTasks}</p>
+          <div className="rounded-lg bg-muted p-4">
+            <p className="text-sm font-medium text-muted-foreground">Total Active Tasks</p>
+            <p className="mt-2 text-3xl font-bold text-foreground">{stats.activeTasks}</p>
           </div>
         </div>
       </div>
 
       {/* All Time Stats */}
       <div>
-        <h3 className="text-lg font-semibold text-milk-900 mb-4">All Time</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">All Time</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-lg bg-purple-50 p-4">
             <p className="text-sm font-medium text-purple-600">Total Created</p>

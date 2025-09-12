@@ -111,25 +111,25 @@ const Landing = () => {
         </div>
       </main>
 
-      <section className="bg-milk-50 py-16">
+      <section className="bg-background py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-10 text-center font-header">Why SourList Works</h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-card p-6 rounded-lg shadow-md">
               <div className="w-12 h-12 bg-fresh-bg rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">🥛</span>
               </div>
               <h3 className="text-xl font-bold mb-2">Task Expiry</h3>
               <p className="text-milk-600">Tasks have a 30-day expiry date, encouraging you to complete them before they go sour.</p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-card p-6 rounded-lg shadow-md">
               <div className="w-12 h-12 bg-fresh-bg rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">🔍</span>
               </div>
               <h3 className="text-xl font-bold mb-2">Smart Prioritization</h3>
               <p className="text-milk-600">Tasks are automatically prioritized based on urgency and expiration date.</p>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-card p-6 rounded-lg shadow-md">
               <div className="w-12 h-12 bg-fresh-bg rounded-full flex items-center justify-center mb-4">
                 <span className="text-2xl">🧠</span>
               </div>
@@ -152,7 +152,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <footer className="bg-milk-800 text-white py-8">
+      <footer className="bg-foreground text-background py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">

@@ -12,7 +12,7 @@ export function PageContainer({ inFocusMode, children }: PageContainerProps) {
   // Create dynamic page classes based on focus mode state
   const pageClasses = cn(
     "min-h-screen p-4 sm:p-6 md:p-8 transition-colors duration-500 ease-in-out flex flex-col w-full",
-    inFocusMode ? "bg-gray-900" : "bg-milk-50"
+    inFocusMode ? "bg-gray-900" : "bg-background"
   );
 
   // Create dynamic text color classes based on focus mode

@@ -71,7 +71,7 @@ export function FocusModePage({
             </Button>
             <Button 
               onClick={handleStartFocus}
-              className="bg-milk-600 hover:bg-milk-700 text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Focus className="mr-2 h-4 w-4" />
               Start Focus
@@ -85,7 +85,7 @@ export function FocusModePage({
       <div className="mb-6 flex justify-center">
         <Button 
           onClick={handleEnterFocusMode}
-          className="bg-milk-600 hover:bg-milk-700 text-white animate-fade-in"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground animate-fade-in"
         >
           <Focus className="mr-2 h-4 w-4" />
           Enter Focus Mode

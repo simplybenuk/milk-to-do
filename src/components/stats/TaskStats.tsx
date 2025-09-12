@@ -112,7 +112,7 @@ export function TaskStats() {
             <CardDescription>No tasks available yet</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-gray-500">Start adding tasks to see your statistics</p>
+            <p className="text-center text-muted-foreground">Start adding tasks to see your statistics</p>
           </CardContent>
         </Card>
       </div>
@@ -138,7 +138,7 @@ export function TaskStats() {
             <CardDescription>No tasks match your current filter selection</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-gray-500">Try selecting different tags or "All Tags" to see your statistics</p>
+            <p className="text-center text-muted-foreground">Try selecting different tags or "All Tags" to see your statistics</p>
           </CardContent>
         </Card>
       )}

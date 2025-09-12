@@ -12,7 +12,7 @@ type AuthContainerProps = {
 
 export function AuthContainer({ title, description, children, footer }: AuthContainerProps) {
   return (
-    <div className="grid h-screen place-items-center bg-milk-50">
+    <div className="grid h-screen place-items-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-3 pb-6">
           <CardTitle className="text-2xl text-center">

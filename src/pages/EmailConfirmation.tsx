@@ -10,7 +10,7 @@ const EmailConfirmation = () => {
   const navigate = useNavigate();
   
   return (
-    <div className="grid h-screen place-items-center bg-milk-50">
+    <div className="grid h-screen place-items-center bg-background">
       <Card className="w-full max-w-md text-center">
         <CardHeader className="space-y-3 pb-6">
           <CardTitle className="text-2xl text-center">

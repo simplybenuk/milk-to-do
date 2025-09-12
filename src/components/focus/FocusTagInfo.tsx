@@ -32,7 +32,7 @@ export function FocusTagInfo({ selectedTagIds }: FocusTagInfoProps) {
         <Badge 
           key={tag.id}
           variant="outline" 
-          className="bg-milk-100 text-milk-800 border-milk-300"
+          className="bg-muted text-muted-foreground border-border"
         >
           {tag.name}
         </Badge>
