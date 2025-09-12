@@ -27,7 +27,7 @@ export function UpgradeBanner() {
           size="sm"
           onClick={() => navigate('/upgrade')}
           variant="outline"
-          className="bg-white border-violet-200 hover:bg-violet-50 text-violet-700 text-xs"
+          className="bg-card border-violet-200 hover:bg-violet-50 text-violet-700 text-xs"
         >
           Upgrade to Pro
         </Button>

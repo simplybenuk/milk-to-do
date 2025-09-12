@@ -77,7 +77,7 @@ export function MainContent({
                 onExitFocusMode={onExitFocusMode}
               />
             ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow-lg">
+              <div className="text-center py-12 bg-card rounded-lg shadow-lg">
                 {noTasksAvailable ? (
                   <div className="flex flex-col items-center space-y-4">
                     <p className="text-milk-500 font-medium">All tasks have been processed!</p>

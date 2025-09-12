@@ -53,9 +53,9 @@ export function TaskAgeIndicator({ createdAt, expiryDate }: TaskAgeIndicatorProp
       icon: Hourglass
     },
     expired: {
-      bg: "bg-gray-100",
-      text: "text-gray-800",
-      border: "border-gray-200",
+      bg: "bg-muted",
+      text: "text-muted-foreground",
+      border: "border-border",
       icon: Hourglass
     }
   };

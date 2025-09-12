@@ -40,11 +40,11 @@ export function SettingsHeader({ title, subtitle }: SettingsHeaderProps) {
         </Button>
       </div>
       <div className="text-center">
-        <div className="inline-flex items-center justify-center rounded-full bg-milk-100 px-3 py-1 text-sm text-milk-800 mb-4">
+        <div className="inline-flex items-center justify-center rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground mb-4">
           App Settings
         </div>
-        <h1 className="text-4xl font-bold text-milk-900 mb-2">{title}</h1>
-        {subtitle && <p className="text-milk-600">{subtitle}</p>}
+        <h1 className="text-4xl font-bold text-foreground mb-2">{title}</h1>
+        {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
       </div>
     </header>
   );

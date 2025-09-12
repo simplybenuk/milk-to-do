@@ -12,7 +12,7 @@ export function ExpiryDateDisplay({ expiryDate }: ExpiryDateDisplayProps) {
     : format(expiryDate, 'd MMM HH:mm');
   
   return (
-    <div className="flex items-center text-sm text-gray-500 mt-1">
+    <div className="flex items-center text-sm text-muted-foreground mt-1">
       <Calendar className="h-3.5 w-3.5 mr-1.5" />
       <span>Expires: {formattedDate}</span>
     </div>

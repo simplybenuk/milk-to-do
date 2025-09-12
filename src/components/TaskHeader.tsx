@@ -97,15 +97,15 @@ export function TaskHeader({ currentView, onViewChange, inFocusMode = false }: T
         <AppLogo size="large" />
       </div>
       
-      <div className="inline-flex items-center justify-center rounded-full bg-milk-100 px-3 py-1 text-sm text-milk-800 mb-4">
+      <div className="inline-flex items-center justify-center rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground mb-4">
         {inFocusMode ? "Focus Mode Active" : "Welcome to SourList"}
       </div>
-      <h1 className="text-4xl font-bold text-milk-900 mb-2">
+      <h1 className="text-4xl font-bold text-foreground mb-2">
         {currentView === 'main' ? 'Your Top Priority' : 
          currentView === 'stats' ? 'Task Statistics' : 
          currentView === 'closed' ? 'Closed Tasks' : 'Task Overview'}
       </h1>
-      <p className="text-milk-600">
+      <p className="text-muted-foreground">
         {currentView === 'main' && inFocusMode 
           ? 'Complete or skip tasks in your current focus session' 
           : currentView === 'main' 

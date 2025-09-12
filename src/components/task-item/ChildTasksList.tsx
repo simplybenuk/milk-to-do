@@ -64,7 +64,7 @@ export function ChildTasksList({
       <Accordion type="single" collapsible defaultValue={defaultAccordionValue.length > 0 ? defaultAccordionValue[0] : undefined}>
         <AccordionItem value="child-tasks" className="border-none">
           <div className="flex items-center justify-between">
-            <AccordionTrigger className="py-1 text-sm font-medium text-gray-600 hover:text-gray-900">
+            <AccordionTrigger className="py-1 text-sm font-medium text-muted-foreground hover:text-foreground">
               <div className="flex items-center gap-2">
                 <PaperclipIcon className="h-4 w-4" />
                 <span>
@@ -80,7 +80,7 @@ export function ChildTasksList({
               {openTasks.map((childTask) => (
                 <div 
                   key={childTask.id} 
-                  className={`flex items-center justify-between p-3 bg-white rounded-md border shadow-sm ${
+                  className={`flex items-center justify-between p-3 bg-card rounded-md border shadow-sm ${
                     isCompleting[childTask.id] ? 'animate-task-complete' : ''
                   }`}
                 >
@@ -121,9 +121,9 @@ export function ChildTasksList({
               
               {closedTasks.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <h5 className="text-xs font-medium uppercase text-gray-500">Completed</h5>
+                  <h5 className="text-xs font-medium uppercase text-muted-foreground">Completed</h5>
                   {closedTasks.map((childTask) => (
-                    <div key={childTask.id} className="flex items-center p-2 bg-gray-50 rounded-md opacity-70">
+                    <div key={childTask.id} className="flex items-center p-2 bg-muted rounded-md opacity-70">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm line-through truncate">{childTask.title}</p>
                       </div>

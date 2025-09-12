@@ -103,7 +103,7 @@
 
 @layer utilities {
   .glass-morphism {
-    @apply backdrop-blur-xl bg-white/5 border border-white/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)];
+    @apply backdrop-blur-xl bg-background/5 border border-border/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)];
   }
   
   .text-gradient {
@@ -133,7 +133,7 @@
   
   /* Focus mode task card styles */
   .focus-card {
-    @apply bg-white shadow-lg rounded-lg border-none z-20 relative;
+    @apply bg-card shadow-lg rounded-lg border-none z-20 relative;
   }
   
   .focus-mode-heading {
