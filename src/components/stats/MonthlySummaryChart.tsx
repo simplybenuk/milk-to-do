@@ -51,8 +51,8 @@ export function MonthlySummaryChart({ tasks }: MonthlySummaryChartProps) {
       
       // Count tasks expired in this month with validation
       const expiredCount = tasks.filter(task => {
-        if (!task?.expired_at) return false;
-        const expiredAt = new Date(task.expired_at);
+        if (task?.closed_status !== 'expired') return false;
+        const expiredAt = task.expired_at ?? task.expiry_date;
         return isValid(expiredAt) && expiredAt >= monthStart && expiredAt <= monthEnd;
       }).length;
       
