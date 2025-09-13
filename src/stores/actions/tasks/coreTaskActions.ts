@@ -123,11 +123,12 @@ export const getCoreTaskActions = (set, get) => ({
       set(state => ({
         tasks: state.tasks.map(task =>
           task.id === id
-            ? { 
-                ...task, 
-                status: 'closed', 
+            ? {
+                ...task,
+                status: 'closed',
                 closed_status: reason,
-                completed_at: reason === 'complete' ? new Date() : undefined
+                completed_at: reason === 'complete' ? new Date() : undefined,
+                expired_at: reason === 'expired' ? new Date() : undefined
               }
             : task
         ),

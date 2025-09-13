@@ -49,11 +49,11 @@ export function DailyActivityChart({ tasks }: DailyActivityChartProps) {
       ).length;
 
       // Count tasks expired on this day
-      const expiredCount = tasks.filter(task => 
-        task.expired_at && 
-        task.expired_at >= dayStart && 
-        task.expired_at <= dayEnd
-      ).length;
+      const expiredCount = tasks.filter(task => {
+        if (task.closed_status !== 'expired') return false;
+        const expiredDate = task.expired_at ?? task.expiry_date;
+        return expiredDate >= dayStart && expiredDate <= dayEnd;
+      }).length;
 
       // Count new tasks created on this day
       const newTasksCount = tasks.filter(task => 

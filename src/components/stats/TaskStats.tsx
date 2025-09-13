@@ -86,9 +86,9 @@ export function TaskStats() {
         task.completed_at && 
         task.completed_at >= oneMonthAgo
       ).length,
-      expired: taskList.filter(task => 
-        task.expired_at && 
-        task.expired_at >= oneMonthAgo
+      expired: taskList.filter(task =>
+        task.closed_status === 'expired' &&
+        (task.expired_at ?? task.expiry_date) >= oneMonthAgo
       ).length,
       activeTasks: taskList.filter(task => task.status === 'open').length,
       
