@@ -11,11 +11,13 @@ export function useAllTasksView() {
   const [focusParentId, setFocusParentId] = useState<string | null>(null);
   const { isPro } = useSubscription();
   
-  // Add effect to refresh tasks when component is mounted
+  // Add effect to refresh tasks when component is mounted if store is empty
   useEffect(() => {
-    // Refresh tasks to ensure we have the latest data including newly created child tasks
-    fetchTasks();
-  }, []); // Removed fetchTasks from dependency array
+    if (tasks.length === 0) {
+      // Refresh tasks to ensure we have the latest data including newly created child tasks
+      fetchTasks();
+    }
+  }, [tasks.length, fetchTasks]);
   
   // Filter tasks by tags only if Pro user
   const selectedTagIds = isPro ? searchParams.get('tags')?.split(',') || [] : [];
