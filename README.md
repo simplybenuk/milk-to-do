@@ -1,3 +1,9 @@
+# Archived
+
+This repository is no longer maintained.
+
+It may contain known security vulnerabilities and should not be used as a dependency, deployed, or copied into production.
+
 
 # SourList - The Expiring To-Do App
 
